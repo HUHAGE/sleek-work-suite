@@ -18,8 +18,8 @@ const TitleBar = () => {
   };
 
   return (
-    <div className={`h-10 flex items-center px-4 bg-background/80 backdrop-blur-xl border-b border-border/50 select-none ${styles.titlebar}`}>
-      <div className={`flex items-center gap-2 flex-1 ${styles.controls}`}>
+    <div className={`${styles.titlebar} h-10 flex items-center px-4 bg-background/80 backdrop-blur-xl border-b border-border/50`}>
+      <div className={`${styles.controls} flex items-center gap-2`}>
         <button
           onClick={handleClose}
           className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
@@ -34,7 +34,7 @@ const TitleBar = () => {
         />
       </div>
       <div className="absolute left-1/2 transform -translate-x-1/2 text-sm text-muted-foreground">
-        工作提效小助手
+        HUHA • 工作提效小助手
       </div>
     </div>
   );
