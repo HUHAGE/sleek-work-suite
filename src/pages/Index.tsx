@@ -26,7 +26,7 @@ const Index = () => {
     // { id: 'clipboard', name: '剪贴板', icon: Clipboard, component: ClipboardHistory },
     { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
-    { id: 'huha', name: 'HUHA工具集', dec: '快速访问HUHA工具网站，探索更多实用功能', icon: Globe, component: HuhaTools },
+    { id: 'huha', name: 'HUHA工具集', icon: Globe, component: HuhaTools },
     { id: 'settings', name: '设置', icon: Settings, component: SettingsTools }
   ];
 
@@ -38,15 +38,17 @@ const Index = () => {
   }, [sidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-      }}></div>
+    <div className="min-h-screen bg-background">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }}></div>
+      </div>
 
       <div className="relative flex h-screen overflow-hidden">
         {/* 侧边栏 */}
         <div className={cn(
-          "glass border-r border-white/10 transition-all duration-300 ease-in-out z-20",
+          "bg-background/80 border-r border-border/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-20",
           sidebarOpen ? "w-72" : "w-20"
         )}>
           <div className="relative h-full">
@@ -86,9 +88,9 @@ const Index = () => {
                       onClick={() => setActiveTool(tool.id)}
                       className={cn(
                         "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                        "hover:bg-white/5 hover:scale-[1.02]",
+                        "hover:bg-primary/5 hover:scale-[1.02]",
                         activeTool === tool.id
-                          ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/20"
+                          ? "bg-primary/10 text-primary border border-primary/30 shadow-lg shadow-primary/20"
                           : "text-muted-foreground hover:text-foreground",
                         !sidebarOpen && "justify-center px-2"
                       )}
@@ -107,10 +109,10 @@ const Index = () => {
         </div>
 
         {/* 主内容区域 */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto bg-background/50 backdrop-blur-sm">
           <div className="container mx-auto p-6">
             {activeToolInfo?.dec && (
-              <div className="mb-6 p-4 rounded-xl bg-white/5 border border-primary/20 backdrop-blur-sm">
+              <div className="mb-6 p-4 rounded-xl bg-card/50 border border-primary/20 backdrop-blur-sm">
                 <div className="flex items-start gap-3">
                   <Info className="text-primary mt-1" size={20} />
                   <div>
