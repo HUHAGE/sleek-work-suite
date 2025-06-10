@@ -7,7 +7,10 @@ electron.contextBridge.exposeInMainWorld("electron", {
         "select-directory",
         "scan-jar-files",
         "copy-files",
-        "set-window-title"
+        "set-window-title",
+        "scan-job-classes",
+        "open-file",
+        "add-annotation"
       ];
       if (validChannels.includes(channel)) {
         return electron.ipcRenderer.invoke(channel, ...args);

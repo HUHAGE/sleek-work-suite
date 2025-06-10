@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { clipboard } from 'electron';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { glob } from 'glob';
 
 const execAsync = promisify(exec);
 
@@ -56,6 +57,73 @@ async function copyFileToTemp(sourcePath: string): Promise<string> {
   
   await fs.promises.copyFile(sourcePath, tempPath);
   return tempPath;
+}
+
+// 扫描Java文件中的Job类
+async function scanJobClasses(dirPath: string): Promise<any[]> {
+  try {
+    const javaFiles = await glob('**/*.java', {
+      cwd: dirPath,
+      absolute: true,
+      ignore: ['**/target/**', '**/build/**', '**/bin/**', '**/test/**']
+    });
+
+    const jobClasses = [];
+    for (const filePath of javaFiles) {
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      
+      // 检查是否实现了Job接口
+      if (content.includes('implements Job') || content.includes('implements org.quartz.Job')) {
+        const className = path.basename(filePath, '.java');
+        const hasAnnotation = content.includes('@DisallowConcurrentExecution');
+        
+        jobClasses.push({
+          className,
+          classPath: filePath,
+          hasAnnotation
+        });
+      }
+    }
+    
+    return jobClasses;
+  } catch (error) {
+    console.error('Error scanning Job classes:', error);
+    throw error;
+  }
+}
+
+// 添加@DisallowConcurrentExecution注解
+async function addJobAnnotation(filePath: string): Promise<void> {
+  try {
+    let content = await fs.promises.readFile(filePath, 'utf-8');
+    
+    // 如果已经有注解，直接返回
+    if (content.includes('@DisallowConcurrentExecution')) {
+      return;
+    }
+    
+    // 添加import语句（如果不存在）
+    if (!content.includes('import org.quartz.DisallowConcurrentExecution;')) {
+      const importStatement = 'import org.quartz.DisallowConcurrentExecution;\n';
+      // 在package语句后或文件开头添加import
+      if (content.includes('package ')) {
+        content = content.replace(/package [^;]+;/, `$&\n${importStatement}`);
+      } else {
+        content = importStatement + content;
+      }
+    }
+    
+    // 在class声明前添加注解
+    content = content.replace(
+      /(public\s+class\s+[^{]+)/,
+      '@DisallowConcurrentExecution\n$1'
+    );
+    
+    await fs.promises.writeFile(filePath, content, 'utf-8');
+  } catch (error) {
+    console.error('Error adding annotation:', error);
+    throw error;
+  }
 }
 
 function createWindow() {
@@ -150,6 +218,41 @@ function createWindow() {
   ipcMain.handle('set-window-title', async (_, title: string) => {
     win.setTitle(title);
     return true;
+  });
+
+  // 扫描Job类
+  ipcMain.handle('scan-job-classes', async (_, dirPath: string) => {
+    try {
+      return await scanJobClasses(dirPath);
+    } catch (error) {
+      console.error('Error scanning Job classes:', error);
+      throw error;
+    }
+  });
+
+  // 打开文件
+  ipcMain.handle('open-file', async (_, filePath: string) => {
+    try {
+      if (process.platform === 'win32') {
+        await execAsync(`code "${filePath}"`);
+      } else {
+        await execAsync(`open "${filePath}"`);
+      }
+    } catch (error) {
+      console.error('Error opening file:', error);
+      throw error;
+    }
+  });
+
+  // 添加注解
+  ipcMain.handle('add-annotation', async (_, filePath: string) => {
+    try {
+      await addJobAnnotation(filePath);
+      return true;
+    } catch (error) {
+      console.error('Error adding annotation:', error);
+      throw error;
+    }
   });
 }
 
