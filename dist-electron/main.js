@@ -2389,6 +2389,9 @@ function createWindow() {
   } else {
     win.loadFile(path$3.join(__dirname, "../dist/index.html"));
   }
+  ipcMain.on("open-external-url", (_event, url) => {
+    shell.openExternal(url);
+  });
   ipcMain.handle("select-directory", async (_) => {
     const result = await dialog.showOpenDialog({
       properties: ["openDirectory"]

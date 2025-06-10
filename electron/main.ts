@@ -195,6 +195,11 @@ function createWindow() {
   // IPC处理函数类型定义
   interface IpcMainInvokeEvent extends Electron.IpcMainInvokeEvent {}
 
+  // 处理打开外部URL的请求
+  ipcMain.on('open-external-url', (_event, url) => {
+    shell.openExternal(url);
+  });
+
   // 选择目录
   ipcMain.handle('select-directory', async (_: IpcMainInvokeEvent) => {
     const result = await dialog.showOpenDialog({

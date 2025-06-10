@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings, Archive, FileCode, ChevronLeft } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings, Archive, FileCode, ChevronLeft, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import TimeTools from '@/components/tools/TimeTools';
@@ -9,6 +9,7 @@ import QRGenerator from '@/components/tools/QRGenerator';
 import ClipboardHistory from '@/components/tools/ClipboardHistory';
 import JarTools from '@/components/tools/JarTools';
 import JobAnnotationTool from '@/components/tools/JobAnnotationTool';
+import HuhaTools from '@/components/tools/HuhaTools';
 
 const tools = [
   { id: 'text', name: '文本工具', icon: Type, component: TextTools },
@@ -19,12 +20,17 @@ const tools = [
   // { id: 'clipboard', name: '剪贴板', icon: Clipboard, component: ClipboardHistory },
   { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
   { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
+  { id: 'huha', name: 'HUHA工具集', dec: '快速访问HUHA工具网站，探索更多实用功能', icon: Globe, component: HuhaTools },
 ];
 
 const Index = () => {
   const [activeTool, setActiveTool] = useState('text');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const ActiveComponent = tools.find(tool => tool.id === activeTool)?.component || TextTools;
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sidebar-width', isSidebarCollapsed ? '80px' : '288px');
+  }, [isSidebarCollapsed]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -35,7 +41,7 @@ const Index = () => {
       <div className="relative flex h-screen">
         {/* 侧边栏 */}
         <div className={cn(
-          "glass border-r border-white/10 transition-all duration-300 ease-in-out",
+          "glass border-r border-white/10 transition-all duration-300 ease-in-out z-20",
           isSidebarCollapsed ? "w-20" : "w-72"
         )}>
           <div className="relative h-full">
@@ -96,7 +102,7 @@ const Index = () => {
                 <div className="glass rounded-xl p-4 text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Settings size={16} />
-                    <span>v1.0</span>
+                    <span>v4.0</span>
                   </div>
                 </div>
               </div>
@@ -107,29 +113,35 @@ const Index = () => {
         {/* 主内容区 */}
         <div className="flex-1 p-8 overflow-auto">
           <div className="max-w-6xl mx-auto">
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                {(() => {
-                  const tool = tools.find(t => t.id === activeTool);
-                  const Icon = tool?.icon || Type;
-                  return (
-                    <>
-                      <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
-                        <Icon size={24} className="text-primary" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-bold text-foreground">{tool?.name}</h2>
-                        <p className="text-muted-foreground">{tool?.dec}</p>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-
-            <div className="animate-fade-in">
+            {activeTool === 'huha' ? (
               <ActiveComponent />
-            </div>
+            ) : (
+              <>
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    {(() => {
+                      const tool = tools.find(t => t.id === activeTool);
+                      const Icon = tool?.icon || Type;
+                      return (
+                        <>
+                          <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
+                            <Icon size={24} className="text-primary" />
+                          </div>
+                          <div>
+                            <h2 className="text-3xl font-bold text-foreground">{tool?.name}</h2>
+                            <p className="text-muted-foreground">{tool?.dec}</p>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="animate-fade-in">
+                  <ActiveComponent />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

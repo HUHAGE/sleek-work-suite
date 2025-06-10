@@ -117,6 +117,8 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
-    "asar": true
+    "asar": true,
+    "mac": false,
+    "linux": false
   }
 }
