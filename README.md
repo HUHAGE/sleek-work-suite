@@ -30,6 +30,7 @@ HUHA工作提效小助手是一款基于 Electron + Vue3 开发的桌面应用�
 ### 环境要求
 - Node.js 16+
 - npm 7+
+- Windows
 
 ### 安装依赖
 ```shell

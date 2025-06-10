@@ -1,14 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ESNext",
     "module": "CommonJS",
-    "moduleResolution": "node",
+    "allowJs": true,
+    "skipLibCheck": true,
     "esModuleInterop": true,
-    "strict": true,
-    "outDir": "../dist-electron"
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "paths": {
+      "*": ["node_modules/*"]
+    }
   },
-  "include": [
-    "main.ts",
-    "preload.ts"
-  ]
+  "include": ["**/*"]
 } 

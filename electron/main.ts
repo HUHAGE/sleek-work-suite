@@ -1,12 +1,12 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
 import path from 'path';
 import * as fs from 'fs';
-import { clipboard } from 'electron';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { glob } from 'glob';
+import glob from 'glob';
 
 const execAsync = promisify(exec);
+const globPromise = promisify(glob);
 
 function scanDirectory(dir: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
@@ -62,10 +62,10 @@ async function copyFileToTemp(sourcePath: string): Promise<string> {
 // 扫描Java文件中的Job类
 async function scanJobClasses(dirPath: string): Promise<any[]> {
   try {
-    const javaFiles = await glob('**/*.java', {
-      cwd: dirPath,
+    const javaFiles = await globPromise('**/*.java', {
+      ignore: ['**/target/**', '**/build/**', '**/bin/**', '**/test/**'],
       absolute: true,
-      ignore: ['**/target/**', '**/build/**', '**/bin/**', '**/test/**']
+      root: dirPath
     });
 
     const jobClasses = [];
@@ -151,8 +151,11 @@ function createWindow() {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
+  // IPC处理函数类型定义
+  interface IpcMainInvokeEvent extends Electron.IpcMainInvokeEvent {}
+
   // 选择目录
-  ipcMain.handle('select-directory', async () => {
+  ipcMain.handle('select-directory', async (_: IpcMainInvokeEvent) => {
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory']
     });
@@ -160,7 +163,7 @@ function createWindow() {
   });
 
   // 扫描JAR文件
-  ipcMain.handle('scan-jar-files', async (_, dirPath: string) => {
+  ipcMain.handle('scan-jar-files', async (_: IpcMainInvokeEvent, dirPath: string) => {
     try {
       const jarPaths = await scanDirectory(dirPath);
       return jarPaths.map(filePath => ({
@@ -175,7 +178,7 @@ function createWindow() {
   });
 
   // 复制文件到剪贴板
-  ipcMain.handle('copy-files', async (_, files: { path: string, name: string }[]) => {
+  ipcMain.handle('copy-files', async (_: IpcMainInvokeEvent, files: { path: string, name: string }[]) => {
     try {
       const filePaths = files.map(file => path.join(file.path, file.name));
       
@@ -203,7 +206,6 @@ function createWindow() {
         // 删除临时脚本文件
         fs.unlinkSync(tempScriptPath);
       } else {
-        // 在其他平台上，我们至少可以复制文件路径
         clipboard.writeText(filePaths.join('\n'));
       }
       
@@ -214,14 +216,14 @@ function createWindow() {
     }
   });
 
-  // 添加设置窗口标题的处理程序
-  ipcMain.handle('set-window-title', async (_, title: string) => {
+  // 设置窗口标题
+  ipcMain.handle('set-window-title', async (_: IpcMainInvokeEvent, title: string) => {
     win.setTitle(title);
     return true;
   });
 
   // 扫描Job类
-  ipcMain.handle('scan-job-classes', async (_, dirPath: string) => {
+  ipcMain.handle('scan-job-classes', async (_: IpcMainInvokeEvent, dirPath: string) => {
     try {
       return await scanJobClasses(dirPath);
     } catch (error) {
@@ -231,7 +233,7 @@ function createWindow() {
   });
 
   // 打开文件
-  ipcMain.handle('open-file', async (_, filePath: string) => {
+  ipcMain.handle('open-file', async (_: IpcMainInvokeEvent, filePath: string) => {
     try {
       if (process.platform === 'win32') {
         await execAsync(`code "${filePath}"`);
