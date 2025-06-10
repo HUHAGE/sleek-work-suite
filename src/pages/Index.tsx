@@ -33,8 +33,8 @@ const Index = () => {
         {/* 侧边栏 */}
         <div className="w-72 glass border-r border-white/10 p-6">
           <div className="mb-8">
-            <h1 className="text-2xl font-bold gradient-text mb-2">工作提效工具</h1>
-            <p className="text-muted-foreground text-sm">让工作更高效，让生活更简单</p>
+            <h1 className="text-2xl font-bold gradient-text mb-2">工作提效小助手</h1>
+            <p className="text-muted-foreground text-sm">让工作更高效，让牛马更轻松</p>
           </div>
 
           <nav className="space-y-2">

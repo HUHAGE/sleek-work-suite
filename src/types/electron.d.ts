@@ -7,6 +7,7 @@ interface IElectronAPI {
       createTime: number
     }>>
     invoke(channel: 'copy-to-clipboard', paths: string[]): Promise<void>
+    invoke(channel: 'set-window-title', title: string): Promise<boolean>
   }
 }
 

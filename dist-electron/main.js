@@ -56,12 +56,16 @@ function createWindow() {
   const win = new electron.BrowserWindow({
     width: 1200,
     height: 800,
+    title: "HUHA工作提效小助手",
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js")
-    }
+    },
+    autoHideMenuBar: true,
+    frame: true
   });
+  win.setMenu(null);
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
     win.webContents.openDevTools();
@@ -114,6 +118,10 @@ function createWindow() {
       console.error("Error copying files:", error);
       throw error;
     }
+  });
+  electron.ipcMain.handle("set-window-title", async (_, title) => {
+    win.setTitle(title);
+    return true;
   });
 }
 electron.app.whenReady().then(() => {

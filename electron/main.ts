@@ -62,12 +62,17 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    title: 'HUHA工作提效小助手',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
-    }
+    },
+    autoHideMenuBar: true,
+    frame: true
   });
+
+  win.setMenu(null);
 
   // 在开发环境中加载本地服务器
   if (process.env.VITE_DEV_SERVER_URL) {
@@ -139,6 +144,12 @@ function createWindow() {
       console.error('Error copying files:', error);
       throw error;
     }
+  });
+
+  // 添加设置窗口标题的处理程序
+  ipcMain.handle('set-window-title', async (_, title: string) => {
+    win.setTitle(title);
+    return true;
   });
 }
 
