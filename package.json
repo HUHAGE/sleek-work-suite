@@ -16,7 +16,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "vite --mode development",
-    "electron:build": "tsc -p electron/tsconfig.json && vite build && electron-builder"
+    "electron:build": "tsc && vite build && electron-builder --dir"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -81,7 +81,7 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
     "electron": "^36.4.0",
-    "electron-builder": "^26.0.12",
+    "electron-builder": "^23.6.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
@@ -101,24 +101,19 @@
     "directories": {
       "output": "release"
     },
-    "win": {
-      "target": [
-        "nsis"
-      ],
-      "artifactName": "${productName}-Setup-${version}.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
-      "deleteAppDataOnUninstall": true
-    },
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
     ],
-    "asar": true,
-    "mac": false,
-    "linux": false
+    "win": {
+      "target": "portable",
+      "artifactName": "${productName}-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}.exe"
+    },
+    "forceCodeSigning": false,
+    "signingHashAlgorithms": null,
+    "asar": false
   }
 }

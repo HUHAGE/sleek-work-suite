@@ -2,6 +2,7 @@
 
 ## 项目简介
 HUHA工作提效小助手是一款基于 Electron + Vue3 开发的桌面应用程序，旨在提高日常工作效率。通过集成多种实用工具和功能，帮助用户更高效地完成工作任务。
+![工具主页](./screen.jpg)
 
 ## 技术栈
 - 框架：
@@ -46,6 +47,7 @@ npm run electron:dev
 ```shell
 npm run electron:build
 ```
+打包后的文件在release目录下
 
 ## 项目结构
 ```

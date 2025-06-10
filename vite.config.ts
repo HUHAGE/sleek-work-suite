@@ -23,7 +23,7 @@ export default defineConfig({
     }),
     renderer(),
   ],
-  base: process.env.ELECTRON === 'true' ? './' : '/',
+  base: './',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -31,7 +31,14 @@ export default defineConfig({
       input: {
         main: path.resolve(__dirname, 'index.html'),
       },
+      output: {
+        manualChunks: undefined
+      }
     },
+    assetsDir: 'assets',
+    minify: true,
+    sourcemap: true,
+    target: 'esnext'
   },
   resolve: {
     alias: {

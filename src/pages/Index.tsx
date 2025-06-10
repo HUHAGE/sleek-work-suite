@@ -16,7 +16,7 @@ const tools = [
   // { id: 'time', name: '时间工具', icon: Clock, component: TimeTools },
   // { id: 'calculator', name: '计算器', icon: Calculator, component: CalculatorTool },
   // { id: 'color', name: '颜色工具', icon: Palette, component: ColorPicker },
-  { id: 'qr', name: '二维码', icon: QrCode, component: QRGenerator },
+  // { id: 'qr', name: '二维码', icon: QrCode, component: QRGenerator },
   // { id: 'clipboard', name: '剪贴板', icon: Clipboard, component: ClipboardHistory },
   { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
   { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },

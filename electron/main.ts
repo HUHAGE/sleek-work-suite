@@ -174,7 +174,7 @@ function createWindow() {
     },
     autoHideMenuBar: true,
     frame: true,
-    backgroundColor: '#1a1a1a' // 设置暗色背景
+    backgroundColor: '#1a1a1a'
   });
 
   // 设置原生窗口为暗黑模式
@@ -189,7 +189,19 @@ function createWindow() {
     win.webContents.openDevTools();
   } else {
     // 在生产环境中加载打包后的文件
-    win.loadFile(path.join(__dirname, '../dist/index.html'));
+    const indexPath = path.join(process.resourcesPath, 'app/dist/index.html');
+    console.log('Loading index file from:', indexPath);
+    win.loadFile(indexPath).catch(err => {
+      console.error('Failed to load index.html:', err);
+      // 尝试备用路径
+      const altPath = path.join(__dirname, '../dist/index.html');
+      console.log('Trying alternative path:', altPath);
+      win.loadFile(altPath).catch(err => {
+        console.error('Failed to load alternative path:', err);
+        // 打开开发者工具以便调试
+        win.webContents.openDevTools();
+      });
+    });
   }
 
   // IPC处理函数类型定义
