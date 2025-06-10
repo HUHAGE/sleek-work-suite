@@ -84,29 +84,32 @@ const JarTools = () => {
     ))
   }
 
-  const copyToClipboard = async (paths: string[]) => {
+  const copyFiles = async (files: { path: string, name: string }[]) => {
     try {
-      await window.electron.ipcRenderer.invoke('copy-to-clipboard', paths)
+      await window.electron.ipcRenderer.invoke('copy-files', files)
       toast({
         title: "复制成功",
-        description: "文件路径已复制到剪贴板",
+        description: "文件已复制到剪贴板",
       })
     } catch (error) {
-      console.error('复制到剪贴板失败:', error)
+      console.error('复制文件失败:', error)
       toast({
         title: "复制失败",
-        description: "复制到剪贴板时出现错误",
+        description: "复制文件时出现错误",
         variant: "destructive"
       })
     }
   }
 
   const handleCopySelected = () => {
-    const selectedPaths = jarFiles
+    const selectedFiles = jarFiles
       .filter(file => file.selected)
-      .map(file => `${file.path}${file.name}`)
-    if (selectedPaths.length > 0) {
-      copyToClipboard(selectedPaths)
+      .map(file => ({
+        path: file.path,
+        name: file.name
+      }))
+    if (selectedFiles.length > 0) {
+      copyFiles(selectedFiles)
     }
   }
 
@@ -121,8 +124,8 @@ const JarTools = () => {
     setJarFiles(sorted)
   }
 
-  const handleCopyPath = (path: string) => {
-    copyToClipboard([path])
+  const handleCopyFile = (file: { path: string, name: string }) => {
+    copyFiles([file])
   }
 
   return (
@@ -213,7 +216,7 @@ const JarTools = () => {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleCopyPath(`${file.path}${file.name}`)}
+                        onClick={() => handleCopyFile({ path: file.path, name: file.name })}
                         className="hover:bg-primary/20"
                       >
                         <Copy className="w-4 h-4" />

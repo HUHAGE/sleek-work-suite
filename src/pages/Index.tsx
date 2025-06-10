@@ -16,7 +16,7 @@ const tools = [
   { id: 'color', name: '颜色工具', icon: Palette, component: ColorPicker },
   { id: 'qr', name: '二维码', icon: QrCode, component: QRGenerator },
   { id: 'clipboard', name: '剪贴板', icon: Clipboard, component: ClipboardHistory },
-  { id: 'jar', name: '个性化JAR管理', icon: Archive, component: JarTools },
+  { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制', icon: Archive, component: JarTools },
 ];
 
 const Index = () => {
@@ -28,7 +28,7 @@ const Index = () => {
       <div className="absolute inset-0 opacity-20" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
-      
+
       <div className="relative flex h-screen">
         {/* 侧边栏 */}
         <div className="w-72 glass border-r border-white/10 p-6">
@@ -36,7 +36,7 @@ const Index = () => {
             <h1 className="text-2xl font-bold gradient-text mb-2">工作提效工具</h1>
             <p className="text-muted-foreground text-sm">让工作更高效，让生活更简单</p>
           </div>
-          
+
           <nav className="space-y-2">
             {tools.map((tool) => {
               const Icon = tool.icon;
@@ -47,8 +47,8 @@ const Index = () => {
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                     "hover:bg-white/5 hover:scale-[1.02]",
-                    activeTool === tool.id 
-                      ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/20" 
+                    activeTool === tool.id
+                      ? "bg-primary/20 text-primary border border-primary/30 shadow-lg shadow-primary/20"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -84,14 +84,14 @@ const Index = () => {
                       </div>
                       <div>
                         <h2 className="text-3xl font-bold text-foreground">{tool?.name}</h2>
-                        <p className="text-muted-foreground">高效便捷的{tool?.name.slice(0, -2)}解决方案</p>
+                        <p className="text-muted-foreground">{tool?.dec}</p>
                       </div>
                     </>
                   );
                 })()}
               </div>
             </div>
-            
+
             <div className="animate-fade-in">
               <ActiveComponent />
             </div>

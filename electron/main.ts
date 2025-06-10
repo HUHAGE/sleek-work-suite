@@ -2,6 +2,10 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
 import * as fs from 'fs';
 import { clipboard } from 'electron';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 function scanDirectory(dir: string): Promise<string[]> {
   return new Promise((resolve, reject) => {
@@ -38,6 +42,20 @@ function scanDirectory(dir: string): Promise<string[]> {
       reject(error);
     }
   });
+}
+
+// 复制文件到临时目录并返回临时文件路径
+async function copyFileToTemp(sourcePath: string): Promise<string> {
+  const tempDir = path.join(app.getPath('temp'), 'sleek-work-suite');
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+  
+  const fileName = path.basename(sourcePath);
+  const tempPath = path.join(tempDir, fileName);
+  
+  await fs.promises.copyFile(sourcePath, tempPath);
+  return tempPath;
 }
 
 function createWindow() {
@@ -83,9 +101,44 @@ function createWindow() {
     }
   });
 
-  // 复制到剪贴板
-  ipcMain.handle('copy-to-clipboard', (_, paths: string[]) => {
-    clipboard.writeText(paths.join('\n'));
+  // 复制文件到剪贴板
+  ipcMain.handle('copy-files', async (_, files: { path: string, name: string }[]) => {
+    try {
+      const filePaths = files.map(file => path.join(file.path, file.name));
+      
+      if (process.platform === 'win32') {
+        // 构建 PowerShell 命令来复制文件到剪贴板
+        const psScript = `
+          Add-Type -AssemblyName System.Windows.Forms
+          $paths = @(
+            ${filePaths.map(p => `'${p.replace(/'/g, "''")}'`).join(",\n            ")}
+          )
+          $fileCollection = New-Object System.Collections.Specialized.StringCollection
+          foreach ($path in $paths) {
+            $fileCollection.Add($path)
+          }
+          [System.Windows.Forms.Clipboard]::SetFileDropList($fileCollection)
+        `;
+        
+        // 将 PowerShell 脚本保存到临时文件
+        const tempScriptPath = path.join(app.getPath('temp'), 'copy-files.ps1');
+        fs.writeFileSync(tempScriptPath, psScript);
+        
+        // 执行 PowerShell 脚本
+        await execAsync(`powershell -ExecutionPolicy Bypass -File "${tempScriptPath}"`);
+        
+        // 删除临时脚本文件
+        fs.unlinkSync(tempScriptPath);
+      } else {
+        // 在其他平台上，我们至少可以复制文件路径
+        clipboard.writeText(filePaths.join('\n'));
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error copying files:', error);
+      throw error;
+    }
   });
 }
 

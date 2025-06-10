@@ -2,6 +2,8 @@
 const electron = require("electron");
 const path = require("path");
 const fs = require("fs");
+const child_process = require("child_process");
+const util = require("util");
 function _interopNamespaceDefault(e) {
   const n = Object.create(null, { [Symbol.toStringTag]: { value: "Module" } });
   if (e) {
@@ -19,6 +21,7 @@ function _interopNamespaceDefault(e) {
   return Object.freeze(n);
 }
 const fs__namespace = /* @__PURE__ */ _interopNamespaceDefault(fs);
+const execAsync = util.promisify(child_process.exec);
 function scanDirectory(dir) {
   return new Promise((resolve, reject) => {
     const jarFiles = [];
@@ -84,8 +87,33 @@ function createWindow() {
       throw error;
     }
   });
-  electron.ipcMain.handle("copy-to-clipboard", (_, paths) => {
-    electron.clipboard.writeText(paths.join("\n"));
+  electron.ipcMain.handle("copy-files", async (_, files) => {
+    try {
+      const filePaths = files.map((file) => path.join(file.path, file.name));
+      if (process.platform === "win32") {
+        const psScript = `
+          Add-Type -AssemblyName System.Windows.Forms
+          $paths = @(
+            ${filePaths.map((p) => `'${p.replace(/'/g, "''")}'`).join(",\n            ")}
+          )
+          $fileCollection = New-Object System.Collections.Specialized.StringCollection
+          foreach ($path in $paths) {
+            $fileCollection.Add($path)
+          }
+          [System.Windows.Forms.Clipboard]::SetFileDropList($fileCollection)
+        `;
+        const tempScriptPath = path.join(electron.app.getPath("temp"), "copy-files.ps1");
+        fs__namespace.writeFileSync(tempScriptPath, psScript);
+        await execAsync(`powershell -ExecutionPolicy Bypass -File "${tempScriptPath}"`);
+        fs__namespace.unlinkSync(tempScriptPath);
+      } else {
+        electron.clipboard.writeText(filePaths.join("\n"));
+      }
+      return true;
+    } catch (error) {
+      console.error("Error copying files:", error);
+      throw error;
+    }
   });
 }
 electron.app.whenReady().then(() => {

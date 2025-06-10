@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('electron', {
       const validChannels = [
         'select-directory',
         'scan-jar-files',
-        'copy-to-clipboard'
+        'copy-files'
       ]
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args)
