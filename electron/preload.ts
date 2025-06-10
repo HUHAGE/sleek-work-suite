@@ -27,5 +27,8 @@ contextBridge.exposeInMainWorld('electron', {
         throw new Error(`不允许调用未注册的IPC通道: ${channel}`)
       }
     }
-  }
+  },
+  minimize: () => ipcRenderer.send('minimize'),
+  maximize: () => ipcRenderer.send('maximize'),
+  close: () => ipcRenderer.send('close'),
 }) 

@@ -12,6 +12,7 @@ import JobAnnotationTool from '@/components/tools/JobAnnotationTool';
 import HuhaTools from '@/components/tools/HuhaTools';
 import SettingsTools from '@/components/tools/SettingsTools';
 import { useSettings } from '@/lib/store/settings';
+import TitleBar from '@/components/TitleBar';
 
 const Index = () => {
   const [activeTool, setActiveTool] = useState('text');
@@ -38,91 +39,96 @@ const Index = () => {
   }, [sidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-      </div>
-
-      <div className="relative flex h-screen overflow-hidden">
-        {/* 侧边栏 */}
-        <div className={cn(
-          "bg-background/80 border-r border-border/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-20",
-          sidebarOpen ? "w-72" : "w-20"
-        )}>
-          <div className="relative h-full">
-            {/* 折叠按钮 */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-primary/20 border border-primary/30 text-primary hover:bg-primary/30 transition-colors"
-            >
-              <ChevronLeft className={cn(
-                "transition-transform duration-300",
-                !sidebarOpen && "rotate-180"
-              )} size={16} />
-            </button>
-
-            <div className={cn(
-              "p-6",
-              !sidebarOpen && "px-4"
-            )}>
-              <div className="mb-8">
-                <h1 className={cn(
-                  "text-2xl font-bold gradient-text mb-2",
-                  !sidebarOpen && "text-center text-1xl"
-                )}>
-                  {!sidebarOpen ? "HUHA" : "工作提效小助手"}
-                </h1>
-                {sidebarOpen && (
-                  <p className="text-muted-foreground text-sm">快速定制，随时更新，随时使用</p>
-                )}
-              </div>
-
-              <nav className="space-y-2">
-                {tools.map((tool) => {
-                  const Icon = tool.icon;
-                  return (
-                    <button
-                      key={tool.id}
-                      onClick={() => setActiveTool(tool.id)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                        "hover:bg-primary/5 hover:scale-[1.02]",
-                        activeTool === tool.id
-                          ? "bg-primary/10 text-primary border border-primary/30 shadow-lg shadow-primary/20"
-                          : "text-muted-foreground hover:text-foreground",
-                        !sidebarOpen && "justify-center px-2"
-                      )}
-                      title={!sidebarOpen ? tool.name : undefined}
-                    >
-                      <Icon size={20} />
-                      {sidebarOpen && (
-                        <span className="font-medium">{tool.name}</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-          </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <TitleBar />
+      <div className="flex-1 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}></div>
         </div>
 
-        {/* 主内容区域 */}
-        <div className="flex-1 overflow-auto bg-background/50 backdrop-blur-sm">
-          <div className="container mx-auto p-6">
-            {activeToolInfo?.dec && (
-              <div className="mb-6 p-4 rounded-xl bg-card/50 border border-primary/20 backdrop-blur-sm">
-                <div className="flex items-start gap-3">
-                  <Info className="text-primary mt-1" size={20} />
-                  <div>
-                    <h2 className="text-lg font-medium text-primary mb-2">{activeToolInfo.name}</h2>
-                    <p className="text-muted-foreground">{activeToolInfo.dec}</p>
+        <div className="relative flex h-full overflow-hidden">
+          {/* 侧边栏 */}
+          <div className={cn(
+            "bg-background/80 border-r border-border/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-20",
+            sidebarOpen ? "w-72" : "w-20"
+          )}>
+            <div className="relative h-full">
+              {/* 折叠按钮 */}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-primary/20 border border-primary/30 text-primary hover:bg-primary/30 transition-colors"
+              >
+                <ChevronLeft className={cn(
+                  "transition-transform duration-300",
+                  !sidebarOpen && "rotate-180"
+                )} size={16} />
+              </button>
+
+              <div className={cn(
+                "p-6",
+                !sidebarOpen && "px-4"
+              )}>
+                <div className="mb-8">
+                  <h1 className={cn(
+                    "text-2xl font-bold gradient-text mb-2",
+                    !sidebarOpen && "text-center text-lg"
+                  )}>
+                    {!sidebarOpen ? "HUHA" : "工作提效小助手"}
+                  </h1>
+                  {sidebarOpen && (
+                    <p className="text-muted-foreground text-sm">快速定制，随时更新，随时使用</p>
+                  )}
+                </div>
+
+                <nav className="space-y-2">
+                  {tools.map((tool) => {
+                    const Icon = tool.icon;
+                    return (
+                      <button
+                        key={tool.id}
+                        onClick={() => setActiveTool(tool.id)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                          "hover:bg-primary/5 hover:scale-[1.02]",
+                          activeTool === tool.id
+                            ? "bg-primary/10 text-primary border border-primary/30 shadow-lg shadow-primary/20"
+                            : "text-muted-foreground hover:text-foreground",
+                          !sidebarOpen && "justify-center px-2"
+                        )}
+                        title={!sidebarOpen ? tool.name : undefined}
+                      >
+                        <Icon size={20} />
+                        {sidebarOpen && (
+                          <span className="font-medium">{tool.name}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          {/* 主内容区域 */}
+          <div className="flex-1 overflow-auto bg-background/50 backdrop-blur-sm h-[calc(100vh-32px)]">
+            <div className="container mx-auto p-6 h-full">
+              {activeToolInfo?.dec && (
+                <div className="mb-6 p-4 rounded-xl bg-card/50 border border-primary/20 backdrop-blur-sm">
+                  <div className="flex items-start gap-3">
+                    <Info className="text-primary mt-1" size={20} />
+                    <div>
+                      <h2 className="text-lg font-medium text-primary mb-2">{activeToolInfo.name}</h2>
+                      <p className="text-muted-foreground">{activeToolInfo.dec}</p>
+                    </div>
                   </div>
                 </div>
+              )}
+              <div className="h-[calc(100%-theme(space.6)-2px)]">
+                <ActiveComponent />
               </div>
-            )}
-            <ActiveComponent />
+            </div>
           </div>
         </div>
       </div>

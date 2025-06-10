@@ -162,68 +162,61 @@ async function addJobAnnotation(filePath: string): Promise<void> {
   }
 }
 
-function createWindow() {
-  // 确定图标路径
-  let iconPath;
-  if (process.env.VITE_DEV_SERVER_URL) {
-    // 开发环境
-    iconPath = path.join(__dirname, '..', 'resources', 'icon.ico');
-  } else {
-    // 生产环境
-    iconPath = process.platform === 'win32'
-      ? path.join(process.resourcesPath, 'icon.ico')
-      : path.join(__dirname, '..', 'resources', 'icon.ico');
-  }
+let mainWindow: BrowserWindow | null = null;
 
-  const win = new BrowserWindow({
+const isDev = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: 'HUHA工作提效小助手',
-    icon: iconPath,
+    minWidth: 800,
+    minHeight: 600,
+    frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     },
-    autoHideMenuBar: true,
-    frame: true,
-    backgroundColor: '#1a1a1a'
+    backgroundColor: '#ffffff',
   });
 
-  // 设置原生窗口为暗黑模式
-  win.setBackgroundColor('#1a1a1a');
-  nativeTheme.themeSource = 'dark';
-
-  win.setMenu(null);
-
-  // 在开发环境中加载本地服务器
-  if (process.env.VITE_DEV_SERVER_URL) {
-    win.loadURL(process.env.VITE_DEV_SERVER_URL);
-    win.webContents.openDevTools();
+  // 开发环境：等待开发服务器启动后再加载页面
+  if (isDev) {
+    const loadURL = async () => {
+      try {
+        await mainWindow?.loadURL('http://localhost:8080');
+        mainWindow?.webContents.openDevTools();
+      } catch (error) {
+        console.log('开发服务器未就绪，5秒后重试...');
+        setTimeout(loadURL, 5000);
+      }
+    };
+    loadURL();
   } else {
-    // 在生产环境中加载打包后的文件
-    if (process.platform === 'win32') {
-      const indexPath = path.join(process.resourcesPath, 'app.asar', 'dist', 'index.html');
-      console.log('Loading index.html from:', indexPath);
-      win.loadFile(indexPath).catch(err => {
-        console.error('Failed to load index.html:', err);
-        // 如果加载失败，尝试使用相对路径
-        const fallbackPath = path.join(__dirname, '..', 'dist', 'index.html');
-        console.log('Trying fallback path:', fallbackPath);
-        win.loadFile(fallbackPath).catch(fallbackErr => {
-          console.error('Failed to load fallback index.html:', fallbackErr);
-          win.webContents.openDevTools();
-        });
-      });
-    } else {
-      const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
-      console.log('Loading index.html from:', indexPath);
-      win.loadFile(indexPath).catch(err => {
-        console.error('Failed to load index.html:', err);
-        win.webContents.openDevTools();
-      });
-    }
+    // 生产环境：加载打包后的文件
+    const indexPath = path.join(__dirname, '../dist/index.html');
+    mainWindow?.loadFile(indexPath).catch(err => {
+      console.error('Failed to load index.html:', err);
+    });
   }
+
+  // 监听窗口控制事件
+  ipcMain.on('minimize', () => {
+    mainWindow?.minimize();
+  });
+
+  ipcMain.on('maximize', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow?.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+  });
+
+  ipcMain.on('close', () => {
+    mainWindow?.close();
+  });
 
   // IPC处理函数类型定义
   interface IpcMainInvokeEvent extends Electron.IpcMainInvokeEvent {}
@@ -308,7 +301,7 @@ function createWindow() {
 
   // 设置窗口标题
   ipcMain.handle('set-window-title', async (_: IpcMainInvokeEvent, title: string) => {
-    win.setTitle(title);
+    mainWindow?.setTitle(title);
     return true;
   });
 
@@ -348,18 +341,16 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
   }
 }); 
