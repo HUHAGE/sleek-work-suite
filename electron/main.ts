@@ -189,19 +189,27 @@ function createWindow() {
     win.webContents.openDevTools();
   } else {
     // 在生产环境中加载打包后的文件
-    const indexPath = path.join(process.resourcesPath, 'app/dist/index.html');
-    console.log('Loading index file from:', indexPath);
-    win.loadFile(indexPath).catch(err => {
-      console.error('Failed to load index.html:', err);
-      // 尝试备用路径
-      const altPath = path.join(__dirname, '../dist/index.html');
-      console.log('Trying alternative path:', altPath);
-      win.loadFile(altPath).catch(err => {
-        console.error('Failed to load alternative path:', err);
-        // 打开开发者工具以便调试
+    if (process.platform === 'win32') {
+      const indexPath = path.join(process.resourcesPath, 'app.asar', 'dist', 'index.html');
+      console.log('Loading index.html from:', indexPath);
+      win.loadFile(indexPath).catch(err => {
+        console.error('Failed to load index.html:', err);
+        // 如果加载失败，尝试使用相对路径
+        const fallbackPath = path.join(__dirname, '..', 'dist', 'index.html');
+        console.log('Trying fallback path:', fallbackPath);
+        win.loadFile(fallbackPath).catch(fallbackErr => {
+          console.error('Failed to load fallback index.html:', fallbackErr);
+          win.webContents.openDevTools();
+        });
+      });
+    } else {
+      const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
+      console.log('Loading index.html from:', indexPath);
+      win.loadFile(indexPath).catch(err => {
+        console.error('Failed to load index.html:', err);
         win.webContents.openDevTools();
       });
-    });
+    }
   }
 
   // IPC处理函数类型定义

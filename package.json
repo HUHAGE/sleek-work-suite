@@ -99,21 +99,17 @@
     "appId": "com.electron.sleek-work-suite",
     "productName": "Sleek Work Suite",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "assets"
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "package.json"
     ],
     "win": {
-      "target": "portable",
-      "artifactName": "${productName}-${version}.exe"
+      "target": "dir"
     },
-    "portable": {
-      "artifactName": "${productName}-${version}.exe"
-    },
-    "forceCodeSigning": false,
-    "signingHashAlgorithms": null,
-    "asar": false
+    "asar": true
   }
 }

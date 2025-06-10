@@ -32,13 +32,14 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
       },
       output: {
-        manualChunks: undefined
+        format: 'es',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     },
-    assetsDir: 'assets',
-    minify: true,
-    sourcemap: true,
-    target: 'esnext'
+    minify: false,
+    sourcemap: true
   },
   resolve: {
     alias: {
