@@ -96,7 +96,7 @@ const Index = () => {
                 <div className="glass rounded-xl p-4 text-center">
                   <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <Settings size={16} />
-                    <span>1.0</span>
+                    <span>v1.0</span>
                   </div>
                 </div>
               </div>

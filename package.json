@@ -4,6 +4,11 @@
   "version": "0.0.0",
   "type": "commonjs",
   "main": "dist-electron/main.js",
+  "description": "A sleek work suite built with Electron and React",
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
@@ -112,6 +117,6 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
-    "asar": false
+    "asar": true
   }
 }

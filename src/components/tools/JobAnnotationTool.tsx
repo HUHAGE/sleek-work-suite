@@ -51,7 +51,9 @@ const JobAnnotationTool: React.FC = () => {
     }
     setScanning(true);
     try {
+      console.log('开始扫描路径:', path);
       const result = await window.electron.ipcRenderer.invoke('scan-job-classes', path);
+      console.log('扫描结果:', result);
       setJobClasses(result);
       toast({
         title: "扫描完成",
@@ -61,7 +63,7 @@ const JobAnnotationTool: React.FC = () => {
       console.error('扫描出错:', error);
       toast({
         title: "扫描失败",
-        description: "请检查路径是否正确",
+        description: error.message || "请检查路径是否正确，以及是否包含Job类文件",
         variant: "destructive"
       });
     } finally {

@@ -62,27 +62,63 @@ async function copyFileToTemp(sourcePath: string): Promise<string> {
 // 扫描Java文件中的Job类
 async function scanJobClasses(dirPath: string): Promise<any[]> {
   try {
-    const javaFiles = await globPromise('**/*.java', {
+    console.log('开始扫描目录:', dirPath);
+    
+    // 检查目录是否存在
+    if (!fs.existsSync(dirPath)) {
+      throw new Error('指定的目录不存在');
+    }
+
+    // 使用 glob 的 cwd 选项而不是 root，并确保使用正确的路径分隔符
+    const pattern = '**/*.java';
+    console.log('使用搜索模式:', pattern);
+    console.log('在目录下搜索:', dirPath);
+
+    const javaFiles = await globPromise(pattern, {
       ignore: ['**/target/**', '**/build/**', '**/bin/**', '**/test/**'],
-      absolute: true,
-      root: dirPath
+      cwd: dirPath,
+      dot: true,
+      nodir: true
     });
+    
+    console.log('找到的Java文件:', javaFiles);
+    console.log('找到的Java文件数量:', javaFiles.length);
+    
+    if (javaFiles.length === 0) {
+      throw new Error('未找到任何Java文件，请检查目录是否正确');
+    }
 
     const jobClasses = [];
-    for (const filePath of javaFiles) {
-      const content = await fs.promises.readFile(filePath, 'utf-8');
-      
-      // 检查是否实现了Job接口
-      if (content.includes('implements Job') || content.includes('implements org.quartz.Job')) {
-        const className = path.basename(filePath, '.java');
-        const hasAnnotation = content.includes('@DisallowConcurrentExecution');
+    for (const relativePath of javaFiles) {
+      try {
+        const filePath = path.join(dirPath, relativePath);
+        console.log('正在处理文件:', filePath);
         
-        jobClasses.push({
-          className,
-          classPath: filePath,
-          hasAnnotation
-        });
+        const content = await fs.promises.readFile(filePath, 'utf-8');
+        
+        // 使用更严格的正则表达式来匹配Job接口实现
+        const implementsJobPattern = /implements\s+(?:org\.quartz\.)?Job\b/;
+        const extendsWithJobPattern = /extends\s+\w+\s+implements\s+(?:org\.quartz\.)?Job\b/;
+        
+        if (implementsJobPattern.test(content) || extendsWithJobPattern.test(content)) {
+          console.log('找到Job类:', filePath);
+          const className = path.basename(filePath, '.java');
+          const hasAnnotation = content.includes('@DisallowConcurrentExecution');
+          
+          jobClasses.push({
+            className,
+            classPath: filePath,
+            hasAnnotation
+          });
+        }
+      } catch (error) {
+        console.error('读取文件失败:', relativePath, error);
       }
+    }
+    
+    console.log('找到的Job类数量:', jobClasses.length);
+    if (jobClasses.length === 0) {
+      throw new Error('未找到任何Job类，请确认项目中是否包含实现了org.quartz.Job接口的类');
     }
     
     return jobClasses;
