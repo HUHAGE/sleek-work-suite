@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme } = require('electron');
 import path from 'path';
 import * as fs from 'fs';
 import { exec } from 'child_process';
@@ -137,8 +137,13 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js')
     },
     autoHideMenuBar: true,
-    frame: true
+    frame: true,
+    backgroundColor: '#1a1a1a' // 设置暗色背景
   });
+
+  // 设置原生窗口为暗黑模式
+  win.setBackgroundColor('#1a1a1a');
+  nativeTheme.themeSource = 'dark';
 
   win.setMenu(null);
 

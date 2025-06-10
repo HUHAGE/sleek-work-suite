@@ -2255,7 +2255,7 @@ function requireGlob() {
 }
 var globExports = requireGlob();
 const glob = /* @__PURE__ */ getDefaultExportFromCjs(globExports);
-const { app, BrowserWindow, ipcMain, dialog, clipboard } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme } = require("electron");
 const execAsync = require$$3$1.promisify(child_process.exec);
 const globPromise = require$$3$1.promisify(glob);
 function scanDirectory(dir) {
@@ -2350,8 +2350,12 @@ function createWindow() {
       preload: path$3.join(__dirname, "preload.js")
     },
     autoHideMenuBar: true,
-    frame: true
+    frame: true,
+    backgroundColor: "#1a1a1a"
+    // 设置暗色背景
   });
+  win.setBackgroundColor("#1a1a1a");
+  nativeTheme.themeSource = "dark";
   win.setMenu(null);
   if (process.env.VITE_DEV_SERVER_URL) {
     win.loadURL(process.env.VITE_DEV_SERVER_URL);
