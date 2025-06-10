@@ -163,10 +163,23 @@ async function addJobAnnotation(filePath: string): Promise<void> {
 }
 
 function createWindow() {
+  // 确定图标路径
+  let iconPath;
+  if (process.env.VITE_DEV_SERVER_URL) {
+    // 开发环境
+    iconPath = path.join(__dirname, '..', 'resources', 'icon.ico');
+  } else {
+    // 生产环境
+    iconPath = process.platform === 'win32'
+      ? path.join(process.resourcesPath, 'icon.ico')
+      : path.join(__dirname, '..', 'resources', 'icon.ico');
+  }
+
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
     title: 'HUHA工作提效小助手',
+    icon: iconPath,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

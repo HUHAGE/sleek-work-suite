@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "commonjs",
   "main": "dist-electron/main.js",
-  "description": "A sleek work suite built with Electron and React",
+  "description": "快速定制，随时更新，随时使用的工作提效工具",
   "author": {
-    "name": "Your Name",
-    "email": "your.email@example.com"
+    "name": "HUHA",
+    "email": "wsyhok@126.com"
   },
   "scripts": {
     "dev": "vite",
@@ -97,7 +97,7 @@
   },
   "build": {
     "appId": "com.electron.sleek-work-suite",
-    "productName": "Sleek Work Suite",
+    "productName": "HUHAToolBox",
     "directories": {
       "output": "release",
       "buildResources": "assets"
