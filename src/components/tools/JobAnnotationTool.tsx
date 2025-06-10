@@ -113,6 +113,31 @@ const JobAnnotationTool: React.FC = () => {
     }
   };
 
+  const handleOpenPath = async () => {
+    if (!path) {
+      toast({
+        title: "路径为空",
+        description: "请先选择或输入路径",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      await window.electron.ipcRenderer.invoke('open-path', path);
+      toast({
+        title: "打开路径",
+        description: "已打开指定路径",
+      });
+    } catch (error) {
+      console.error('打开路径失败:', error);
+      toast({
+        title: "打开失败",
+        description: "无法打开路径，请检查路径是否存在",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* 路径输入区域 */}
@@ -131,6 +156,10 @@ const JobAnnotationTool: React.FC = () => {
           <Button onClick={handleSelectPath} variant="outline" className="shrink-0">
             <FolderOpen className="w-4 h-4 mr-2" />
             选择
+          </Button>
+          <Button onClick={handleOpenPath} variant="outline" className="shrink-0">
+            <ExternalLink className="w-4 h-4 mr-2" />
+            打开
           </Button>
           <Button onClick={handleScan} disabled={!path || scanning} className="shrink-0">
             <Search className="w-4 h-4 mr-2" />

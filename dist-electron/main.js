@@ -1,21 +1,2494 @@
-"use strict";const D=require("path"),st=require("fs"),ie=require("child_process"),Lt=require("util"),ae=require("events"),Pt=require("assert");function oe(t){const e=Object.create(null,{[Symbol.toStringTag]:{value:"Module"}});if(t){for(const r in t)if(r!=="default"){const n=Object.getOwnPropertyDescriptor(t,r);Object.defineProperty(e,r,n.get?n:{enumerable:!0,get:()=>t[r]})}}return e.default=t,Object.freeze(e)}const F=oe(st);function ce(t){return t&&t.__esModule&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t}var wt={},z=D,B=process.platform==="win32",x=st,he=process.env.NODE_DEBUG&&/fs/.test(process.env.NODE_DEBUG);function le(){var t;if(he){var e=new Error;t=r}else t=n;return t;function r(s){s&&(e.message=s.message,s=e,n(s))}function n(s){if(s){if(process.throwDeprecation)throw s;if(!process.noDeprecation){var h="fs: missing callback "+(s.stack||s.message);process.traceDeprecation?console.trace(h):console.error(h)}}}}function ue(t){return typeof t=="function"?t:le()}z.normalize;if(B)var Q=/(.*?)(?:[\/\\]+|$)/g;else var Q=/(.*?)(?:[\/]+|$)/g;if(B)var bt=/^(?:[a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/][^\\\/]+)?[\\\/]*/;else var bt=/^[\/]*/;wt.realpathSync=function(e,r){if(e=z.resolve(e),r&&Object.prototype.hasOwnProperty.call(r,e))return r[e];var n=e,s={},h={},f,g,d,w;S();function S(){var _=bt.exec(e);f=_[0].length,g=_[0],d=_[0],w="",B&&!h[d]&&(x.lstatSync(d),h[d]=!0)}for(;f<e.length;){Q.lastIndex=f;var O=Q.exec(e);if(w=g,g+=O[0],d=w+O[1],f=Q.lastIndex,!(h[d]||r&&r[d]===d)){var c;if(r&&Object.prototype.hasOwnProperty.call(r,d))c=r[d];else{var v=x.lstatSync(d);if(!v.isSymbolicLink()){h[d]=!0,r&&(r[d]=d);continue}var m=null;if(!B){var y=v.dev.toString(32)+":"+v.ino.toString(32);s.hasOwnProperty(y)&&(m=s[y])}m===null&&(x.statSync(d),m=x.readlinkSync(d)),c=z.resolve(w,m),r&&(r[d]=c),B||(s[y]=m)}e=z.resolve(c,e.slice(f)),S()}}return r&&(r[n]=e),e};wt.realpath=function(e,r,n){if(typeof n!="function"&&(n=ue(r),r=null),e=z.resolve(e),r&&Object.prototype.hasOwnProperty.call(r,e))return process.nextTick(n.bind(null,null,r[e]));var s=e,h={},f={},g,d,w,S;O();function O(){var _=bt.exec(e);g=_[0].length,d=_[0],w=_[0],S="",B&&!f[w]?x.lstat(w,function(A){if(A)return n(A);f[w]=!0,c()}):process.nextTick(c)}function c(){if(g>=e.length)return r&&(r[s]=e),n(null,e);Q.lastIndex=g;var _=Q.exec(e);return S=d,d+=_[0],w=S+_[1],g=Q.lastIndex,f[w]||r&&r[w]===w?process.nextTick(c):r&&Object.prototype.hasOwnProperty.call(r,w)?y(r[w]):x.lstat(w,v)}function v(_,A){if(_)return n(_);if(!A.isSymbolicLink())return f[w]=!0,r&&(r[w]=w),process.nextTick(c);if(!B){var b=A.dev.toString(32)+":"+A.ino.toString(32);if(h.hasOwnProperty(b))return m(null,h[b],w)}x.stat(w,function($){if($)return n($);x.readlink(w,function(i,a){B||(h[b]=a),m(i,a)})})}function m(_,A,b){if(_)return n(_);var $=z.resolve(S,A);r&&(r[b]=$),y($)}function y(_){e=z.resolve(_,e.slice(g)),O()}};var Mt=J;J.realpath=J;J.sync=_t;J.realpathSync=_t;J.monkeypatch=pe;J.unmonkeypatch=de;var H=st,pt=H.realpath,dt=H.realpathSync,fe=process.version,Tt=/^v[0-5]\./.test(fe),Nt=wt;function Ft(t){return t&&t.syscall==="realpath"&&(t.code==="ELOOP"||t.code==="ENOMEM"||t.code==="ENAMETOOLONG")}function J(t,e,r){if(Tt)return pt(t,e,r);typeof e=="function"&&(r=e,e=null),pt(t,e,function(n,s){Ft(n)?Nt.realpath(t,e,r):r(n,s)})}function _t(t,e){if(Tt)return dt(t,e);try{return dt(t,e)}catch(r){if(Ft(r))return Nt.realpathSync(t,e);throw r}}function pe(){H.realpath=J,H.realpathSync=_t}function de(){H.realpath=pt,H.realpathSync=dt}const ve=typeof process=="object"&&process&&process.platform==="win32";var ge=ve?{sep:"\\"}:{sep:"/"},me=Gt;function Gt(t,e,r){t instanceof RegExp&&(t=kt(t,r)),e instanceof RegExp&&(e=kt(e,r));var n=qt(t,e,r);return n&&{start:n[0],end:n[1],pre:r.slice(0,n[0]),body:r.slice(n[0]+t.length,n[1]),post:r.slice(n[1]+e.length)}}function kt(t,e){var r=e.match(t);return r?r[0]:null}Gt.range=qt;function qt(t,e,r){var n,s,h,f,g,d=r.indexOf(t),w=r.indexOf(e,d+1),S=d;if(d>=0&&w>0){if(t===e)return[d,w];for(n=[],h=r.length;S>=0&&!g;)S==d?(n.push(S),d=r.indexOf(t,S+1)):n.length==1?g=[n.pop(),w]:(s=n.pop(),s<h&&(h=s,f=w),w=r.indexOf(e,S+1)),S=d<w&&d>=0?d:w;n.length&&(g=[h,f])}return g}var xt=me,ye=_e,Bt="\0SLASH"+Math.random()+"\0",Jt="\0OPEN"+Math.random()+"\0",Et="\0CLOSE"+Math.random()+"\0",Ut="\0COMMA"+Math.random()+"\0",Wt="\0PERIOD"+Math.random()+"\0";function ot(t){return parseInt(t,10)==t?parseInt(t,10):t.charCodeAt(0)}function we(t){return t.split("\\\\").join(Bt).split("\\{").join(Jt).split("\\}").join(Et).split("\\,").join(Ut).split("\\.").join(Wt)}function be(t){return t.split(Bt).join("\\").split(Jt).join("{").split(Et).join("}").split(Ut).join(",").split(Wt).join(".")}function zt(t){if(!t)return[""];var e=[],r=xt("{","}",t);if(!r)return t.split(",");var n=r.pre,s=r.body,h=r.post,f=n.split(",");f[f.length-1]+="{"+s+"}";var g=zt(h);return h.length&&(f[f.length-1]+=g.shift(),f.push.apply(f,g)),e.push.apply(e,f),e}function _e(t){return t?(t.substr(0,2)==="{}"&&(t="\\{\\}"+t.substr(2)),K(we(t),!0).map(be)):[]}function Ee(t){return"{"+t+"}"}function Se(t){return/^-?0\d/.test(t)}function ke(t,e){return t<=e}function Oe(t,e){return t>=e}function K(t,e){var r=[],n=xt("{","}",t);if(!n)return[t];var s=n.pre,h=n.post.length?K(n.post,!1):[""];if(/\$$/.test(n.pre))for(var f=0;f<h.length;f++){var g=s+"{"+n.body+"}"+h[f];r.push(g)}else{var d=/^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(n.body),w=/^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(n.body),S=d||w,O=n.body.indexOf(",")>=0;if(!S&&!O)return n.post.match(/,.*\}/)?(t=n.pre+"{"+n.body+Et+n.post,K(t)):[t];var c;if(S)c=n.body.split(/\.\./);else if(c=zt(n.body),c.length===1&&(c=K(c[0],!1).map(Ee),c.length===1))return h.map(function(k){return n.pre+c[0]+k});var v;if(S){var m=ot(c[0]),y=ot(c[1]),_=Math.max(c[0].length,c[1].length),A=c.length==3?Math.abs(ot(c[2])):1,b=ke,$=y<m;$&&(A*=-1,b=Oe);var i=c.some(Se);v=[];for(var a=m;b(a,y);a+=A){var u;if(w)u=String.fromCharCode(a),u==="\\"&&(u="");else if(u=String(a),i){var l=_-u.length;if(l>0){var o=new Array(l+1).join("0");a<0?u="-"+o+u.slice(1):u=o+u}}v.push(u)}}else{v=[];for(var p=0;p<c.length;p++)v.push.apply(v,K(c[p],!1))}for(var p=0;p<v.length;p++)for(var f=0;f<h.length;f++){var g=s+v[p]+h[f];(!e||S||g)&&r.push(g)}}return r}const L=it=(t,e,r={})=>(nt(e),!r.nocomment&&e.charAt(0)==="#"?!1:new at(e,r).match(t));var it=L;const vt=ge;L.sep=vt.sep;const N=Symbol("globstar **");L.GLOBSTAR=N;const Ae=ye,Ot={"!":{open:"(?:(?!(?:",close:"))[^/]*?)"},"?":{open:"(?:",close:")?"},"+":{open:"(?:",close:")+"},"*":{open:"(?:",close:")*"},"@":{open:"(?:",close:")"}},gt="[^/]",ct=gt+"*?",je="(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?",$e="(?:(?!(?:\\/|^)\\.).)*?",Qt=t=>t.split("").reduce((e,r)=>(e[r]=!0,e),{}),At=Qt("().*{}+?[]^$\\!"),Ie=Qt("[.("),jt=/\/+/;L.filter=(t,e={})=>(r,n,s)=>L(r,t,e);const q=(t,e={})=>{const r={};return Object.keys(t).forEach(n=>r[n]=t[n]),Object.keys(e).forEach(n=>r[n]=e[n]),r};L.defaults=t=>{if(!t||typeof t!="object"||!Object.keys(t).length)return L;const e=L,r=(n,s,h)=>e(n,s,q(t,h));return r.Minimatch=class extends e.Minimatch{constructor(s,h){super(s,q(t,h))}},r.Minimatch.defaults=n=>e.defaults(q(t,n)).Minimatch,r.filter=(n,s)=>e.filter(n,q(t,s)),r.defaults=n=>e.defaults(q(t,n)),r.makeRe=(n,s)=>e.makeRe(n,q(t,s)),r.braceExpand=(n,s)=>e.braceExpand(n,q(t,s)),r.match=(n,s,h)=>e.match(n,s,q(t,h)),r};L.braceExpand=(t,e)=>Ht(t,e);const Ht=(t,e={})=>(nt(t),e.nobrace||!/\{(?:(?!\{).)*\}/.test(t)?[t]:Ae(t)),Re=1024*64,nt=t=>{if(typeof t!="string")throw new TypeError("invalid pattern");if(t.length>Re)throw new TypeError("pattern is too long")},ht=Symbol("subparse");L.makeRe=(t,e)=>new at(t,e||{}).makeRe();L.match=(t,e,r={})=>{const n=new at(e,r);return t=t.filter(s=>n.match(s)),n.options.nonull&&!t.length&&t.push(e),t};const Ce=t=>t.replace(/\\(.)/g,"$1"),De=t=>t.replace(/\\([^-\]])/g,"$1"),Le=t=>t.replace(/[-[\]{}()*+?.,\\^$|#\s]/g,"\\$&"),Pe=t=>t.replace(/[[\]\\]/g,"\\$&");let at=class{constructor(e,r){nt(e),r||(r={}),this.options=r,this.set=[],this.pattern=e,this.windowsPathsNoEscape=!!r.windowsPathsNoEscape||r.allowWindowsEscape===!1,this.windowsPathsNoEscape&&(this.pattern=this.pattern.replace(/\\/g,"/")),this.regexp=null,this.negate=!1,this.comment=!1,this.empty=!1,this.partial=!!r.partial,this.make()}debug(){}make(){const e=this.pattern,r=this.options;if(!r.nocomment&&e.charAt(0)==="#"){this.comment=!0;return}if(!e){this.empty=!0;return}this.parseNegate();let n=this.globSet=this.braceExpand();r.debug&&(this.debug=(...s)=>console.error(...s)),this.debug(this.pattern,n),n=this.globParts=n.map(s=>s.split(jt)),this.debug(this.pattern,n),n=n.map((s,h,f)=>s.map(this.parse,this)),this.debug(this.pattern,n),n=n.filter(s=>s.indexOf(!1)===-1),this.debug(this.pattern,n),this.set=n}parseNegate(){if(this.options.nonegate)return;const e=this.pattern;let r=!1,n=0;for(let s=0;s<e.length&&e.charAt(s)==="!";s++)r=!r,n++;n&&(this.pattern=e.slice(n)),this.negate=r}matchOne(e,r,n){var s=this.options;this.debug("matchOne",{this:this,file:e,pattern:r}),this.debug("matchOne",e.length,r.length);for(var h=0,f=0,g=e.length,d=r.length;h<g&&f<d;h++,f++){this.debug("matchOne loop");var w=r[f],S=e[h];if(this.debug(r,w,S),w===!1)return!1;if(w===N){this.debug("GLOBSTAR",[r,w,S]);var O=h,c=f+1;if(c===d){for(this.debug("** at the end");h<g;h++)if(e[h]==="."||e[h]===".."||!s.dot&&e[h].charAt(0)===".")return!1;return!0}for(;O<g;){var v=e[O];if(this.debug(`
-globstar while`,e,O,r,c,v),this.matchOne(e.slice(O),r.slice(c),n))return this.debug("globstar found match!",O,g,v),!0;if(v==="."||v===".."||!s.dot&&v.charAt(0)==="."){this.debug("dot detected!",e,O,r,c);break}this.debug("globstar swallow a segment, and continue"),O++}return!!(n&&(this.debug(`
->>> no match, partial?`,e,O,r,c),O===g))}var m;if(typeof w=="string"?(m=S===w,this.debug("string match",w,S,m)):(m=S.match(w),this.debug("pattern match",w,S,m)),!m)return!1}if(h===g&&f===d)return!0;if(h===g)return n;if(f===d)return h===g-1&&e[h]==="";throw new Error("wtf?")}braceExpand(){return Ht(this.pattern,this.options)}parse(e,r){nt(e);const n=this.options;if(e==="**")if(n.noglobstar)e="*";else return N;if(e==="")return"";let s="",h=!1,f=!1;const g=[],d=[];let w,S=!1,O=-1,c=-1,v,m,y,_=e.charAt(0)===".",A=n.dot||_;const b=()=>_?"":A?"(?!(?:^|\\/)\\.{1,2}(?:$|\\/))":"(?!\\.)",$=l=>l.charAt(0)==="."?"":n.dot?"(?!(?:^|\\/)\\.{1,2}(?:$|\\/))":"(?!\\.)",i=()=>{if(w){switch(w){case"*":s+=ct,h=!0;break;case"?":s+=gt,h=!0;break;default:s+="\\"+w;break}this.debug("clearStateChar %j %j",w,s),w=!1}};for(let l=0,o;l<e.length&&(o=e.charAt(l));l++){if(this.debug("%s	%s %s %j",e,l,s,o),f){if(o==="/")return!1;At[o]&&(s+="\\"),s+=o,f=!1;continue}switch(o){case"/":return!1;case"\\":if(S&&e.charAt(l+1)==="-"){s+=o;continue}i(),f=!0;continue;case"?":case"*":case"+":case"@":case"!":if(this.debug("%s	%s %s %j <-- stateChar",e,l,s,o),S){this.debug("  in class"),o==="!"&&l===c+1&&(o="^"),s+=o;continue}this.debug("call clearStateChar %j",w),i(),w=o,n.noext&&i();continue;case"(":{if(S){s+="(";continue}if(!w){s+="\\(";continue}const p={type:w,start:l-1,reStart:s.length,open:Ot[w].open,close:Ot[w].close};this.debug(this.pattern,"	",p),g.push(p),s+=p.open,p.start===0&&p.type!=="!"&&(_=!0,s+=$(e.slice(l+1))),this.debug("plType %j %j",w,s),w=!1;continue}case")":{const p=g[g.length-1];if(S||!p){s+="\\)";continue}g.pop(),i(),h=!0,m=p,s+=m.close,m.type==="!"&&d.push(Object.assign(m,{reEnd:s.length}));continue}case"|":{const p=g[g.length-1];if(S||!p){s+="\\|";continue}i(),s+="|",p.start===0&&p.type!=="!"&&(_=!0,s+=$(e.slice(l+1)));continue}case"[":if(i(),S){s+="\\"+o;continue}S=!0,c=l,O=s.length,s+=o;continue;case"]":if(l===c+1||!S){s+="\\"+o;continue}v=e.substring(c+1,l);try{RegExp("["+Pe(De(v))+"]"),s+=o}catch{s=s.substring(0,O)+"(?:$.)"}h=!0,S=!1;continue;default:i(),At[o]&&!(o==="^"&&S)&&(s+="\\"),s+=o;break}}for(S&&(v=e.slice(c+1),y=this.parse(v,ht),s=s.substring(0,O)+"\\["+y[0],h=h||y[1]),m=g.pop();m;m=g.pop()){let l;l=s.slice(m.reStart+m.open.length),this.debug("setting tail",s,m),l=l.replace(/((?:\\{2}){0,64})(\\?)\|/g,(p,k,E)=>(E||(E="\\"),k+k+E+"|")),this.debug(`tail=%j
-   %s`,l,l,m,s);const o=m.type==="*"?ct:m.type==="?"?gt:"\\"+m.type;h=!0,s=s.slice(0,m.reStart)+o+"\\("+l}i(),f&&(s+="\\\\");const a=Ie[s.charAt(0)];for(let l=d.length-1;l>-1;l--){const o=d[l],p=s.slice(0,o.reStart),k=s.slice(o.reStart,o.reEnd-8);let E=s.slice(o.reEnd);const j=s.slice(o.reEnd-8,o.reEnd)+E,C=p.split(")").length,P=p.split("(").length-C;let M=E;for(let I=0;I<P;I++)M=M.replace(/\)[+*?]?/,"");E=M;const T=E===""&&r!==ht?"(?:$|\\/)":"";s=p+k+E+T+j}if(s!==""&&h&&(s="(?=.)"+s),a&&(s=b()+s),r===ht)return[s,h];if(n.nocase&&!h&&(h=e.toUpperCase()!==e.toLowerCase()),!h)return Ce(e);const u=n.nocase?"i":"";try{return Object.assign(new RegExp("^"+s+"$",u),{_glob:e,_src:s})}catch{return new RegExp("$.")}}makeRe(){if(this.regexp||this.regexp===!1)return this.regexp;const e=this.set;if(!e.length)return this.regexp=!1,this.regexp;const r=this.options,n=r.noglobstar?ct:r.dot?je:$e,s=r.nocase?"i":"";let h=e.map(f=>(f=f.map(g=>typeof g=="string"?Le(g):g===N?N:g._src).reduce((g,d)=>(g[g.length-1]===N&&d===N||g.push(d),g),[]),f.forEach((g,d)=>{g!==N||f[d-1]===N||(d===0?f.length>1?f[d+1]="(?:\\/|"+n+"\\/)?"+f[d+1]:f[d]=n:d===f.length-1?f[d-1]+="(?:\\/|"+n+")?":(f[d-1]+="(?:\\/|\\/"+n+"\\/)"+f[d+1],f[d+1]=N))}),f.filter(g=>g!==N).join("/"))).join("|");h="^(?:"+h+")$",this.negate&&(h="^(?!"+h+").*$");try{this.regexp=new RegExp(h,s)}catch{this.regexp=!1}return this.regexp}match(e,r=this.partial){if(this.debug("match",e,this.pattern),this.comment)return!1;if(this.empty)return e==="";if(e==="/"&&r)return!0;const n=this.options;vt.sep!=="/"&&(e=e.split(vt.sep).join("/")),e=e.split(jt),this.debug(this.pattern,"split",e);const s=this.set;this.debug(this.pattern,"set",s);let h;for(let f=e.length-1;f>=0&&(h=e[f],!h);f--);for(let f=0;f<s.length;f++){const g=s[f];let d=e;if(n.matchBase&&g.length===1&&(d=[h]),this.matchOne(d,g,r))return n.flipNegate?!0:!this.negate}return n.flipNegate?!1:this.negate}static defaults(e){return L.defaults(e).Minimatch}};L.Minimatch=at;var mt={exports:{}},et={exports:{}},$t;function Me(){return $t||($t=1,typeof Object.create=="function"?et.exports=function(e,r){r&&(e.super_=r,e.prototype=Object.create(r.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}))}:et.exports=function(e,r){if(r){e.super_=r;var n=function(){};n.prototype=r.prototype,e.prototype=new n,e.prototype.constructor=e}}),et.exports}try{var It=require("util");if(typeof It.inherits!="function")throw"";mt.exports=It.inherits}catch{mt.exports=Me()}var Te=mt.exports,G={};G.setopts=Be;G.ownProp=Vt;G.makeAbs=Y;G.finish=Je;G.mark=Ue;G.isIgnored=Kt;G.childrenIgnored=We;function Vt(t,e){return Object.prototype.hasOwnProperty.call(t,e)}var Ne=st,W=D,Fe=it,Zt=D.isAbsolute,yt=Fe.Minimatch;function Ge(t,e){return t.localeCompare(e,"en")}function qe(t,e){t.ignore=e.ignore||[],Array.isArray(t.ignore)||(t.ignore=[t.ignore]),t.ignore.length&&(t.ignore=t.ignore.map(xe))}function xe(t){var e=null;if(t.slice(-3)==="/**"){var r=t.replace(/(\/\*\*)+$/,"");e=new yt(r,{dot:!0})}return{matcher:new yt(t,{dot:!0}),gmatcher:e}}function Be(t,e,r){if(r||(r={}),r.matchBase&&e.indexOf("/")===-1){if(r.noglobstar)throw new Error("base matching requires globstar");e="**/"+e}t.windowsPathsNoEscape=!!r.windowsPathsNoEscape||r.allowWindowsEscape===!1,t.windowsPathsNoEscape&&(e=e.replace(/\\/g,"/")),t.silent=!!r.silent,t.pattern=e,t.strict=r.strict!==!1,t.realpath=!!r.realpath,t.realpathCache=r.realpathCache||Object.create(null),t.follow=!!r.follow,t.dot=!!r.dot,t.mark=!!r.mark,t.nodir=!!r.nodir,t.nodir&&(t.mark=!0),t.sync=!!r.sync,t.nounique=!!r.nounique,t.nonull=!!r.nonull,t.nosort=!!r.nosort,t.nocase=!!r.nocase,t.stat=!!r.stat,t.noprocess=!!r.noprocess,t.absolute=!!r.absolute,t.fs=r.fs||Ne,t.maxLength=r.maxLength||1/0,t.cache=r.cache||Object.create(null),t.statCache=r.statCache||Object.create(null),t.symlinks=r.symlinks||Object.create(null),qe(t,r),t.changedCwd=!1;var n=process.cwd();Vt(r,"cwd")?(t.cwd=W.resolve(r.cwd),t.changedCwd=t.cwd!==n):t.cwd=W.resolve(n),t.root=r.root||W.resolve(t.cwd,"/"),t.root=W.resolve(t.root),t.cwdAbs=Zt(t.cwd)?t.cwd:Y(t,t.cwd),t.nomount=!!r.nomount,process.platform==="win32"&&(t.root=t.root.replace(/\\/g,"/"),t.cwd=t.cwd.replace(/\\/g,"/"),t.cwdAbs=t.cwdAbs.replace(/\\/g,"/")),r.nonegate=!0,r.nocomment=!0,t.minimatch=new yt(e,r),t.options=t.minimatch.options}function Je(t){for(var e=t.nounique,r=e?[]:Object.create(null),n=0,s=t.matches.length;n<s;n++){var h=t.matches[n];if(!h||Object.keys(h).length===0){if(t.nonull){var f=t.minimatch.globSet[n];e?r.push(f):r[f]=!0}}else{var g=Object.keys(h);e?r.push.apply(r,g):g.forEach(function(d){r[d]=!0})}}if(e||(r=Object.keys(r)),t.nosort||(r=r.sort(Ge)),t.mark){for(var n=0;n<r.length;n++)r[n]=t._mark(r[n]);t.nodir&&(r=r.filter(function(d){var w=!/\/$/.test(d),S=t.cache[d]||t.cache[Y(t,d)];return w&&S&&(w=S!=="DIR"&&!Array.isArray(S)),w}))}t.ignore.length&&(r=r.filter(function(d){return!Kt(t,d)})),t.found=r}function Ue(t,e){var r=Y(t,e),n=t.cache[r],s=e;if(n){var h=n==="DIR"||Array.isArray(n),f=e.slice(-1)==="/";if(h&&!f?s+="/":!h&&f&&(s=s.slice(0,-1)),s!==e){var g=Y(t,s);t.statCache[g]=t.statCache[r],t.cache[g]=t.cache[r]}}return s}function Y(t,e){var r=e;return e.charAt(0)==="/"?r=W.join(t.root,e):Zt(e)||e===""?r=e:t.changedCwd?r=W.resolve(t.cwd,e):r=W.resolve(e),process.platform==="win32"&&(r=r.replace(/\\/g,"/")),r}function Kt(t,e){return t.ignore.length?t.ignore.some(function(r){return r.matcher.match(e)||!!(r.gmatcher&&r.gmatcher.match(e))}):!1}function We(t,e){return t.ignore.length?t.ignore.some(function(r){return!!(r.gmatcher&&r.gmatcher.match(e))}):!1}var lt,Rt;function ze(){if(Rt)return lt;Rt=1,lt=S,S.GlobSync=O;var t=Mt,e=it;e.Minimatch,ne().Glob;var r=D,n=Pt,s=D.isAbsolute,h=G,f=h.setopts,g=h.ownProp,d=h.childrenIgnored,w=h.isIgnored;function S(c,v){if(typeof v=="function"||arguments.length===3)throw new TypeError(`callback provided to sync glob
-See: https://github.com/isaacs/node-glob/issues/167`);return new O(c,v).found}function O(c,v){if(!c)throw new Error("must provide pattern");if(typeof v=="function"||arguments.length===3)throw new TypeError(`callback provided to sync glob
-See: https://github.com/isaacs/node-glob/issues/167`);if(!(this instanceof O))return new O(c,v);if(f(this,c,v),this.noprocess)return this;var m=this.minimatch.set.length;this.matches=new Array(m);for(var y=0;y<m;y++)this._process(this.minimatch.set[y],y,!1);this._finish()}return O.prototype._finish=function(){if(n.ok(this instanceof O),this.realpath){var c=this;this.matches.forEach(function(v,m){var y=c.matches[m]=Object.create(null);for(var _ in v)try{_=c._makeAbs(_);var A=t.realpathSync(_,c.realpathCache);y[A]=!0}catch(b){if(b.syscall==="stat")y[c._makeAbs(_)]=!0;else throw b}})}h.finish(this)},O.prototype._process=function(c,v,m){n.ok(this instanceof O);for(var y=0;typeof c[y]=="string";)y++;var _;switch(y){case c.length:this._processSimple(c.join("/"),v);return;case 0:_=null;break;default:_=c.slice(0,y).join("/");break}var A=c.slice(y),b;_===null?b=".":((s(_)||s(c.map(function(a){return typeof a=="string"?a:"[*]"}).join("/")))&&(!_||!s(_))&&(_="/"+_),b=_);var $=this._makeAbs(b);if(!d(this,b)){var i=A[0]===e.GLOBSTAR;i?this._processGlobStar(_,b,$,A,v,m):this._processReaddir(_,b,$,A,v,m)}},O.prototype._processReaddir=function(c,v,m,y,_,A){var b=this._readdir(m,A);if(b){for(var $=y[0],i=!!this.minimatch.negate,a=$._glob,u=this.dot||a.charAt(0)===".",l=[],o=0;o<b.length;o++){var p=b[o];if(p.charAt(0)!=="."||u){var k;i&&!c?k=!p.match($):k=p.match($),k&&l.push(p)}}var E=l.length;if(E!==0){if(y.length===1&&!this.mark&&!this.stat){this.matches[_]||(this.matches[_]=Object.create(null));for(var o=0;o<E;o++){var p=l[o];c&&(c.slice(-1)!=="/"?p=c+"/"+p:p=c+p),p.charAt(0)==="/"&&!this.nomount&&(p=r.join(this.root,p)),this._emitMatch(_,p)}return}y.shift();for(var o=0;o<E;o++){var p=l[o],j;c?j=[c,p]:j=[p],this._process(j.concat(y),_,A)}}}},O.prototype._emitMatch=function(c,v){if(!w(this,v)){var m=this._makeAbs(v);if(this.mark&&(v=this._mark(v)),this.absolute&&(v=m),!this.matches[c][v]){if(this.nodir){var y=this.cache[m];if(y==="DIR"||Array.isArray(y))return}this.matches[c][v]=!0,this.stat&&this._stat(v)}}},O.prototype._readdirInGlobStar=function(c){if(this.follow)return this._readdir(c,!1);var v,m;try{m=this.fs.lstatSync(c)}catch(_){if(_.code==="ENOENT")return null}var y=m&&m.isSymbolicLink();return this.symlinks[c]=y,!y&&m&&!m.isDirectory()?this.cache[c]="FILE":v=this._readdir(c,!1),v},O.prototype._readdir=function(c,v){if(v&&!g(this.symlinks,c))return this._readdirInGlobStar(c);if(g(this.cache,c)){var m=this.cache[c];if(!m||m==="FILE")return null;if(Array.isArray(m))return m}try{return this._readdirEntries(c,this.fs.readdirSync(c))}catch(y){return this._readdirError(c,y),null}},O.prototype._readdirEntries=function(c,v){if(!this.mark&&!this.stat)for(var m=0;m<v.length;m++){var y=v[m];c==="/"?y=c+y:y=c+"/"+y,this.cache[y]=!0}return this.cache[c]=v,v},O.prototype._readdirError=function(c,v){switch(v.code){case"ENOTSUP":case"ENOTDIR":var m=this._makeAbs(c);if(this.cache[m]="FILE",m===this.cwdAbs){var y=new Error(v.code+" invalid cwd "+this.cwd);throw y.path=this.cwd,y.code=v.code,y}break;case"ENOENT":case"ELOOP":case"ENAMETOOLONG":case"UNKNOWN":this.cache[this._makeAbs(c)]=!1;break;default:if(this.cache[this._makeAbs(c)]=!1,this.strict)throw v;this.silent||console.error("glob error",v);break}},O.prototype._processGlobStar=function(c,v,m,y,_,A){var b=this._readdir(m,A);if(b){var $=y.slice(1),i=c?[c]:[],a=i.concat($);this._process(a,_,!1);var u=b.length,l=this.symlinks[m];if(!(l&&A))for(var o=0;o<u;o++){var p=b[o];if(!(p.charAt(0)==="."&&!this.dot)){var k=i.concat(b[o],$);this._process(k,_,!0);var E=i.concat(b[o],y);this._process(E,_,!0)}}}},O.prototype._processSimple=function(c,v){var m=this._stat(c);if(this.matches[v]||(this.matches[v]=Object.create(null)),!!m){if(c&&s(c)&&!this.nomount){var y=/[\/\\]$/.test(c);c.charAt(0)==="/"?c=r.join(this.root,c):(c=r.resolve(this.root,c),y&&(c+="/"))}process.platform==="win32"&&(c=c.replace(/\\/g,"/")),this._emitMatch(v,c)}},O.prototype._stat=function(c){var v=this._makeAbs(c),m=c.slice(-1)==="/";if(c.length>this.maxLength)return!1;if(!this.stat&&g(this.cache,v)){var A=this.cache[v];if(Array.isArray(A)&&(A="DIR"),!m||A==="DIR")return A;if(m&&A==="FILE")return!1}var y=this.statCache[v];if(!y){var _;try{_=this.fs.lstatSync(v)}catch(b){if(b&&(b.code==="ENOENT"||b.code==="ENOTDIR"))return this.statCache[v]=!1,!1}if(_&&_.isSymbolicLink())try{y=this.fs.statSync(v)}catch{y=_}else y=_}this.statCache[v]=y;var A=!0;return y&&(A=y.isDirectory()?"DIR":"FILE"),this.cache[v]=this.cache[v]||A,m&&A==="FILE"?!1:A},O.prototype._mark=function(c){return h.mark(this,c)},O.prototype._makeAbs=function(c){return h.makeAbs(this,c)},lt}var Xt=Yt;function Yt(t,e){if(t&&e)return Yt(t)(e);if(typeof t!="function")throw new TypeError("need wrapper function");return Object.keys(t).forEach(function(n){r[n]=t[n]}),r;function r(){for(var n=new Array(arguments.length),s=0;s<n.length;s++)n[s]=arguments[s];var h=t.apply(this,n),f=n[n.length-1];return typeof h=="function"&&h!==f&&Object.keys(f).forEach(function(g){h[g]=f[g]}),h}}var St={exports:{}},te=Xt;St.exports=te(rt);St.exports.strict=te(ee);rt.proto=rt(function(){Object.defineProperty(Function.prototype,"once",{value:function(){return rt(this)},configurable:!0}),Object.defineProperty(Function.prototype,"onceStrict",{value:function(){return ee(this)},configurable:!0})});function rt(t){var e=function(){return e.called?e.value:(e.called=!0,e.value=t.apply(this,arguments))};return e.called=!1,e}function ee(t){var e=function(){if(e.called)throw new Error(e.onceError);return e.called=!0,e.value=t.apply(this,arguments)},r=t.name||"Function wrapped with `once`";return e.onceError=r+" shouldn't be called more than once",e.called=!1,e}var re=St.exports,Qe=Xt,X=Object.create(null),He=re,Ve=Qe(Ze);function Ze(t,e){return X[t]?(X[t].push(e),null):(X[t]=[e],Ke(t))}function Ke(t){return He(function e(){var r=X[t],n=r.length,s=Xe(arguments);try{for(var h=0;h<n;h++)r[h].apply(null,s)}finally{r.length>n?(r.splice(0,n),process.nextTick(function(){e.apply(null,s)})):delete X[t]}})}function Xe(t){for(var e=t.length,r=[],n=0;n<e;n++)r[n]=t[n];return r}var ut,Ct;function ne(){if(Ct)return ut;Ct=1,ut=y;var t=Mt,e=it;e.Minimatch;var r=Te,n=ae.EventEmitter,s=D,h=Pt,f=D.isAbsolute,g=ze(),d=G,w=d.setopts,S=d.ownProp,O=Ve,c=d.childrenIgnored,v=d.isIgnored,m=re;function y(i,a,u){if(typeof a=="function"&&(u=a,a={}),a||(a={}),a.sync){if(u)throw new TypeError("callback provided to sync glob");return g(i,a)}return new b(i,a,u)}y.sync=g;var _=y.GlobSync=g.GlobSync;y.glob=y;function A(i,a){if(a===null||typeof a!="object")return i;for(var u=Object.keys(a),l=u.length;l--;)i[u[l]]=a[u[l]];return i}y.hasMagic=function(i,a){var u=A({},a);u.noprocess=!0;var l=new b(i,u),o=l.minimatch.set;if(!i)return!1;if(o.length>1)return!0;for(var p=0;p<o[0].length;p++)if(typeof o[0][p]!="string")return!0;return!1},y.Glob=b,r(b,n);function b(i,a,u){if(typeof a=="function"&&(u=a,a=null),a&&a.sync){if(u)throw new TypeError("callback provided to sync glob");return new _(i,a)}if(!(this instanceof b))return new b(i,a,u);w(this,i,a),this._didRealPath=!1;var l=this.minimatch.set.length;this.matches=new Array(l),typeof u=="function"&&(u=m(u),this.on("error",u),this.on("end",function(j){u(null,j)}));var o=this;if(this._processing=0,this._emitQueue=[],this._processQueue=[],this.paused=!1,this.noprocess)return this;if(l===0)return E();for(var p=!0,k=0;k<l;k++)this._process(this.minimatch.set[k],k,!1,E);p=!1;function E(){--o._processing,o._processing<=0&&(p?process.nextTick(function(){o._finish()}):o._finish())}}b.prototype._finish=function(){if(h(this instanceof b),!this.aborted){if(this.realpath&&!this._didRealpath)return this._realpath();d.finish(this),this.emit("end",this.found)}},b.prototype._realpath=function(){if(this._didRealpath)return;this._didRealpath=!0;var i=this.matches.length;if(i===0)return this._finish();for(var a=this,u=0;u<this.matches.length;u++)this._realpathSet(u,l);function l(){--i===0&&a._finish()}},b.prototype._realpathSet=function(i,a){var u=this.matches[i];if(!u)return a();var l=Object.keys(u),o=this,p=l.length;if(p===0)return a();var k=this.matches[i]=Object.create(null);l.forEach(function(E,j){E=o._makeAbs(E),t.realpath(E,o.realpathCache,function(C,P){C?C.syscall==="stat"?k[E]=!0:o.emit("error",C):k[P]=!0,--p===0&&(o.matches[i]=k,a())})})},b.prototype._mark=function(i){return d.mark(this,i)},b.prototype._makeAbs=function(i){return d.makeAbs(this,i)},b.prototype.abort=function(){this.aborted=!0,this.emit("abort")},b.prototype.pause=function(){this.paused||(this.paused=!0,this.emit("pause"))},b.prototype.resume=function(){if(this.paused){if(this.emit("resume"),this.paused=!1,this._emitQueue.length){var i=this._emitQueue.slice(0);this._emitQueue.length=0;for(var a=0;a<i.length;a++){var u=i[a];this._emitMatch(u[0],u[1])}}if(this._processQueue.length){var l=this._processQueue.slice(0);this._processQueue.length=0;for(var a=0;a<l.length;a++){var o=l[a];this._processing--,this._process(o[0],o[1],o[2],o[3])}}}},b.prototype._process=function(i,a,u,l){if(h(this instanceof b),h(typeof l=="function"),!this.aborted){if(this._processing++,this.paused){this._processQueue.push([i,a,u,l]);return}for(var o=0;typeof i[o]=="string";)o++;var p;switch(o){case i.length:this._processSimple(i.join("/"),a,l);return;case 0:p=null;break;default:p=i.slice(0,o).join("/");break}var k=i.slice(o),E;p===null?E=".":((f(p)||f(i.map(function(P){return typeof P=="string"?P:"[*]"}).join("/")))&&(!p||!f(p))&&(p="/"+p),E=p);var j=this._makeAbs(E);if(c(this,E))return l();var C=k[0]===e.GLOBSTAR;C?this._processGlobStar(p,E,j,k,a,u,l):this._processReaddir(p,E,j,k,a,u,l)}},b.prototype._processReaddir=function(i,a,u,l,o,p,k){var E=this;this._readdir(u,p,function(j,C){return E._processReaddir2(i,a,u,l,o,p,C,k)})},b.prototype._processReaddir2=function(i,a,u,l,o,p,k,E){if(!k)return E();for(var j=l[0],C=!!this.minimatch.negate,P=j._glob,M=this.dot||P.charAt(0)===".",T=[],I=0;I<k.length;I++){var R=k[I];if(R.charAt(0)!=="."||M){var V;C&&!i?V=!R.match(j):V=R.match(j),V&&T.push(R)}}var Z=T.length;if(Z===0)return E();if(l.length===1&&!this.mark&&!this.stat){this.matches[o]||(this.matches[o]=Object.create(null));for(var I=0;I<Z;I++){var R=T[I];i&&(i!=="/"?R=i+"/"+R:R=i+R),R.charAt(0)==="/"&&!this.nomount&&(R=s.join(this.root,R)),this._emitMatch(o,R)}return E()}l.shift();for(var I=0;I<Z;I++){var R=T[I];i&&(i!=="/"?R=i+"/"+R:R=i+R),this._process([R].concat(l),o,p,E)}E()},b.prototype._emitMatch=function(i,a){if(!this.aborted&&!v(this,a)){if(this.paused){this._emitQueue.push([i,a]);return}var u=f(a)?a:this._makeAbs(a);if(this.mark&&(a=this._mark(a)),this.absolute&&(a=u),!this.matches[i][a]){if(this.nodir){var l=this.cache[u];if(l==="DIR"||Array.isArray(l))return}this.matches[i][a]=!0;var o=this.statCache[u];o&&this.emit("stat",a,o),this.emit("match",a)}}},b.prototype._readdirInGlobStar=function(i,a){if(this.aborted)return;if(this.follow)return this._readdir(i,!1,a);var u="lstat\0"+i,l=this,o=O(u,p);o&&l.fs.lstat(i,o);function p(k,E){if(k&&k.code==="ENOENT")return a();var j=E&&E.isSymbolicLink();l.symlinks[i]=j,!j&&E&&!E.isDirectory()?(l.cache[i]="FILE",a()):l._readdir(i,!1,a)}},b.prototype._readdir=function(i,a,u){if(!this.aborted&&(u=O("readdir\0"+i+"\0"+a,u),!!u)){if(a&&!S(this.symlinks,i))return this._readdirInGlobStar(i,u);if(S(this.cache,i)){var l=this.cache[i];if(!l||l==="FILE")return u();if(Array.isArray(l))return u(null,l)}var o=this;o.fs.readdir(i,$(this,i,u))}};function $(i,a,u){return function(l,o){l?i._readdirError(a,l,u):i._readdirEntries(a,o,u)}}return b.prototype._readdirEntries=function(i,a,u){if(!this.aborted){if(!this.mark&&!this.stat)for(var l=0;l<a.length;l++){var o=a[l];i==="/"?o=i+o:o=i+"/"+o,this.cache[o]=!0}return this.cache[i]=a,u(null,a)}},b.prototype._readdirError=function(i,a,u){if(!this.aborted){switch(a.code){case"ENOTSUP":case"ENOTDIR":var l=this._makeAbs(i);if(this.cache[l]="FILE",l===this.cwdAbs){var o=new Error(a.code+" invalid cwd "+this.cwd);o.path=this.cwd,o.code=a.code,this.emit("error",o),this.abort()}break;case"ENOENT":case"ELOOP":case"ENAMETOOLONG":case"UNKNOWN":this.cache[this._makeAbs(i)]=!1;break;default:this.cache[this._makeAbs(i)]=!1,this.strict&&(this.emit("error",a),this.abort()),this.silent||console.error("glob error",a);break}return u()}},b.prototype._processGlobStar=function(i,a,u,l,o,p,k){var E=this;this._readdir(u,p,function(j,C){E._processGlobStar2(i,a,u,l,o,p,C,k)})},b.prototype._processGlobStar2=function(i,a,u,l,o,p,k,E){if(!k)return E();var j=l.slice(1),C=i?[i]:[],P=C.concat(j);this._process(P,o,!1,E);var M=this.symlinks[u],T=k.length;if(M&&p)return E();for(var I=0;I<T;I++){var R=k[I];if(!(R.charAt(0)==="."&&!this.dot)){var V=C.concat(k[I],j);this._process(V,o,!0,E);var Z=C.concat(k[I],l);this._process(Z,o,!0,E)}}E()},b.prototype._processSimple=function(i,a,u){var l=this;this._stat(i,function(o,p){l._processSimple2(i,a,o,p,u)})},b.prototype._processSimple2=function(i,a,u,l,o){if(this.matches[a]||(this.matches[a]=Object.create(null)),!l)return o();if(i&&f(i)&&!this.nomount){var p=/[\/\\]$/.test(i);i.charAt(0)==="/"?i=s.join(this.root,i):(i=s.resolve(this.root,i),p&&(i+="/"))}process.platform==="win32"&&(i=i.replace(/\\/g,"/")),this._emitMatch(a,i),o()},b.prototype._stat=function(i,a){var u=this._makeAbs(i),l=i.slice(-1)==="/";if(i.length>this.maxLength)return a();if(!this.stat&&S(this.cache,u)){var o=this.cache[u];if(Array.isArray(o)&&(o="DIR"),!l||o==="DIR")return a(null,o);if(l&&o==="FILE")return a()}var p=this.statCache[u];if(p!==void 0){if(p===!1)return a(null,p);var k=p.isDirectory()?"DIR":"FILE";return l&&k==="FILE"?a():a(null,k,p)}var E=this,j=O("stat\0"+u,C);j&&E.fs.lstat(u,j);function C(P,M){if(M&&M.isSymbolicLink())return E.fs.stat(u,function(T,I){T?E._stat2(i,u,null,M,a):E._stat2(i,u,T,I,a)});E._stat2(i,u,P,M,a)}},b.prototype._stat2=function(i,a,u,l,o){if(u&&(u.code==="ENOENT"||u.code==="ENOTDIR"))return this.statCache[a]=!1,o();var p=i.slice(-1)==="/";if(this.statCache[a]=l,a.slice(-1)==="/"&&l&&!l.isDirectory())return o(null,!1,l);var k=!0;return l&&(k=l.isDirectory()?"DIR":"FILE"),this.cache[a]=this.cache[a]||k,p&&k==="FILE"?o():o(null,k,l)},ut}var Ye=ne();const tr=ce(Ye),{app:tt,BrowserWindow:se,ipcMain:U,dialog:er,clipboard:rr,nativeTheme:nr}=require("electron"),ft=Lt.promisify(ie.exec),sr=Lt.promisify(tr);function ir(t){return new Promise((e,r)=>{const n=[];function s(h){const f=F.readdirSync(h);for(const g of f){const d=D.join(h,g);if(F.statSync(d).isDirectory())if(D.basename(d)==="target"){const S=F.readdirSync(d);for(const O of S)O.endsWith(".jar")&&n.push(D.join(d,O))}else s(d)}}try{s(t),e(n)}catch(h){r(h)}})}async function ar(t){try{if(console.log("开始扫描目录:",t),!F.existsSync(t))throw new Error("指定的目录不存在");const e="**/*.java";console.log("使用搜索模式:",e),console.log("在目录下搜索:",t);const r=await sr(e,{ignore:["**/target/**","**/build/**","**/bin/**","**/test/**"],cwd:t,dot:!0,nodir:!0});if(console.log("找到的Java文件:",r),console.log("找到的Java文件数量:",r.length),r.length===0)throw new Error("未找到任何Java文件，请检查目录是否正确");const n=[];for(const s of r)try{const h=D.join(t,s);console.log("正在处理文件:",h);const f=await F.promises.readFile(h,"utf-8"),g=/implements\s+(?:org\.quartz\.)?Job\b/,d=/extends\s+\w+\s+implements\s+(?:org\.quartz\.)?Job\b/;if(g.test(f)||d.test(f)){console.log("找到Job类:",h);const w=D.basename(h,".java"),S=f.includes("@DisallowConcurrentExecution");n.push({className:w,classPath:h,hasAnnotation:S})}}catch(h){console.error("读取文件失败:",s,h)}if(console.log("找到的Job类数量:",n.length),n.length===0)throw new Error("未找到任何Job类，请确认项目中是否包含实现了org.quartz.Job接口的类");return n}catch(e){throw console.error("Error scanning Job classes:",e),e}}async function or(t){try{let e=await F.promises.readFile(t,"utf-8");if(e.includes("@DisallowConcurrentExecution"))return;if(!e.includes("import org.quartz.DisallowConcurrentExecution;")){const r=`import org.quartz.DisallowConcurrentExecution;
-`;e.includes("package ")?e=e.replace(/package [^;]+;/,`$&
-${r}`):e=r+e}e=e.replace(/(public\s+class\s+[^{]+)/,`@DisallowConcurrentExecution
-$1`),await F.promises.writeFile(t,e,"utf-8")}catch(e){throw console.error("Error adding annotation:",e),e}}function Dt(){const t=new se({width:1200,height:800,title:"HUHA工作提效小助手",webPreferences:{nodeIntegration:!1,contextIsolation:!0,preload:D.join(__dirname,"preload.js")},autoHideMenuBar:!0,frame:!0,backgroundColor:"#1a1a1a"});t.setBackgroundColor("#1a1a1a"),nr.themeSource="dark",t.setMenu(null),process.env.VITE_DEV_SERVER_URL?(t.loadURL(process.env.VITE_DEV_SERVER_URL),t.webContents.openDevTools()):t.loadFile(D.join(__dirname,"../dist/index.html")),U.handle("select-directory",async e=>(await er.showOpenDialog({properties:["openDirectory"]})).filePaths[0]),U.handle("scan-jar-files",async(e,r)=>{try{return(await ir(r)).map(s=>({name:D.basename(s),path:D.dirname(s)+D.sep,createTime:F.statSync(s).birthtime.getTime()}))}catch(n){throw console.error("Error scanning JAR files:",n),n}}),U.handle("copy-files",async(e,r)=>{try{const n=r.map(s=>D.join(s.path,s.name));if(process.platform==="win32"){const s=`
+"use strict";
+const path$3 = require("path");
+const fs$3 = require("fs");
+const child_process = require("child_process");
+const require$$3$1 = require("util");
+const require$$3 = require("events");
+const require$$5 = require("assert");
+function _interopNamespaceDefault(e) {
+  const n = Object.create(null, { [Symbol.toStringTag]: { value: "Module" } });
+  if (e) {
+    for (const k in e) {
+      if (k !== "default") {
+        const d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: () => e[k]
+        });
+      }
+    }
+  }
+  n.default = e;
+  return Object.freeze(n);
+}
+const fs__namespace = /* @__PURE__ */ _interopNamespaceDefault(fs$3);
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+}
+var old$1 = {};
+var pathModule = path$3;
+var isWindows$1 = process.platform === "win32";
+var fs$2 = fs$3;
+var DEBUG = process.env.NODE_DEBUG && /fs/.test(process.env.NODE_DEBUG);
+function rethrow() {
+  var callback;
+  if (DEBUG) {
+    var backtrace = new Error();
+    callback = debugCallback;
+  } else
+    callback = missingCallback;
+  return callback;
+  function debugCallback(err) {
+    if (err) {
+      backtrace.message = err.message;
+      err = backtrace;
+      missingCallback(err);
+    }
+  }
+  function missingCallback(err) {
+    if (err) {
+      if (process.throwDeprecation)
+        throw err;
+      else if (!process.noDeprecation) {
+        var msg = "fs: missing callback " + (err.stack || err.message);
+        if (process.traceDeprecation)
+          console.trace(msg);
+        else
+          console.error(msg);
+      }
+    }
+  }
+}
+function maybeCallback(cb) {
+  return typeof cb === "function" ? cb : rethrow();
+}
+pathModule.normalize;
+if (isWindows$1) {
+  var nextPartRe = /(.*?)(?:[\/\\]+|$)/g;
+} else {
+  var nextPartRe = /(.*?)(?:[\/]+|$)/g;
+}
+if (isWindows$1) {
+  var splitRootRe = /^(?:[a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/][^\\\/]+)?[\\\/]*/;
+} else {
+  var splitRootRe = /^[\/]*/;
+}
+old$1.realpathSync = function realpathSync(p, cache) {
+  p = pathModule.resolve(p);
+  if (cache && Object.prototype.hasOwnProperty.call(cache, p)) {
+    return cache[p];
+  }
+  var original = p, seenLinks = {}, knownHard = {};
+  var pos;
+  var current;
+  var base;
+  var previous;
+  start();
+  function start() {
+    var m = splitRootRe.exec(p);
+    pos = m[0].length;
+    current = m[0];
+    base = m[0];
+    previous = "";
+    if (isWindows$1 && !knownHard[base]) {
+      fs$2.lstatSync(base);
+      knownHard[base] = true;
+    }
+  }
+  while (pos < p.length) {
+    nextPartRe.lastIndex = pos;
+    var result = nextPartRe.exec(p);
+    previous = current;
+    current += result[0];
+    base = previous + result[1];
+    pos = nextPartRe.lastIndex;
+    if (knownHard[base] || cache && cache[base] === base) {
+      continue;
+    }
+    var resolvedLink;
+    if (cache && Object.prototype.hasOwnProperty.call(cache, base)) {
+      resolvedLink = cache[base];
+    } else {
+      var stat = fs$2.lstatSync(base);
+      if (!stat.isSymbolicLink()) {
+        knownHard[base] = true;
+        if (cache) cache[base] = base;
+        continue;
+      }
+      var linkTarget = null;
+      if (!isWindows$1) {
+        var id = stat.dev.toString(32) + ":" + stat.ino.toString(32);
+        if (seenLinks.hasOwnProperty(id)) {
+          linkTarget = seenLinks[id];
+        }
+      }
+      if (linkTarget === null) {
+        fs$2.statSync(base);
+        linkTarget = fs$2.readlinkSync(base);
+      }
+      resolvedLink = pathModule.resolve(previous, linkTarget);
+      if (cache) cache[base] = resolvedLink;
+      if (!isWindows$1) seenLinks[id] = linkTarget;
+    }
+    p = pathModule.resolve(resolvedLink, p.slice(pos));
+    start();
+  }
+  if (cache) cache[original] = p;
+  return p;
+};
+old$1.realpath = function realpath(p, cache, cb) {
+  if (typeof cb !== "function") {
+    cb = maybeCallback(cache);
+    cache = null;
+  }
+  p = pathModule.resolve(p);
+  if (cache && Object.prototype.hasOwnProperty.call(cache, p)) {
+    return process.nextTick(cb.bind(null, null, cache[p]));
+  }
+  var original = p, seenLinks = {}, knownHard = {};
+  var pos;
+  var current;
+  var base;
+  var previous;
+  start();
+  function start() {
+    var m = splitRootRe.exec(p);
+    pos = m[0].length;
+    current = m[0];
+    base = m[0];
+    previous = "";
+    if (isWindows$1 && !knownHard[base]) {
+      fs$2.lstat(base, function(err) {
+        if (err) return cb(err);
+        knownHard[base] = true;
+        LOOP();
+      });
+    } else {
+      process.nextTick(LOOP);
+    }
+  }
+  function LOOP() {
+    if (pos >= p.length) {
+      if (cache) cache[original] = p;
+      return cb(null, p);
+    }
+    nextPartRe.lastIndex = pos;
+    var result = nextPartRe.exec(p);
+    previous = current;
+    current += result[0];
+    base = previous + result[1];
+    pos = nextPartRe.lastIndex;
+    if (knownHard[base] || cache && cache[base] === base) {
+      return process.nextTick(LOOP);
+    }
+    if (cache && Object.prototype.hasOwnProperty.call(cache, base)) {
+      return gotResolvedLink(cache[base]);
+    }
+    return fs$2.lstat(base, gotStat);
+  }
+  function gotStat(err, stat) {
+    if (err) return cb(err);
+    if (!stat.isSymbolicLink()) {
+      knownHard[base] = true;
+      if (cache) cache[base] = base;
+      return process.nextTick(LOOP);
+    }
+    if (!isWindows$1) {
+      var id = stat.dev.toString(32) + ":" + stat.ino.toString(32);
+      if (seenLinks.hasOwnProperty(id)) {
+        return gotTarget(null, seenLinks[id], base);
+      }
+    }
+    fs$2.stat(base, function(err2) {
+      if (err2) return cb(err2);
+      fs$2.readlink(base, function(err3, target) {
+        if (!isWindows$1) seenLinks[id] = target;
+        gotTarget(err3, target);
+      });
+    });
+  }
+  function gotTarget(err, target, base2) {
+    if (err) return cb(err);
+    var resolvedLink = pathModule.resolve(previous, target);
+    if (cache) cache[base2] = resolvedLink;
+    gotResolvedLink(resolvedLink);
+  }
+  function gotResolvedLink(resolvedLink) {
+    p = pathModule.resolve(resolvedLink, p.slice(pos));
+    start();
+  }
+};
+var fs_realpath = realpath2;
+realpath2.realpath = realpath2;
+realpath2.sync = realpathSync2;
+realpath2.realpathSync = realpathSync2;
+realpath2.monkeypatch = monkeypatch;
+realpath2.unmonkeypatch = unmonkeypatch;
+var fs$1 = fs$3;
+var origRealpath = fs$1.realpath;
+var origRealpathSync = fs$1.realpathSync;
+var version = process.version;
+var ok = /^v[0-5]\./.test(version);
+var old = old$1;
+function newError(er) {
+  return er && er.syscall === "realpath" && (er.code === "ELOOP" || er.code === "ENOMEM" || er.code === "ENAMETOOLONG");
+}
+function realpath2(p, cache, cb) {
+  if (ok) {
+    return origRealpath(p, cache, cb);
+  }
+  if (typeof cache === "function") {
+    cb = cache;
+    cache = null;
+  }
+  origRealpath(p, cache, function(er, result) {
+    if (newError(er)) {
+      old.realpath(p, cache, cb);
+    } else {
+      cb(er, result);
+    }
+  });
+}
+function realpathSync2(p, cache) {
+  if (ok) {
+    return origRealpathSync(p, cache);
+  }
+  try {
+    return origRealpathSync(p, cache);
+  } catch (er) {
+    if (newError(er)) {
+      return old.realpathSync(p, cache);
+    } else {
+      throw er;
+    }
+  }
+}
+function monkeypatch() {
+  fs$1.realpath = realpath2;
+  fs$1.realpathSync = realpathSync2;
+}
+function unmonkeypatch() {
+  fs$1.realpath = origRealpath;
+  fs$1.realpathSync = origRealpathSync;
+}
+const isWindows = typeof process === "object" && process && process.platform === "win32";
+var path$2 = isWindows ? { sep: "\\" } : { sep: "/" };
+var balancedMatch = balanced$1;
+function balanced$1(a, b, str) {
+  if (a instanceof RegExp) a = maybeMatch(a, str);
+  if (b instanceof RegExp) b = maybeMatch(b, str);
+  var r = range(a, b, str);
+  return r && {
+    start: r[0],
+    end: r[1],
+    pre: str.slice(0, r[0]),
+    body: str.slice(r[0] + a.length, r[1]),
+    post: str.slice(r[1] + b.length)
+  };
+}
+function maybeMatch(reg, str) {
+  var m = str.match(reg);
+  return m ? m[0] : null;
+}
+balanced$1.range = range;
+function range(a, b, str) {
+  var begs, beg, left, right, result;
+  var ai = str.indexOf(a);
+  var bi = str.indexOf(b, ai + 1);
+  var i = ai;
+  if (ai >= 0 && bi > 0) {
+    if (a === b) {
+      return [ai, bi];
+    }
+    begs = [];
+    left = str.length;
+    while (i >= 0 && !result) {
+      if (i == ai) {
+        begs.push(i);
+        ai = str.indexOf(a, i + 1);
+      } else if (begs.length == 1) {
+        result = [begs.pop(), bi];
+      } else {
+        beg = begs.pop();
+        if (beg < left) {
+          left = beg;
+          right = bi;
+        }
+        bi = str.indexOf(b, i + 1);
+      }
+      i = ai < bi && ai >= 0 ? ai : bi;
+    }
+    if (begs.length) {
+      result = [left, right];
+    }
+  }
+  return result;
+}
+var balanced = balancedMatch;
+var braceExpansion = expandTop;
+var escSlash = "\0SLASH" + Math.random() + "\0";
+var escOpen = "\0OPEN" + Math.random() + "\0";
+var escClose = "\0CLOSE" + Math.random() + "\0";
+var escComma = "\0COMMA" + Math.random() + "\0";
+var escPeriod = "\0PERIOD" + Math.random() + "\0";
+function numeric(str) {
+  return parseInt(str, 10) == str ? parseInt(str, 10) : str.charCodeAt(0);
+}
+function escapeBraces(str) {
+  return str.split("\\\\").join(escSlash).split("\\{").join(escOpen).split("\\}").join(escClose).split("\\,").join(escComma).split("\\.").join(escPeriod);
+}
+function unescapeBraces(str) {
+  return str.split(escSlash).join("\\").split(escOpen).join("{").split(escClose).join("}").split(escComma).join(",").split(escPeriod).join(".");
+}
+function parseCommaParts(str) {
+  if (!str)
+    return [""];
+  var parts = [];
+  var m = balanced("{", "}", str);
+  if (!m)
+    return str.split(",");
+  var pre = m.pre;
+  var body = m.body;
+  var post = m.post;
+  var p = pre.split(",");
+  p[p.length - 1] += "{" + body + "}";
+  var postParts = parseCommaParts(post);
+  if (post.length) {
+    p[p.length - 1] += postParts.shift();
+    p.push.apply(p, postParts);
+  }
+  parts.push.apply(parts, p);
+  return parts;
+}
+function expandTop(str) {
+  if (!str)
+    return [];
+  if (str.substr(0, 2) === "{}") {
+    str = "\\{\\}" + str.substr(2);
+  }
+  return expand$1(escapeBraces(str), true).map(unescapeBraces);
+}
+function embrace(str) {
+  return "{" + str + "}";
+}
+function isPadded(el) {
+  return /^-?0\d/.test(el);
+}
+function lte(i, y) {
+  return i <= y;
+}
+function gte(i, y) {
+  return i >= y;
+}
+function expand$1(str, isTop) {
+  var expansions = [];
+  var m = balanced("{", "}", str);
+  if (!m) return [str];
+  var pre = m.pre;
+  var post = m.post.length ? expand$1(m.post, false) : [""];
+  if (/\$$/.test(m.pre)) {
+    for (var k = 0; k < post.length; k++) {
+      var expansion = pre + "{" + m.body + "}" + post[k];
+      expansions.push(expansion);
+    }
+  } else {
+    var isNumericSequence = /^-?\d+\.\.-?\d+(?:\.\.-?\d+)?$/.test(m.body);
+    var isAlphaSequence = /^[a-zA-Z]\.\.[a-zA-Z](?:\.\.-?\d+)?$/.test(m.body);
+    var isSequence = isNumericSequence || isAlphaSequence;
+    var isOptions = m.body.indexOf(",") >= 0;
+    if (!isSequence && !isOptions) {
+      if (m.post.match(/,.*\}/)) {
+        str = m.pre + "{" + m.body + escClose + m.post;
+        return expand$1(str);
+      }
+      return [str];
+    }
+    var n;
+    if (isSequence) {
+      n = m.body.split(/\.\./);
+    } else {
+      n = parseCommaParts(m.body);
+      if (n.length === 1) {
+        n = expand$1(n[0], false).map(embrace);
+        if (n.length === 1) {
+          return post.map(function(p) {
+            return m.pre + n[0] + p;
+          });
+        }
+      }
+    }
+    var N;
+    if (isSequence) {
+      var x = numeric(n[0]);
+      var y = numeric(n[1]);
+      var width = Math.max(n[0].length, n[1].length);
+      var incr = n.length == 3 ? Math.abs(numeric(n[2])) : 1;
+      var test = lte;
+      var reverse = y < x;
+      if (reverse) {
+        incr *= -1;
+        test = gte;
+      }
+      var pad = n.some(isPadded);
+      N = [];
+      for (var i = x; test(i, y); i += incr) {
+        var c;
+        if (isAlphaSequence) {
+          c = String.fromCharCode(i);
+          if (c === "\\")
+            c = "";
+        } else {
+          c = String(i);
+          if (pad) {
+            var need = width - c.length;
+            if (need > 0) {
+              var z = new Array(need + 1).join("0");
+              if (i < 0)
+                c = "-" + z + c.slice(1);
+              else
+                c = z + c;
+            }
+          }
+        }
+        N.push(c);
+      }
+    } else {
+      N = [];
+      for (var j = 0; j < n.length; j++) {
+        N.push.apply(N, expand$1(n[j], false));
+      }
+    }
+    for (var j = 0; j < N.length; j++) {
+      for (var k = 0; k < post.length; k++) {
+        var expansion = pre + N[j] + post[k];
+        if (!isTop || isSequence || expansion)
+          expansions.push(expansion);
+      }
+    }
+  }
+  return expansions;
+}
+const minimatch$1 = minimatch_1 = (p, pattern, options = {}) => {
+  assertValidPattern(pattern);
+  if (!options.nocomment && pattern.charAt(0) === "#") {
+    return false;
+  }
+  return new Minimatch$1(pattern, options).match(p);
+};
+var minimatch_1 = minimatch$1;
+const path$1 = path$2;
+minimatch$1.sep = path$1.sep;
+const GLOBSTAR = Symbol("globstar **");
+minimatch$1.GLOBSTAR = GLOBSTAR;
+const expand = braceExpansion;
+const plTypes = {
+  "!": { open: "(?:(?!(?:", close: "))[^/]*?)" },
+  "?": { open: "(?:", close: ")?" },
+  "+": { open: "(?:", close: ")+" },
+  "*": { open: "(?:", close: ")*" },
+  "@": { open: "(?:", close: ")" }
+};
+const qmark = "[^/]";
+const star = qmark + "*?";
+const twoStarDot = "(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?";
+const twoStarNoDot = "(?:(?!(?:\\/|^)\\.).)*?";
+const charSet = (s) => s.split("").reduce((set, c) => {
+  set[c] = true;
+  return set;
+}, {});
+const reSpecials = charSet("().*{}+?[]^$\\!");
+const addPatternStartSet = charSet("[.(");
+const slashSplit = /\/+/;
+minimatch$1.filter = (pattern, options = {}) => (p, i, list) => minimatch$1(p, pattern, options);
+const ext = (a, b = {}) => {
+  const t = {};
+  Object.keys(a).forEach((k) => t[k] = a[k]);
+  Object.keys(b).forEach((k) => t[k] = b[k]);
+  return t;
+};
+minimatch$1.defaults = (def) => {
+  if (!def || typeof def !== "object" || !Object.keys(def).length) {
+    return minimatch$1;
+  }
+  const orig = minimatch$1;
+  const m = (p, pattern, options) => orig(p, pattern, ext(def, options));
+  m.Minimatch = class Minimatch extends orig.Minimatch {
+    constructor(pattern, options) {
+      super(pattern, ext(def, options));
+    }
+  };
+  m.Minimatch.defaults = (options) => orig.defaults(ext(def, options)).Minimatch;
+  m.filter = (pattern, options) => orig.filter(pattern, ext(def, options));
+  m.defaults = (options) => orig.defaults(ext(def, options));
+  m.makeRe = (pattern, options) => orig.makeRe(pattern, ext(def, options));
+  m.braceExpand = (pattern, options) => orig.braceExpand(pattern, ext(def, options));
+  m.match = (list, pattern, options) => orig.match(list, pattern, ext(def, options));
+  return m;
+};
+minimatch$1.braceExpand = (pattern, options) => braceExpand(pattern, options);
+const braceExpand = (pattern, options = {}) => {
+  assertValidPattern(pattern);
+  if (options.nobrace || !/\{(?:(?!\{).)*\}/.test(pattern)) {
+    return [pattern];
+  }
+  return expand(pattern);
+};
+const MAX_PATTERN_LENGTH = 1024 * 64;
+const assertValidPattern = (pattern) => {
+  if (typeof pattern !== "string") {
+    throw new TypeError("invalid pattern");
+  }
+  if (pattern.length > MAX_PATTERN_LENGTH) {
+    throw new TypeError("pattern is too long");
+  }
+};
+const SUBPARSE = Symbol("subparse");
+minimatch$1.makeRe = (pattern, options) => new Minimatch$1(pattern, options || {}).makeRe();
+minimatch$1.match = (list, pattern, options = {}) => {
+  const mm = new Minimatch$1(pattern, options);
+  list = list.filter((f) => mm.match(f));
+  if (mm.options.nonull && !list.length) {
+    list.push(pattern);
+  }
+  return list;
+};
+const globUnescape = (s) => s.replace(/\\(.)/g, "$1");
+const charUnescape = (s) => s.replace(/\\([^-\]])/g, "$1");
+const regExpEscape = (s) => s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+const braExpEscape = (s) => s.replace(/[[\]\\]/g, "\\$&");
+let Minimatch$1 = class Minimatch {
+  constructor(pattern, options) {
+    assertValidPattern(pattern);
+    if (!options) options = {};
+    this.options = options;
+    this.set = [];
+    this.pattern = pattern;
+    this.windowsPathsNoEscape = !!options.windowsPathsNoEscape || options.allowWindowsEscape === false;
+    if (this.windowsPathsNoEscape) {
+      this.pattern = this.pattern.replace(/\\/g, "/");
+    }
+    this.regexp = null;
+    this.negate = false;
+    this.comment = false;
+    this.empty = false;
+    this.partial = !!options.partial;
+    this.make();
+  }
+  debug() {
+  }
+  make() {
+    const pattern = this.pattern;
+    const options = this.options;
+    if (!options.nocomment && pattern.charAt(0) === "#") {
+      this.comment = true;
+      return;
+    }
+    if (!pattern) {
+      this.empty = true;
+      return;
+    }
+    this.parseNegate();
+    let set = this.globSet = this.braceExpand();
+    if (options.debug) this.debug = (...args) => console.error(...args);
+    this.debug(this.pattern, set);
+    set = this.globParts = set.map((s) => s.split(slashSplit));
+    this.debug(this.pattern, set);
+    set = set.map((s, si, set2) => s.map(this.parse, this));
+    this.debug(this.pattern, set);
+    set = set.filter((s) => s.indexOf(false) === -1);
+    this.debug(this.pattern, set);
+    this.set = set;
+  }
+  parseNegate() {
+    if (this.options.nonegate) return;
+    const pattern = this.pattern;
+    let negate = false;
+    let negateOffset = 0;
+    for (let i = 0; i < pattern.length && pattern.charAt(i) === "!"; i++) {
+      negate = !negate;
+      negateOffset++;
+    }
+    if (negateOffset) this.pattern = pattern.slice(negateOffset);
+    this.negate = negate;
+  }
+  // set partial to true to test if, for example,
+  // "/a/b" matches the start of "/*/b/*/d"
+  // Partial means, if you run out of file before you run
+  // out of pattern, then that's fine, as long as all
+  // the parts match.
+  matchOne(file, pattern, partial) {
+    var options = this.options;
+    this.debug(
+      "matchOne",
+      { "this": this, file, pattern }
+    );
+    this.debug("matchOne", file.length, pattern.length);
+    for (var fi = 0, pi = 0, fl = file.length, pl = pattern.length; fi < fl && pi < pl; fi++, pi++) {
+      this.debug("matchOne loop");
+      var p = pattern[pi];
+      var f = file[fi];
+      this.debug(pattern, p, f);
+      if (p === false) return false;
+      if (p === GLOBSTAR) {
+        this.debug("GLOBSTAR", [pattern, p, f]);
+        var fr = fi;
+        var pr = pi + 1;
+        if (pr === pl) {
+          this.debug("** at the end");
+          for (; fi < fl; fi++) {
+            if (file[fi] === "." || file[fi] === ".." || !options.dot && file[fi].charAt(0) === ".") return false;
+          }
+          return true;
+        }
+        while (fr < fl) {
+          var swallowee = file[fr];
+          this.debug("\nglobstar while", file, fr, pattern, pr, swallowee);
+          if (this.matchOne(file.slice(fr), pattern.slice(pr), partial)) {
+            this.debug("globstar found match!", fr, fl, swallowee);
+            return true;
+          } else {
+            if (swallowee === "." || swallowee === ".." || !options.dot && swallowee.charAt(0) === ".") {
+              this.debug("dot detected!", file, fr, pattern, pr);
+              break;
+            }
+            this.debug("globstar swallow a segment, and continue");
+            fr++;
+          }
+        }
+        if (partial) {
+          this.debug("\n>>> no match, partial?", file, fr, pattern, pr);
+          if (fr === fl) return true;
+        }
+        return false;
+      }
+      var hit;
+      if (typeof p === "string") {
+        hit = f === p;
+        this.debug("string match", p, f, hit);
+      } else {
+        hit = f.match(p);
+        this.debug("pattern match", p, f, hit);
+      }
+      if (!hit) return false;
+    }
+    if (fi === fl && pi === pl) {
+      return true;
+    } else if (fi === fl) {
+      return partial;
+    } else if (pi === pl) {
+      return fi === fl - 1 && file[fi] === "";
+    }
+    throw new Error("wtf?");
+  }
+  braceExpand() {
+    return braceExpand(this.pattern, this.options);
+  }
+  parse(pattern, isSub) {
+    assertValidPattern(pattern);
+    const options = this.options;
+    if (pattern === "**") {
+      if (!options.noglobstar)
+        return GLOBSTAR;
+      else
+        pattern = "*";
+    }
+    if (pattern === "") return "";
+    let re = "";
+    let hasMagic = false;
+    let escaping = false;
+    const patternListStack = [];
+    const negativeLists = [];
+    let stateChar;
+    let inClass = false;
+    let reClassStart = -1;
+    let classStart = -1;
+    let cs;
+    let pl;
+    let sp;
+    let dotTravAllowed = pattern.charAt(0) === ".";
+    let dotFileAllowed = options.dot || dotTravAllowed;
+    const patternStart = () => dotTravAllowed ? "" : dotFileAllowed ? "(?!(?:^|\\/)\\.{1,2}(?:$|\\/))" : "(?!\\.)";
+    const subPatternStart = (p) => p.charAt(0) === "." ? "" : options.dot ? "(?!(?:^|\\/)\\.{1,2}(?:$|\\/))" : "(?!\\.)";
+    const clearStateChar = () => {
+      if (stateChar) {
+        switch (stateChar) {
+          case "*":
+            re += star;
+            hasMagic = true;
+            break;
+          case "?":
+            re += qmark;
+            hasMagic = true;
+            break;
+          default:
+            re += "\\" + stateChar;
+            break;
+        }
+        this.debug("clearStateChar %j %j", stateChar, re);
+        stateChar = false;
+      }
+    };
+    for (let i = 0, c; i < pattern.length && (c = pattern.charAt(i)); i++) {
+      this.debug("%s	%s %s %j", pattern, i, re, c);
+      if (escaping) {
+        if (c === "/") {
+          return false;
+        }
+        if (reSpecials[c]) {
+          re += "\\";
+        }
+        re += c;
+        escaping = false;
+        continue;
+      }
+      switch (c) {
+        case "/": {
+          return false;
+        }
+        case "\\":
+          if (inClass && pattern.charAt(i + 1) === "-") {
+            re += c;
+            continue;
+          }
+          clearStateChar();
+          escaping = true;
+          continue;
+        case "?":
+        case "*":
+        case "+":
+        case "@":
+        case "!":
+          this.debug("%s	%s %s %j <-- stateChar", pattern, i, re, c);
+          if (inClass) {
+            this.debug("  in class");
+            if (c === "!" && i === classStart + 1) c = "^";
+            re += c;
+            continue;
+          }
+          this.debug("call clearStateChar %j", stateChar);
+          clearStateChar();
+          stateChar = c;
+          if (options.noext) clearStateChar();
+          continue;
+        case "(": {
+          if (inClass) {
+            re += "(";
+            continue;
+          }
+          if (!stateChar) {
+            re += "\\(";
+            continue;
+          }
+          const plEntry = {
+            type: stateChar,
+            start: i - 1,
+            reStart: re.length,
+            open: plTypes[stateChar].open,
+            close: plTypes[stateChar].close
+          };
+          this.debug(this.pattern, "	", plEntry);
+          patternListStack.push(plEntry);
+          re += plEntry.open;
+          if (plEntry.start === 0 && plEntry.type !== "!") {
+            dotTravAllowed = true;
+            re += subPatternStart(pattern.slice(i + 1));
+          }
+          this.debug("plType %j %j", stateChar, re);
+          stateChar = false;
+          continue;
+        }
+        case ")": {
+          const plEntry = patternListStack[patternListStack.length - 1];
+          if (inClass || !plEntry) {
+            re += "\\)";
+            continue;
+          }
+          patternListStack.pop();
+          clearStateChar();
+          hasMagic = true;
+          pl = plEntry;
+          re += pl.close;
+          if (pl.type === "!") {
+            negativeLists.push(Object.assign(pl, { reEnd: re.length }));
+          }
+          continue;
+        }
+        case "|": {
+          const plEntry = patternListStack[patternListStack.length - 1];
+          if (inClass || !plEntry) {
+            re += "\\|";
+            continue;
+          }
+          clearStateChar();
+          re += "|";
+          if (plEntry.start === 0 && plEntry.type !== "!") {
+            dotTravAllowed = true;
+            re += subPatternStart(pattern.slice(i + 1));
+          }
+          continue;
+        }
+        case "[":
+          clearStateChar();
+          if (inClass) {
+            re += "\\" + c;
+            continue;
+          }
+          inClass = true;
+          classStart = i;
+          reClassStart = re.length;
+          re += c;
+          continue;
+        case "]":
+          if (i === classStart + 1 || !inClass) {
+            re += "\\" + c;
+            continue;
+          }
+          cs = pattern.substring(classStart + 1, i);
+          try {
+            RegExp("[" + braExpEscape(charUnescape(cs)) + "]");
+            re += c;
+          } catch (er) {
+            re = re.substring(0, reClassStart) + "(?:$.)";
+          }
+          hasMagic = true;
+          inClass = false;
+          continue;
+        default:
+          clearStateChar();
+          if (reSpecials[c] && !(c === "^" && inClass)) {
+            re += "\\";
+          }
+          re += c;
+          break;
+      }
+    }
+    if (inClass) {
+      cs = pattern.slice(classStart + 1);
+      sp = this.parse(cs, SUBPARSE);
+      re = re.substring(0, reClassStart) + "\\[" + sp[0];
+      hasMagic = hasMagic || sp[1];
+    }
+    for (pl = patternListStack.pop(); pl; pl = patternListStack.pop()) {
+      let tail;
+      tail = re.slice(pl.reStart + pl.open.length);
+      this.debug("setting tail", re, pl);
+      tail = tail.replace(/((?:\\{2}){0,64})(\\?)\|/g, (_, $1, $2) => {
+        if (!$2) {
+          $2 = "\\";
+        }
+        return $1 + $1 + $2 + "|";
+      });
+      this.debug("tail=%j\n   %s", tail, tail, pl, re);
+      const t = pl.type === "*" ? star : pl.type === "?" ? qmark : "\\" + pl.type;
+      hasMagic = true;
+      re = re.slice(0, pl.reStart) + t + "\\(" + tail;
+    }
+    clearStateChar();
+    if (escaping) {
+      re += "\\\\";
+    }
+    const addPatternStart = addPatternStartSet[re.charAt(0)];
+    for (let n = negativeLists.length - 1; n > -1; n--) {
+      const nl = negativeLists[n];
+      const nlBefore = re.slice(0, nl.reStart);
+      const nlFirst = re.slice(nl.reStart, nl.reEnd - 8);
+      let nlAfter = re.slice(nl.reEnd);
+      const nlLast = re.slice(nl.reEnd - 8, nl.reEnd) + nlAfter;
+      const closeParensBefore = nlBefore.split(")").length;
+      const openParensBefore = nlBefore.split("(").length - closeParensBefore;
+      let cleanAfter = nlAfter;
+      for (let i = 0; i < openParensBefore; i++) {
+        cleanAfter = cleanAfter.replace(/\)[+*?]?/, "");
+      }
+      nlAfter = cleanAfter;
+      const dollar = nlAfter === "" && isSub !== SUBPARSE ? "(?:$|\\/)" : "";
+      re = nlBefore + nlFirst + nlAfter + dollar + nlLast;
+    }
+    if (re !== "" && hasMagic) {
+      re = "(?=.)" + re;
+    }
+    if (addPatternStart) {
+      re = patternStart() + re;
+    }
+    if (isSub === SUBPARSE) {
+      return [re, hasMagic];
+    }
+    if (options.nocase && !hasMagic) {
+      hasMagic = pattern.toUpperCase() !== pattern.toLowerCase();
+    }
+    if (!hasMagic) {
+      return globUnescape(pattern);
+    }
+    const flags = options.nocase ? "i" : "";
+    try {
+      return Object.assign(new RegExp("^" + re + "$", flags), {
+        _glob: pattern,
+        _src: re
+      });
+    } catch (er) {
+      return new RegExp("$.");
+    }
+  }
+  makeRe() {
+    if (this.regexp || this.regexp === false) return this.regexp;
+    const set = this.set;
+    if (!set.length) {
+      this.regexp = false;
+      return this.regexp;
+    }
+    const options = this.options;
+    const twoStar = options.noglobstar ? star : options.dot ? twoStarDot : twoStarNoDot;
+    const flags = options.nocase ? "i" : "";
+    let re = set.map((pattern) => {
+      pattern = pattern.map(
+        (p) => typeof p === "string" ? regExpEscape(p) : p === GLOBSTAR ? GLOBSTAR : p._src
+      ).reduce((set2, p) => {
+        if (!(set2[set2.length - 1] === GLOBSTAR && p === GLOBSTAR)) {
+          set2.push(p);
+        }
+        return set2;
+      }, []);
+      pattern.forEach((p, i) => {
+        if (p !== GLOBSTAR || pattern[i - 1] === GLOBSTAR) {
+          return;
+        }
+        if (i === 0) {
+          if (pattern.length > 1) {
+            pattern[i + 1] = "(?:\\/|" + twoStar + "\\/)?" + pattern[i + 1];
+          } else {
+            pattern[i] = twoStar;
+          }
+        } else if (i === pattern.length - 1) {
+          pattern[i - 1] += "(?:\\/|" + twoStar + ")?";
+        } else {
+          pattern[i - 1] += "(?:\\/|\\/" + twoStar + "\\/)" + pattern[i + 1];
+          pattern[i + 1] = GLOBSTAR;
+        }
+      });
+      return pattern.filter((p) => p !== GLOBSTAR).join("/");
+    }).join("|");
+    re = "^(?:" + re + ")$";
+    if (this.negate) re = "^(?!" + re + ").*$";
+    try {
+      this.regexp = new RegExp(re, flags);
+    } catch (ex) {
+      this.regexp = false;
+    }
+    return this.regexp;
+  }
+  match(f, partial = this.partial) {
+    this.debug("match", f, this.pattern);
+    if (this.comment) return false;
+    if (this.empty) return f === "";
+    if (f === "/" && partial) return true;
+    const options = this.options;
+    if (path$1.sep !== "/") {
+      f = f.split(path$1.sep).join("/");
+    }
+    f = f.split(slashSplit);
+    this.debug(this.pattern, "split", f);
+    const set = this.set;
+    this.debug(this.pattern, "set", set);
+    let filename;
+    for (let i = f.length - 1; i >= 0; i--) {
+      filename = f[i];
+      if (filename) break;
+    }
+    for (let i = 0; i < set.length; i++) {
+      const pattern = set[i];
+      let file = f;
+      if (options.matchBase && pattern.length === 1) {
+        file = [filename];
+      }
+      const hit = this.matchOne(file, pattern, partial);
+      if (hit) {
+        if (options.flipNegate) return true;
+        return !this.negate;
+      }
+    }
+    if (options.flipNegate) return false;
+    return this.negate;
+  }
+  static defaults(def) {
+    return minimatch$1.defaults(def).Minimatch;
+  }
+};
+minimatch$1.Minimatch = Minimatch$1;
+var inherits = { exports: {} };
+var inherits_browser = { exports: {} };
+var hasRequiredInherits_browser;
+function requireInherits_browser() {
+  if (hasRequiredInherits_browser) return inherits_browser.exports;
+  hasRequiredInherits_browser = 1;
+  if (typeof Object.create === "function") {
+    inherits_browser.exports = function inherits2(ctor, superCtor) {
+      if (superCtor) {
+        ctor.super_ = superCtor;
+        ctor.prototype = Object.create(superCtor.prototype, {
+          constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+          }
+        });
+      }
+    };
+  } else {
+    inherits_browser.exports = function inherits2(ctor, superCtor) {
+      if (superCtor) {
+        ctor.super_ = superCtor;
+        var TempCtor = function() {
+        };
+        TempCtor.prototype = superCtor.prototype;
+        ctor.prototype = new TempCtor();
+        ctor.prototype.constructor = ctor;
+      }
+    };
+  }
+  return inherits_browser.exports;
+}
+try {
+  var util = require("util");
+  if (typeof util.inherits !== "function") throw "";
+  inherits.exports = util.inherits;
+} catch (e) {
+  inherits.exports = requireInherits_browser();
+}
+var inheritsExports = inherits.exports;
+var common = {};
+common.setopts = setopts;
+common.ownProp = ownProp;
+common.makeAbs = makeAbs;
+common.finish = finish;
+common.mark = mark;
+common.isIgnored = isIgnored;
+common.childrenIgnored = childrenIgnored;
+function ownProp(obj, field) {
+  return Object.prototype.hasOwnProperty.call(obj, field);
+}
+var fs = fs$3;
+var path = path$3;
+var minimatch = minimatch_1;
+var isAbsolute = path$3.isAbsolute;
+var Minimatch2 = minimatch.Minimatch;
+function alphasort(a, b) {
+  return a.localeCompare(b, "en");
+}
+function setupIgnores(self, options) {
+  self.ignore = options.ignore || [];
+  if (!Array.isArray(self.ignore))
+    self.ignore = [self.ignore];
+  if (self.ignore.length) {
+    self.ignore = self.ignore.map(ignoreMap);
+  }
+}
+function ignoreMap(pattern) {
+  var gmatcher = null;
+  if (pattern.slice(-3) === "/**") {
+    var gpattern = pattern.replace(/(\/\*\*)+$/, "");
+    gmatcher = new Minimatch2(gpattern, { dot: true });
+  }
+  return {
+    matcher: new Minimatch2(pattern, { dot: true }),
+    gmatcher
+  };
+}
+function setopts(self, pattern, options) {
+  if (!options)
+    options = {};
+  if (options.matchBase && -1 === pattern.indexOf("/")) {
+    if (options.noglobstar) {
+      throw new Error("base matching requires globstar");
+    }
+    pattern = "**/" + pattern;
+  }
+  self.windowsPathsNoEscape = !!options.windowsPathsNoEscape || options.allowWindowsEscape === false;
+  if (self.windowsPathsNoEscape) {
+    pattern = pattern.replace(/\\/g, "/");
+  }
+  self.silent = !!options.silent;
+  self.pattern = pattern;
+  self.strict = options.strict !== false;
+  self.realpath = !!options.realpath;
+  self.realpathCache = options.realpathCache || /* @__PURE__ */ Object.create(null);
+  self.follow = !!options.follow;
+  self.dot = !!options.dot;
+  self.mark = !!options.mark;
+  self.nodir = !!options.nodir;
+  if (self.nodir)
+    self.mark = true;
+  self.sync = !!options.sync;
+  self.nounique = !!options.nounique;
+  self.nonull = !!options.nonull;
+  self.nosort = !!options.nosort;
+  self.nocase = !!options.nocase;
+  self.stat = !!options.stat;
+  self.noprocess = !!options.noprocess;
+  self.absolute = !!options.absolute;
+  self.fs = options.fs || fs;
+  self.maxLength = options.maxLength || Infinity;
+  self.cache = options.cache || /* @__PURE__ */ Object.create(null);
+  self.statCache = options.statCache || /* @__PURE__ */ Object.create(null);
+  self.symlinks = options.symlinks || /* @__PURE__ */ Object.create(null);
+  setupIgnores(self, options);
+  self.changedCwd = false;
+  var cwd = process.cwd();
+  if (!ownProp(options, "cwd"))
+    self.cwd = path.resolve(cwd);
+  else {
+    self.cwd = path.resolve(options.cwd);
+    self.changedCwd = self.cwd !== cwd;
+  }
+  self.root = options.root || path.resolve(self.cwd, "/");
+  self.root = path.resolve(self.root);
+  self.cwdAbs = isAbsolute(self.cwd) ? self.cwd : makeAbs(self, self.cwd);
+  self.nomount = !!options.nomount;
+  if (process.platform === "win32") {
+    self.root = self.root.replace(/\\/g, "/");
+    self.cwd = self.cwd.replace(/\\/g, "/");
+    self.cwdAbs = self.cwdAbs.replace(/\\/g, "/");
+  }
+  options.nonegate = true;
+  options.nocomment = true;
+  self.minimatch = new Minimatch2(pattern, options);
+  self.options = self.minimatch.options;
+}
+function finish(self) {
+  var nou = self.nounique;
+  var all = nou ? [] : /* @__PURE__ */ Object.create(null);
+  for (var i = 0, l = self.matches.length; i < l; i++) {
+    var matches = self.matches[i];
+    if (!matches || Object.keys(matches).length === 0) {
+      if (self.nonull) {
+        var literal = self.minimatch.globSet[i];
+        if (nou)
+          all.push(literal);
+        else
+          all[literal] = true;
+      }
+    } else {
+      var m = Object.keys(matches);
+      if (nou)
+        all.push.apply(all, m);
+      else
+        m.forEach(function(m2) {
+          all[m2] = true;
+        });
+    }
+  }
+  if (!nou)
+    all = Object.keys(all);
+  if (!self.nosort)
+    all = all.sort(alphasort);
+  if (self.mark) {
+    for (var i = 0; i < all.length; i++) {
+      all[i] = self._mark(all[i]);
+    }
+    if (self.nodir) {
+      all = all.filter(function(e) {
+        var notDir = !/\/$/.test(e);
+        var c = self.cache[e] || self.cache[makeAbs(self, e)];
+        if (notDir && c)
+          notDir = c !== "DIR" && !Array.isArray(c);
+        return notDir;
+      });
+    }
+  }
+  if (self.ignore.length)
+    all = all.filter(function(m2) {
+      return !isIgnored(self, m2);
+    });
+  self.found = all;
+}
+function mark(self, p) {
+  var abs = makeAbs(self, p);
+  var c = self.cache[abs];
+  var m = p;
+  if (c) {
+    var isDir = c === "DIR" || Array.isArray(c);
+    var slash = p.slice(-1) === "/";
+    if (isDir && !slash)
+      m += "/";
+    else if (!isDir && slash)
+      m = m.slice(0, -1);
+    if (m !== p) {
+      var mabs = makeAbs(self, m);
+      self.statCache[mabs] = self.statCache[abs];
+      self.cache[mabs] = self.cache[abs];
+    }
+  }
+  return m;
+}
+function makeAbs(self, f) {
+  var abs = f;
+  if (f.charAt(0) === "/") {
+    abs = path.join(self.root, f);
+  } else if (isAbsolute(f) || f === "") {
+    abs = f;
+  } else if (self.changedCwd) {
+    abs = path.resolve(self.cwd, f);
+  } else {
+    abs = path.resolve(f);
+  }
+  if (process.platform === "win32")
+    abs = abs.replace(/\\/g, "/");
+  return abs;
+}
+function isIgnored(self, path2) {
+  if (!self.ignore.length)
+    return false;
+  return self.ignore.some(function(item) {
+    return item.matcher.match(path2) || !!(item.gmatcher && item.gmatcher.match(path2));
+  });
+}
+function childrenIgnored(self, path2) {
+  if (!self.ignore.length)
+    return false;
+  return self.ignore.some(function(item) {
+    return !!(item.gmatcher && item.gmatcher.match(path2));
+  });
+}
+var sync;
+var hasRequiredSync;
+function requireSync() {
+  if (hasRequiredSync) return sync;
+  hasRequiredSync = 1;
+  sync = globSync;
+  globSync.GlobSync = GlobSync;
+  var rp = fs_realpath;
+  var minimatch2 = minimatch_1;
+  minimatch2.Minimatch;
+  requireGlob().Glob;
+  var path2 = path$3;
+  var assert = require$$5;
+  var isAbsolute2 = path$3.isAbsolute;
+  var common$1 = common;
+  var setopts2 = common$1.setopts;
+  var ownProp2 = common$1.ownProp;
+  var childrenIgnored2 = common$1.childrenIgnored;
+  var isIgnored2 = common$1.isIgnored;
+  function globSync(pattern, options) {
+    if (typeof options === "function" || arguments.length === 3)
+      throw new TypeError("callback provided to sync glob\nSee: https://github.com/isaacs/node-glob/issues/167");
+    return new GlobSync(pattern, options).found;
+  }
+  function GlobSync(pattern, options) {
+    if (!pattern)
+      throw new Error("must provide pattern");
+    if (typeof options === "function" || arguments.length === 3)
+      throw new TypeError("callback provided to sync glob\nSee: https://github.com/isaacs/node-glob/issues/167");
+    if (!(this instanceof GlobSync))
+      return new GlobSync(pattern, options);
+    setopts2(this, pattern, options);
+    if (this.noprocess)
+      return this;
+    var n = this.minimatch.set.length;
+    this.matches = new Array(n);
+    for (var i = 0; i < n; i++) {
+      this._process(this.minimatch.set[i], i, false);
+    }
+    this._finish();
+  }
+  GlobSync.prototype._finish = function() {
+    assert.ok(this instanceof GlobSync);
+    if (this.realpath) {
+      var self = this;
+      this.matches.forEach(function(matchset, index) {
+        var set = self.matches[index] = /* @__PURE__ */ Object.create(null);
+        for (var p in matchset) {
+          try {
+            p = self._makeAbs(p);
+            var real = rp.realpathSync(p, self.realpathCache);
+            set[real] = true;
+          } catch (er) {
+            if (er.syscall === "stat")
+              set[self._makeAbs(p)] = true;
+            else
+              throw er;
+          }
+        }
+      });
+    }
+    common$1.finish(this);
+  };
+  GlobSync.prototype._process = function(pattern, index, inGlobStar) {
+    assert.ok(this instanceof GlobSync);
+    var n = 0;
+    while (typeof pattern[n] === "string") {
+      n++;
+    }
+    var prefix;
+    switch (n) {
+      case pattern.length:
+        this._processSimple(pattern.join("/"), index);
+        return;
+      case 0:
+        prefix = null;
+        break;
+      default:
+        prefix = pattern.slice(0, n).join("/");
+        break;
+    }
+    var remain = pattern.slice(n);
+    var read;
+    if (prefix === null)
+      read = ".";
+    else if (isAbsolute2(prefix) || isAbsolute2(pattern.map(function(p) {
+      return typeof p === "string" ? p : "[*]";
+    }).join("/"))) {
+      if (!prefix || !isAbsolute2(prefix))
+        prefix = "/" + prefix;
+      read = prefix;
+    } else
+      read = prefix;
+    var abs = this._makeAbs(read);
+    if (childrenIgnored2(this, read))
+      return;
+    var isGlobStar = remain[0] === minimatch2.GLOBSTAR;
+    if (isGlobStar)
+      this._processGlobStar(prefix, read, abs, remain, index, inGlobStar);
+    else
+      this._processReaddir(prefix, read, abs, remain, index, inGlobStar);
+  };
+  GlobSync.prototype._processReaddir = function(prefix, read, abs, remain, index, inGlobStar) {
+    var entries = this._readdir(abs, inGlobStar);
+    if (!entries)
+      return;
+    var pn = remain[0];
+    var negate = !!this.minimatch.negate;
+    var rawGlob = pn._glob;
+    var dotOk = this.dot || rawGlob.charAt(0) === ".";
+    var matchedEntries = [];
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (e.charAt(0) !== "." || dotOk) {
+        var m;
+        if (negate && !prefix) {
+          m = !e.match(pn);
+        } else {
+          m = e.match(pn);
+        }
+        if (m)
+          matchedEntries.push(e);
+      }
+    }
+    var len = matchedEntries.length;
+    if (len === 0)
+      return;
+    if (remain.length === 1 && !this.mark && !this.stat) {
+      if (!this.matches[index])
+        this.matches[index] = /* @__PURE__ */ Object.create(null);
+      for (var i = 0; i < len; i++) {
+        var e = matchedEntries[i];
+        if (prefix) {
+          if (prefix.slice(-1) !== "/")
+            e = prefix + "/" + e;
+          else
+            e = prefix + e;
+        }
+        if (e.charAt(0) === "/" && !this.nomount) {
+          e = path2.join(this.root, e);
+        }
+        this._emitMatch(index, e);
+      }
+      return;
+    }
+    remain.shift();
+    for (var i = 0; i < len; i++) {
+      var e = matchedEntries[i];
+      var newPattern;
+      if (prefix)
+        newPattern = [prefix, e];
+      else
+        newPattern = [e];
+      this._process(newPattern.concat(remain), index, inGlobStar);
+    }
+  };
+  GlobSync.prototype._emitMatch = function(index, e) {
+    if (isIgnored2(this, e))
+      return;
+    var abs = this._makeAbs(e);
+    if (this.mark)
+      e = this._mark(e);
+    if (this.absolute) {
+      e = abs;
+    }
+    if (this.matches[index][e])
+      return;
+    if (this.nodir) {
+      var c = this.cache[abs];
+      if (c === "DIR" || Array.isArray(c))
+        return;
+    }
+    this.matches[index][e] = true;
+    if (this.stat)
+      this._stat(e);
+  };
+  GlobSync.prototype._readdirInGlobStar = function(abs) {
+    if (this.follow)
+      return this._readdir(abs, false);
+    var entries;
+    var lstat;
+    try {
+      lstat = this.fs.lstatSync(abs);
+    } catch (er) {
+      if (er.code === "ENOENT") {
+        return null;
+      }
+    }
+    var isSym = lstat && lstat.isSymbolicLink();
+    this.symlinks[abs] = isSym;
+    if (!isSym && lstat && !lstat.isDirectory())
+      this.cache[abs] = "FILE";
+    else
+      entries = this._readdir(abs, false);
+    return entries;
+  };
+  GlobSync.prototype._readdir = function(abs, inGlobStar) {
+    if (inGlobStar && !ownProp2(this.symlinks, abs))
+      return this._readdirInGlobStar(abs);
+    if (ownProp2(this.cache, abs)) {
+      var c = this.cache[abs];
+      if (!c || c === "FILE")
+        return null;
+      if (Array.isArray(c))
+        return c;
+    }
+    try {
+      return this._readdirEntries(abs, this.fs.readdirSync(abs));
+    } catch (er) {
+      this._readdirError(abs, er);
+      return null;
+    }
+  };
+  GlobSync.prototype._readdirEntries = function(abs, entries) {
+    if (!this.mark && !this.stat) {
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        if (abs === "/")
+          e = abs + e;
+        else
+          e = abs + "/" + e;
+        this.cache[e] = true;
+      }
+    }
+    this.cache[abs] = entries;
+    return entries;
+  };
+  GlobSync.prototype._readdirError = function(f, er) {
+    switch (er.code) {
+      case "ENOTSUP":
+      case "ENOTDIR":
+        var abs = this._makeAbs(f);
+        this.cache[abs] = "FILE";
+        if (abs === this.cwdAbs) {
+          var error = new Error(er.code + " invalid cwd " + this.cwd);
+          error.path = this.cwd;
+          error.code = er.code;
+          throw error;
+        }
+        break;
+      case "ENOENT":
+      case "ELOOP":
+      case "ENAMETOOLONG":
+      case "UNKNOWN":
+        this.cache[this._makeAbs(f)] = false;
+        break;
+      default:
+        this.cache[this._makeAbs(f)] = false;
+        if (this.strict)
+          throw er;
+        if (!this.silent)
+          console.error("glob error", er);
+        break;
+    }
+  };
+  GlobSync.prototype._processGlobStar = function(prefix, read, abs, remain, index, inGlobStar) {
+    var entries = this._readdir(abs, inGlobStar);
+    if (!entries)
+      return;
+    var remainWithoutGlobStar = remain.slice(1);
+    var gspref = prefix ? [prefix] : [];
+    var noGlobStar = gspref.concat(remainWithoutGlobStar);
+    this._process(noGlobStar, index, false);
+    var len = entries.length;
+    var isSym = this.symlinks[abs];
+    if (isSym && inGlobStar)
+      return;
+    for (var i = 0; i < len; i++) {
+      var e = entries[i];
+      if (e.charAt(0) === "." && !this.dot)
+        continue;
+      var instead = gspref.concat(entries[i], remainWithoutGlobStar);
+      this._process(instead, index, true);
+      var below = gspref.concat(entries[i], remain);
+      this._process(below, index, true);
+    }
+  };
+  GlobSync.prototype._processSimple = function(prefix, index) {
+    var exists = this._stat(prefix);
+    if (!this.matches[index])
+      this.matches[index] = /* @__PURE__ */ Object.create(null);
+    if (!exists)
+      return;
+    if (prefix && isAbsolute2(prefix) && !this.nomount) {
+      var trail = /[\/\\]$/.test(prefix);
+      if (prefix.charAt(0) === "/") {
+        prefix = path2.join(this.root, prefix);
+      } else {
+        prefix = path2.resolve(this.root, prefix);
+        if (trail)
+          prefix += "/";
+      }
+    }
+    if (process.platform === "win32")
+      prefix = prefix.replace(/\\/g, "/");
+    this._emitMatch(index, prefix);
+  };
+  GlobSync.prototype._stat = function(f) {
+    var abs = this._makeAbs(f);
+    var needDir = f.slice(-1) === "/";
+    if (f.length > this.maxLength)
+      return false;
+    if (!this.stat && ownProp2(this.cache, abs)) {
+      var c = this.cache[abs];
+      if (Array.isArray(c))
+        c = "DIR";
+      if (!needDir || c === "DIR")
+        return c;
+      if (needDir && c === "FILE")
+        return false;
+    }
+    var stat = this.statCache[abs];
+    if (!stat) {
+      var lstat;
+      try {
+        lstat = this.fs.lstatSync(abs);
+      } catch (er) {
+        if (er && (er.code === "ENOENT" || er.code === "ENOTDIR")) {
+          this.statCache[abs] = false;
+          return false;
+        }
+      }
+      if (lstat && lstat.isSymbolicLink()) {
+        try {
+          stat = this.fs.statSync(abs);
+        } catch (er) {
+          stat = lstat;
+        }
+      } else {
+        stat = lstat;
+      }
+    }
+    this.statCache[abs] = stat;
+    var c = true;
+    if (stat)
+      c = stat.isDirectory() ? "DIR" : "FILE";
+    this.cache[abs] = this.cache[abs] || c;
+    if (needDir && c === "FILE")
+      return false;
+    return c;
+  };
+  GlobSync.prototype._mark = function(p) {
+    return common$1.mark(this, p);
+  };
+  GlobSync.prototype._makeAbs = function(f) {
+    return common$1.makeAbs(this, f);
+  };
+  return sync;
+}
+var wrappy_1 = wrappy$2;
+function wrappy$2(fn, cb) {
+  if (fn && cb) return wrappy$2(fn)(cb);
+  if (typeof fn !== "function")
+    throw new TypeError("need wrapper function");
+  Object.keys(fn).forEach(function(k) {
+    wrapper[k] = fn[k];
+  });
+  return wrapper;
+  function wrapper() {
+    var args = new Array(arguments.length);
+    for (var i = 0; i < args.length; i++) {
+      args[i] = arguments[i];
+    }
+    var ret = fn.apply(this, args);
+    var cb2 = args[args.length - 1];
+    if (typeof ret === "function" && ret !== cb2) {
+      Object.keys(cb2).forEach(function(k) {
+        ret[k] = cb2[k];
+      });
+    }
+    return ret;
+  }
+}
+var once$2 = { exports: {} };
+var wrappy$1 = wrappy_1;
+once$2.exports = wrappy$1(once$1);
+once$2.exports.strict = wrappy$1(onceStrict);
+once$1.proto = once$1(function() {
+  Object.defineProperty(Function.prototype, "once", {
+    value: function() {
+      return once$1(this);
+    },
+    configurable: true
+  });
+  Object.defineProperty(Function.prototype, "onceStrict", {
+    value: function() {
+      return onceStrict(this);
+    },
+    configurable: true
+  });
+});
+function once$1(fn) {
+  var f = function() {
+    if (f.called) return f.value;
+    f.called = true;
+    return f.value = fn.apply(this, arguments);
+  };
+  f.called = false;
+  return f;
+}
+function onceStrict(fn) {
+  var f = function() {
+    if (f.called)
+      throw new Error(f.onceError);
+    f.called = true;
+    return f.value = fn.apply(this, arguments);
+  };
+  var name = fn.name || "Function wrapped with `once`";
+  f.onceError = name + " shouldn't be called more than once";
+  f.called = false;
+  return f;
+}
+var onceExports = once$2.exports;
+var wrappy = wrappy_1;
+var reqs = /* @__PURE__ */ Object.create(null);
+var once = onceExports;
+var inflight_1 = wrappy(inflight);
+function inflight(key, cb) {
+  if (reqs[key]) {
+    reqs[key].push(cb);
+    return null;
+  } else {
+    reqs[key] = [cb];
+    return makeres(key);
+  }
+}
+function makeres(key) {
+  return once(function RES() {
+    var cbs = reqs[key];
+    var len = cbs.length;
+    var args = slice(arguments);
+    try {
+      for (var i = 0; i < len; i++) {
+        cbs[i].apply(null, args);
+      }
+    } finally {
+      if (cbs.length > len) {
+        cbs.splice(0, len);
+        process.nextTick(function() {
+          RES.apply(null, args);
+        });
+      } else {
+        delete reqs[key];
+      }
+    }
+  });
+}
+function slice(args) {
+  var length = args.length;
+  var array = [];
+  for (var i = 0; i < length; i++) array[i] = args[i];
+  return array;
+}
+var glob_1;
+var hasRequiredGlob;
+function requireGlob() {
+  if (hasRequiredGlob) return glob_1;
+  hasRequiredGlob = 1;
+  glob_1 = glob2;
+  var rp = fs_realpath;
+  var minimatch2 = minimatch_1;
+  minimatch2.Minimatch;
+  var inherits2 = inheritsExports;
+  var EE = require$$3.EventEmitter;
+  var path2 = path$3;
+  var assert = require$$5;
+  var isAbsolute2 = path$3.isAbsolute;
+  var globSync = requireSync();
+  var common$1 = common;
+  var setopts2 = common$1.setopts;
+  var ownProp2 = common$1.ownProp;
+  var inflight2 = inflight_1;
+  var childrenIgnored2 = common$1.childrenIgnored;
+  var isIgnored2 = common$1.isIgnored;
+  var once2 = onceExports;
+  function glob2(pattern, options, cb) {
+    if (typeof options === "function") cb = options, options = {};
+    if (!options) options = {};
+    if (options.sync) {
+      if (cb)
+        throw new TypeError("callback provided to sync glob");
+      return globSync(pattern, options);
+    }
+    return new Glob(pattern, options, cb);
+  }
+  glob2.sync = globSync;
+  var GlobSync = glob2.GlobSync = globSync.GlobSync;
+  glob2.glob = glob2;
+  function extend(origin, add) {
+    if (add === null || typeof add !== "object") {
+      return origin;
+    }
+    var keys = Object.keys(add);
+    var i = keys.length;
+    while (i--) {
+      origin[keys[i]] = add[keys[i]];
+    }
+    return origin;
+  }
+  glob2.hasMagic = function(pattern, options_) {
+    var options = extend({}, options_);
+    options.noprocess = true;
+    var g = new Glob(pattern, options);
+    var set = g.minimatch.set;
+    if (!pattern)
+      return false;
+    if (set.length > 1)
+      return true;
+    for (var j = 0; j < set[0].length; j++) {
+      if (typeof set[0][j] !== "string")
+        return true;
+    }
+    return false;
+  };
+  glob2.Glob = Glob;
+  inherits2(Glob, EE);
+  function Glob(pattern, options, cb) {
+    if (typeof options === "function") {
+      cb = options;
+      options = null;
+    }
+    if (options && options.sync) {
+      if (cb)
+        throw new TypeError("callback provided to sync glob");
+      return new GlobSync(pattern, options);
+    }
+    if (!(this instanceof Glob))
+      return new Glob(pattern, options, cb);
+    setopts2(this, pattern, options);
+    this._didRealPath = false;
+    var n = this.minimatch.set.length;
+    this.matches = new Array(n);
+    if (typeof cb === "function") {
+      cb = once2(cb);
+      this.on("error", cb);
+      this.on("end", function(matches) {
+        cb(null, matches);
+      });
+    }
+    var self = this;
+    this._processing = 0;
+    this._emitQueue = [];
+    this._processQueue = [];
+    this.paused = false;
+    if (this.noprocess)
+      return this;
+    if (n === 0)
+      return done();
+    var sync2 = true;
+    for (var i = 0; i < n; i++) {
+      this._process(this.minimatch.set[i], i, false, done);
+    }
+    sync2 = false;
+    function done() {
+      --self._processing;
+      if (self._processing <= 0) {
+        if (sync2) {
+          process.nextTick(function() {
+            self._finish();
+          });
+        } else {
+          self._finish();
+        }
+      }
+    }
+  }
+  Glob.prototype._finish = function() {
+    assert(this instanceof Glob);
+    if (this.aborted)
+      return;
+    if (this.realpath && !this._didRealpath)
+      return this._realpath();
+    common$1.finish(this);
+    this.emit("end", this.found);
+  };
+  Glob.prototype._realpath = function() {
+    if (this._didRealpath)
+      return;
+    this._didRealpath = true;
+    var n = this.matches.length;
+    if (n === 0)
+      return this._finish();
+    var self = this;
+    for (var i = 0; i < this.matches.length; i++)
+      this._realpathSet(i, next);
+    function next() {
+      if (--n === 0)
+        self._finish();
+    }
+  };
+  Glob.prototype._realpathSet = function(index, cb) {
+    var matchset = this.matches[index];
+    if (!matchset)
+      return cb();
+    var found = Object.keys(matchset);
+    var self = this;
+    var n = found.length;
+    if (n === 0)
+      return cb();
+    var set = this.matches[index] = /* @__PURE__ */ Object.create(null);
+    found.forEach(function(p, i) {
+      p = self._makeAbs(p);
+      rp.realpath(p, self.realpathCache, function(er, real) {
+        if (!er)
+          set[real] = true;
+        else if (er.syscall === "stat")
+          set[p] = true;
+        else
+          self.emit("error", er);
+        if (--n === 0) {
+          self.matches[index] = set;
+          cb();
+        }
+      });
+    });
+  };
+  Glob.prototype._mark = function(p) {
+    return common$1.mark(this, p);
+  };
+  Glob.prototype._makeAbs = function(f) {
+    return common$1.makeAbs(this, f);
+  };
+  Glob.prototype.abort = function() {
+    this.aborted = true;
+    this.emit("abort");
+  };
+  Glob.prototype.pause = function() {
+    if (!this.paused) {
+      this.paused = true;
+      this.emit("pause");
+    }
+  };
+  Glob.prototype.resume = function() {
+    if (this.paused) {
+      this.emit("resume");
+      this.paused = false;
+      if (this._emitQueue.length) {
+        var eq = this._emitQueue.slice(0);
+        this._emitQueue.length = 0;
+        for (var i = 0; i < eq.length; i++) {
+          var e = eq[i];
+          this._emitMatch(e[0], e[1]);
+        }
+      }
+      if (this._processQueue.length) {
+        var pq = this._processQueue.slice(0);
+        this._processQueue.length = 0;
+        for (var i = 0; i < pq.length; i++) {
+          var p = pq[i];
+          this._processing--;
+          this._process(p[0], p[1], p[2], p[3]);
+        }
+      }
+    }
+  };
+  Glob.prototype._process = function(pattern, index, inGlobStar, cb) {
+    assert(this instanceof Glob);
+    assert(typeof cb === "function");
+    if (this.aborted)
+      return;
+    this._processing++;
+    if (this.paused) {
+      this._processQueue.push([pattern, index, inGlobStar, cb]);
+      return;
+    }
+    var n = 0;
+    while (typeof pattern[n] === "string") {
+      n++;
+    }
+    var prefix;
+    switch (n) {
+      case pattern.length:
+        this._processSimple(pattern.join("/"), index, cb);
+        return;
+      case 0:
+        prefix = null;
+        break;
+      default:
+        prefix = pattern.slice(0, n).join("/");
+        break;
+    }
+    var remain = pattern.slice(n);
+    var read;
+    if (prefix === null)
+      read = ".";
+    else if (isAbsolute2(prefix) || isAbsolute2(pattern.map(function(p) {
+      return typeof p === "string" ? p : "[*]";
+    }).join("/"))) {
+      if (!prefix || !isAbsolute2(prefix))
+        prefix = "/" + prefix;
+      read = prefix;
+    } else
+      read = prefix;
+    var abs = this._makeAbs(read);
+    if (childrenIgnored2(this, read))
+      return cb();
+    var isGlobStar = remain[0] === minimatch2.GLOBSTAR;
+    if (isGlobStar)
+      this._processGlobStar(prefix, read, abs, remain, index, inGlobStar, cb);
+    else
+      this._processReaddir(prefix, read, abs, remain, index, inGlobStar, cb);
+  };
+  Glob.prototype._processReaddir = function(prefix, read, abs, remain, index, inGlobStar, cb) {
+    var self = this;
+    this._readdir(abs, inGlobStar, function(er, entries) {
+      return self._processReaddir2(prefix, read, abs, remain, index, inGlobStar, entries, cb);
+    });
+  };
+  Glob.prototype._processReaddir2 = function(prefix, read, abs, remain, index, inGlobStar, entries, cb) {
+    if (!entries)
+      return cb();
+    var pn = remain[0];
+    var negate = !!this.minimatch.negate;
+    var rawGlob = pn._glob;
+    var dotOk = this.dot || rawGlob.charAt(0) === ".";
+    var matchedEntries = [];
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (e.charAt(0) !== "." || dotOk) {
+        var m;
+        if (negate && !prefix) {
+          m = !e.match(pn);
+        } else {
+          m = e.match(pn);
+        }
+        if (m)
+          matchedEntries.push(e);
+      }
+    }
+    var len = matchedEntries.length;
+    if (len === 0)
+      return cb();
+    if (remain.length === 1 && !this.mark && !this.stat) {
+      if (!this.matches[index])
+        this.matches[index] = /* @__PURE__ */ Object.create(null);
+      for (var i = 0; i < len; i++) {
+        var e = matchedEntries[i];
+        if (prefix) {
+          if (prefix !== "/")
+            e = prefix + "/" + e;
+          else
+            e = prefix + e;
+        }
+        if (e.charAt(0) === "/" && !this.nomount) {
+          e = path2.join(this.root, e);
+        }
+        this._emitMatch(index, e);
+      }
+      return cb();
+    }
+    remain.shift();
+    for (var i = 0; i < len; i++) {
+      var e = matchedEntries[i];
+      if (prefix) {
+        if (prefix !== "/")
+          e = prefix + "/" + e;
+        else
+          e = prefix + e;
+      }
+      this._process([e].concat(remain), index, inGlobStar, cb);
+    }
+    cb();
+  };
+  Glob.prototype._emitMatch = function(index, e) {
+    if (this.aborted)
+      return;
+    if (isIgnored2(this, e))
+      return;
+    if (this.paused) {
+      this._emitQueue.push([index, e]);
+      return;
+    }
+    var abs = isAbsolute2(e) ? e : this._makeAbs(e);
+    if (this.mark)
+      e = this._mark(e);
+    if (this.absolute)
+      e = abs;
+    if (this.matches[index][e])
+      return;
+    if (this.nodir) {
+      var c = this.cache[abs];
+      if (c === "DIR" || Array.isArray(c))
+        return;
+    }
+    this.matches[index][e] = true;
+    var st = this.statCache[abs];
+    if (st)
+      this.emit("stat", e, st);
+    this.emit("match", e);
+  };
+  Glob.prototype._readdirInGlobStar = function(abs, cb) {
+    if (this.aborted)
+      return;
+    if (this.follow)
+      return this._readdir(abs, false, cb);
+    var lstatkey = "lstat\0" + abs;
+    var self = this;
+    var lstatcb = inflight2(lstatkey, lstatcb_);
+    if (lstatcb)
+      self.fs.lstat(abs, lstatcb);
+    function lstatcb_(er, lstat) {
+      if (er && er.code === "ENOENT")
+        return cb();
+      var isSym = lstat && lstat.isSymbolicLink();
+      self.symlinks[abs] = isSym;
+      if (!isSym && lstat && !lstat.isDirectory()) {
+        self.cache[abs] = "FILE";
+        cb();
+      } else
+        self._readdir(abs, false, cb);
+    }
+  };
+  Glob.prototype._readdir = function(abs, inGlobStar, cb) {
+    if (this.aborted)
+      return;
+    cb = inflight2("readdir\0" + abs + "\0" + inGlobStar, cb);
+    if (!cb)
+      return;
+    if (inGlobStar && !ownProp2(this.symlinks, abs))
+      return this._readdirInGlobStar(abs, cb);
+    if (ownProp2(this.cache, abs)) {
+      var c = this.cache[abs];
+      if (!c || c === "FILE")
+        return cb();
+      if (Array.isArray(c))
+        return cb(null, c);
+    }
+    var self = this;
+    self.fs.readdir(abs, readdirCb(this, abs, cb));
+  };
+  function readdirCb(self, abs, cb) {
+    return function(er, entries) {
+      if (er)
+        self._readdirError(abs, er, cb);
+      else
+        self._readdirEntries(abs, entries, cb);
+    };
+  }
+  Glob.prototype._readdirEntries = function(abs, entries, cb) {
+    if (this.aborted)
+      return;
+    if (!this.mark && !this.stat) {
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        if (abs === "/")
+          e = abs + e;
+        else
+          e = abs + "/" + e;
+        this.cache[e] = true;
+      }
+    }
+    this.cache[abs] = entries;
+    return cb(null, entries);
+  };
+  Glob.prototype._readdirError = function(f, er, cb) {
+    if (this.aborted)
+      return;
+    switch (er.code) {
+      case "ENOTSUP":
+      case "ENOTDIR":
+        var abs = this._makeAbs(f);
+        this.cache[abs] = "FILE";
+        if (abs === this.cwdAbs) {
+          var error = new Error(er.code + " invalid cwd " + this.cwd);
+          error.path = this.cwd;
+          error.code = er.code;
+          this.emit("error", error);
+          this.abort();
+        }
+        break;
+      case "ENOENT":
+      case "ELOOP":
+      case "ENAMETOOLONG":
+      case "UNKNOWN":
+        this.cache[this._makeAbs(f)] = false;
+        break;
+      default:
+        this.cache[this._makeAbs(f)] = false;
+        if (this.strict) {
+          this.emit("error", er);
+          this.abort();
+        }
+        if (!this.silent)
+          console.error("glob error", er);
+        break;
+    }
+    return cb();
+  };
+  Glob.prototype._processGlobStar = function(prefix, read, abs, remain, index, inGlobStar, cb) {
+    var self = this;
+    this._readdir(abs, inGlobStar, function(er, entries) {
+      self._processGlobStar2(prefix, read, abs, remain, index, inGlobStar, entries, cb);
+    });
+  };
+  Glob.prototype._processGlobStar2 = function(prefix, read, abs, remain, index, inGlobStar, entries, cb) {
+    if (!entries)
+      return cb();
+    var remainWithoutGlobStar = remain.slice(1);
+    var gspref = prefix ? [prefix] : [];
+    var noGlobStar = gspref.concat(remainWithoutGlobStar);
+    this._process(noGlobStar, index, false, cb);
+    var isSym = this.symlinks[abs];
+    var len = entries.length;
+    if (isSym && inGlobStar)
+      return cb();
+    for (var i = 0; i < len; i++) {
+      var e = entries[i];
+      if (e.charAt(0) === "." && !this.dot)
+        continue;
+      var instead = gspref.concat(entries[i], remainWithoutGlobStar);
+      this._process(instead, index, true, cb);
+      var below = gspref.concat(entries[i], remain);
+      this._process(below, index, true, cb);
+    }
+    cb();
+  };
+  Glob.prototype._processSimple = function(prefix, index, cb) {
+    var self = this;
+    this._stat(prefix, function(er, exists) {
+      self._processSimple2(prefix, index, er, exists, cb);
+    });
+  };
+  Glob.prototype._processSimple2 = function(prefix, index, er, exists, cb) {
+    if (!this.matches[index])
+      this.matches[index] = /* @__PURE__ */ Object.create(null);
+    if (!exists)
+      return cb();
+    if (prefix && isAbsolute2(prefix) && !this.nomount) {
+      var trail = /[\/\\]$/.test(prefix);
+      if (prefix.charAt(0) === "/") {
+        prefix = path2.join(this.root, prefix);
+      } else {
+        prefix = path2.resolve(this.root, prefix);
+        if (trail)
+          prefix += "/";
+      }
+    }
+    if (process.platform === "win32")
+      prefix = prefix.replace(/\\/g, "/");
+    this._emitMatch(index, prefix);
+    cb();
+  };
+  Glob.prototype._stat = function(f, cb) {
+    var abs = this._makeAbs(f);
+    var needDir = f.slice(-1) === "/";
+    if (f.length > this.maxLength)
+      return cb();
+    if (!this.stat && ownProp2(this.cache, abs)) {
+      var c = this.cache[abs];
+      if (Array.isArray(c))
+        c = "DIR";
+      if (!needDir || c === "DIR")
+        return cb(null, c);
+      if (needDir && c === "FILE")
+        return cb();
+    }
+    var stat = this.statCache[abs];
+    if (stat !== void 0) {
+      if (stat === false)
+        return cb(null, stat);
+      else {
+        var type = stat.isDirectory() ? "DIR" : "FILE";
+        if (needDir && type === "FILE")
+          return cb();
+        else
+          return cb(null, type, stat);
+      }
+    }
+    var self = this;
+    var statcb = inflight2("stat\0" + abs, lstatcb_);
+    if (statcb)
+      self.fs.lstat(abs, statcb);
+    function lstatcb_(er, lstat) {
+      if (lstat && lstat.isSymbolicLink()) {
+        return self.fs.stat(abs, function(er2, stat2) {
+          if (er2)
+            self._stat2(f, abs, null, lstat, cb);
+          else
+            self._stat2(f, abs, er2, stat2, cb);
+        });
+      } else {
+        self._stat2(f, abs, er, lstat, cb);
+      }
+    }
+  };
+  Glob.prototype._stat2 = function(f, abs, er, stat, cb) {
+    if (er && (er.code === "ENOENT" || er.code === "ENOTDIR")) {
+      this.statCache[abs] = false;
+      return cb();
+    }
+    var needDir = f.slice(-1) === "/";
+    this.statCache[abs] = stat;
+    if (abs.slice(-1) === "/" && stat && !stat.isDirectory())
+      return cb(null, false, stat);
+    var c = true;
+    if (stat)
+      c = stat.isDirectory() ? "DIR" : "FILE";
+    this.cache[abs] = this.cache[abs] || c;
+    if (needDir && c === "FILE")
+      return cb();
+    return cb(null, c, stat);
+  };
+  return glob_1;
+}
+var globExports = requireGlob();
+const glob = /* @__PURE__ */ getDefaultExportFromCjs(globExports);
+const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme, shell } = require("electron");
+const execAsync = require$$3$1.promisify(child_process.exec);
+const globPromise = require$$3$1.promisify(glob);
+function scanDirectory(dir) {
+  return new Promise((resolve, reject) => {
+    const jarFiles = [];
+    function scan(directory) {
+      const files = fs__namespace.readdirSync(directory);
+      for (const file of files) {
+        const fullPath = path$3.join(directory, file);
+        const stat = fs__namespace.statSync(fullPath);
+        if (stat.isDirectory()) {
+          if (path$3.basename(fullPath) === "target") {
+            const targetFiles = fs__namespace.readdirSync(fullPath);
+            for (const targetFile of targetFiles) {
+              if (targetFile.endsWith(".jar")) {
+                jarFiles.push(path$3.join(fullPath, targetFile));
+              }
+            }
+          } else {
+            scan(fullPath);
+          }
+        }
+      }
+    }
+    try {
+      scan(dir);
+      resolve(jarFiles);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+async function scanJobClasses(dirPath) {
+  try {
+    console.log("开始扫描目录:", dirPath);
+    if (!fs__namespace.existsSync(dirPath)) {
+      throw new Error("指定的目录不存在");
+    }
+    const pattern = "**/*.java";
+    console.log("使用搜索模式:", pattern);
+    console.log("在目录下搜索:", dirPath);
+    const javaFiles = await globPromise(pattern, {
+      ignore: ["**/target/**", "**/build/**", "**/bin/**", "**/test/**"],
+      cwd: dirPath,
+      dot: true,
+      nodir: true
+    });
+    console.log("找到的Java文件:", javaFiles);
+    console.log("找到的Java文件数量:", javaFiles.length);
+    if (javaFiles.length === 0) {
+      throw new Error("未找到任何Java文件，请检查目录是否正确");
+    }
+    const jobClasses = [];
+    for (const relativePath of javaFiles) {
+      try {
+        const filePath = path$3.join(dirPath, relativePath);
+        console.log("正在处理文件:", filePath);
+        const content = await fs__namespace.promises.readFile(filePath, "utf-8");
+        const implementsJobPattern = /implements\s+(?:org\.quartz\.)?Job\b/;
+        const extendsWithJobPattern = /extends\s+\w+\s+implements\s+(?:org\.quartz\.)?Job\b/;
+        if (implementsJobPattern.test(content) || extendsWithJobPattern.test(content)) {
+          console.log("找到Job类:", filePath);
+          const className = path$3.basename(filePath, ".java");
+          const hasAnnotation = content.includes("@DisallowConcurrentExecution");
+          jobClasses.push({
+            className,
+            classPath: filePath,
+            hasAnnotation
+          });
+        }
+      } catch (error) {
+        console.error("读取文件失败:", relativePath, error);
+      }
+    }
+    console.log("找到的Job类数量:", jobClasses.length);
+    if (jobClasses.length === 0) {
+      throw new Error("未找到任何Job类，请确认项目中是否包含实现了org.quartz.Job接口的类");
+    }
+    return jobClasses;
+  } catch (error) {
+    console.error("Error scanning Job classes:", error);
+    throw error;
+  }
+}
+async function addJobAnnotation(filePath) {
+  try {
+    let content = await fs__namespace.promises.readFile(filePath, "utf-8");
+    if (content.includes("@DisallowConcurrentExecution")) {
+      return;
+    }
+    if (!content.includes("import org.quartz.DisallowConcurrentExecution;")) {
+      const importStatement = "import org.quartz.DisallowConcurrentExecution;\n";
+      if (content.includes("package ")) {
+        content = content.replace(/package [^;]+;/, `$&
+${importStatement}`);
+      } else {
+        content = importStatement + content;
+      }
+    }
+    content = content.replace(
+      /(public\s+class\s+[^{]+)/,
+      "@DisallowConcurrentExecution\n$1"
+    );
+    await fs__namespace.promises.writeFile(filePath, content, "utf-8");
+  } catch (error) {
+    console.error("Error adding annotation:", error);
+    throw error;
+  }
+}
+function createWindow() {
+  const win = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    title: "HUHA工作提效小助手",
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path$3.join(__dirname, "preload.js")
+    },
+    autoHideMenuBar: true,
+    frame: true,
+    backgroundColor: "#1a1a1a"
+    // 设置暗色背景
+  });
+  win.setBackgroundColor("#1a1a1a");
+  nativeTheme.themeSource = "dark";
+  win.setMenu(null);
+  if (process.env.VITE_DEV_SERVER_URL) {
+    win.loadURL(process.env.VITE_DEV_SERVER_URL);
+    win.webContents.openDevTools();
+  } else {
+    win.loadFile(path$3.join(__dirname, "../dist/index.html"));
+  }
+  ipcMain.handle("select-directory", async (_) => {
+    const result = await dialog.showOpenDialog({
+      properties: ["openDirectory"]
+    });
+    return result.filePaths[0];
+  });
+  ipcMain.handle("open-path", async (_, dirPath) => {
+    try {
+      await shell.openPath(dirPath);
+      return true;
+    } catch (error) {
+      console.error("Error opening path:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("scan-jar-files", async (_, dirPath) => {
+    try {
+      const jarPaths = await scanDirectory(dirPath);
+      return jarPaths.map((filePath) => ({
+        name: path$3.basename(filePath),
+        path: path$3.dirname(filePath) + path$3.sep,
+        createTime: fs__namespace.statSync(filePath).birthtime.getTime()
+      }));
+    } catch (error) {
+      console.error("Error scanning JAR files:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("copy-files", async (_, files) => {
+    try {
+      const filePaths = files.map((file) => path$3.join(file.path, file.name));
+      if (process.platform === "win32") {
+        const psScript = `
           Add-Type -AssemblyName System.Windows.Forms
           $paths = @(
-            ${n.map(f=>`'${f.replace(/'/g,"''")}'`).join(`,
-            `)}
+            ${filePaths.map((p) => `'${p.replace(/'/g, "''")}'`).join(",\n            ")}
           )
           $fileCollection = New-Object System.Collections.Specialized.StringCollection
           foreach ($path in $paths) {
             $fileCollection.Add($path)
           }
           [System.Windows.Forms.Clipboard]::SetFileDropList($fileCollection)
-        `,h=D.join(tt.getPath("temp"),"copy-files.ps1");F.writeFileSync(h,s),await ft(`powershell -ExecutionPolicy Bypass -File "${h}"`),F.unlinkSync(h)}else rr.writeText(n.join(`
-`));return!0}catch(n){throw console.error("Error copying files:",n),n}}),U.handle("set-window-title",async(e,r)=>(t.setTitle(r),!0)),U.handle("scan-job-classes",async(e,r)=>{try{return await ar(r)}catch(n){throw console.error("Error scanning Job classes:",n),n}}),U.handle("open-file",async(e,r)=>{try{process.platform==="win32"?await ft(`code "${r}"`):await ft(`open "${r}"`)}catch(n){throw console.error("Error opening file:",n),n}}),U.handle("add-annotation",async(e,r)=>{try{return await or(r),!0}catch(n){throw console.error("Error adding annotation:",n),n}})}tt.whenReady().then(()=>{Dt(),tt.on("activate",()=>{se.getAllWindows().length===0&&Dt()})});tt.on("window-all-closed",()=>{process.platform!=="darwin"&&tt.quit()});
+        `;
+        const tempScriptPath = path$3.join(app.getPath("temp"), "copy-files.ps1");
+        fs__namespace.writeFileSync(tempScriptPath, psScript);
+        await execAsync(`powershell -ExecutionPolicy Bypass -File "${tempScriptPath}"`);
+        fs__namespace.unlinkSync(tempScriptPath);
+      } else {
+        clipboard.writeText(filePaths.join("\n"));
+      }
+      return true;
+    } catch (error) {
+      console.error("Error copying files:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("set-window-title", async (_, title) => {
+    win.setTitle(title);
+    return true;
+  });
+  ipcMain.handle("scan-job-classes", async (_, dirPath) => {
+    try {
+      return await scanJobClasses(dirPath);
+    } catch (error) {
+      console.error("Error scanning Job classes:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("open-file", async (_, filePath) => {
+    try {
+      if (process.platform === "win32") {
+        await execAsync(`code "${filePath}"`);
+      } else {
+        await execAsync(`open "${filePath}"`);
+      }
+    } catch (error) {
+      console.error("Error opening file:", error);
+      throw error;
+    }
+  });
+  ipcMain.handle("add-annotation", async (_, filePath) => {
+    try {
+      await addJobAnnotation(filePath);
+      return true;
+    } catch (error) {
+      console.error("Error adding annotation:", error);
+      throw error;
+    }
+  });
+}
+app.whenReady().then(() => {
+  createWindow();
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
+});

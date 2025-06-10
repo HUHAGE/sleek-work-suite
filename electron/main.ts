@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme, shell } = require('electron');
 import path from 'path';
 import * as fs from 'fs';
 import { exec } from 'child_process';
@@ -201,6 +201,17 @@ function createWindow() {
       properties: ['openDirectory']
     });
     return result.filePaths[0];
+  });
+
+  // 打开路径
+  ipcMain.handle('open-path', async (_: IpcMainInvokeEvent, dirPath: string) => {
+    try {
+      await shell.openPath(dirPath);
+      return true;
+    } catch (error) {
+      console.error('Error opening path:', error);
+      throw error;
+    }
   });
 
   // 扫描JAR文件

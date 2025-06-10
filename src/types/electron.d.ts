@@ -7,6 +7,7 @@ interface IElectronAPI {
     invoke(channel: 'scan-job-classes', path: string): Promise<{ className: string; classPath: string; hasAnnotation: boolean; }[]>
     invoke(channel: 'open-file', filePath: string): Promise<void>
     invoke(channel: 'add-annotation', filePath: string): Promise<boolean>
+    invoke(channel: 'open-path', dirPath: string): Promise<boolean>
   }
 }
 

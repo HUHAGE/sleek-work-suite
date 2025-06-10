@@ -11,7 +11,8 @@ contextBridge.exposeInMainWorld('electron', {
         'set-window-title',
         'scan-job-classes',
         'open-file',
-        'add-annotation'
+        'add-annotation',
+        'open-path'
       ]
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args)

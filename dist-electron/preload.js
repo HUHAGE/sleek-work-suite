@@ -1,1 +1,22 @@
-"use strict";const n=require("electron");n.contextBridge.exposeInMainWorld("electron",{ipcRenderer:{invoke:(e,...r)=>{if(["select-directory","scan-jar-files","copy-files","set-window-title","scan-job-classes","open-file","add-annotation"].includes(e))return n.ipcRenderer.invoke(e,...r);throw new Error(`不允许调用未注册的IPC通道: ${e}`)}}});
+"use strict";
+const electron = require("electron");
+electron.contextBridge.exposeInMainWorld("electron", {
+  ipcRenderer: {
+    invoke: (channel, ...args) => {
+      const validChannels = [
+        "select-directory",
+        "scan-jar-files",
+        "copy-files",
+        "set-window-title",
+        "scan-job-classes",
+        "open-file",
+        "add-annotation",
+        "open-path"
+      ];
+      if (validChannels.includes(channel)) {
+        return electron.ipcRenderer.invoke(channel, ...args);
+      }
+      throw new Error(`不允许调用未注册的IPC通道: ${channel}`);
+    }
+  }
+});
