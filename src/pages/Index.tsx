@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings } from 'lucide-react';
+import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import TimeTools from '@/components/tools/TimeTools';
@@ -8,6 +7,7 @@ import CalculatorTool from '@/components/tools/CalculatorTool';
 import ColorPicker from '@/components/tools/ColorPicker';
 import QRGenerator from '@/components/tools/QRGenerator';
 import ClipboardHistory from '@/components/tools/ClipboardHistory';
+import JarTools from '@/components/tools/JarTools';
 
 const tools = [
   { id: 'text', name: '文本工具', icon: Type, component: TextTools },
@@ -16,6 +16,7 @@ const tools = [
   { id: 'color', name: '颜色工具', icon: Palette, component: ColorPicker },
   { id: 'qr', name: '二维码', icon: QrCode, component: QRGenerator },
   { id: 'clipboard', name: '剪贴板', icon: Clipboard, component: ClipboardHistory },
+  { id: 'jar', name: '个性化JAR管理', icon: Archive, component: JarTools },
 ];
 
 const Index = () => {
