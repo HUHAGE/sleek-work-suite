@@ -10,13 +10,19 @@ interface IElectronAPI {
     invoke(channel: 'open-path', path: string): Promise<void>
     invoke(channel: 'scan-sensitive-logs', params: { 
       projectPath: string
-      sensitiveWords: string[] 
+      sensitiveWords: string[]
+      fileTypes: string[]
     }): Promise<Array<{
       filePath: string
+      fileType: string
       line: number
       content: string
       sensitiveWord: string
     }>>
+    invoke(channel: 'save-file', params: {
+      defaultPath: string
+      fileContent: string
+    }): Promise<string | null>
   }
 }
 

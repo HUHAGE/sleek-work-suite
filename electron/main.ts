@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import glob from 'glob';
+import { SUPPORTED_FILE_EXTENSIONS, FileType } from '../src/types/file-types';
 
 const execAsync = promisify(exec);
 const globPromise = promisify(glob);
@@ -340,49 +341,162 @@ function createWindow() {
     }
   });
 
-  // 扫描敏感日志
-  ipcMain.handle('scan-sensitive-logs', async (_: IpcMainInvokeEvent, { projectPath, sensitiveWords }) => {
+  // 保存文件
+  ipcMain.handle('save-file', async (_: IpcMainInvokeEvent, { defaultPath, fileContent }) => {
     try {
-      // 递归获取所有 Java 文件
-      const javaFiles: string[] = [];
+      const { filePath, canceled } = await dialog.showSaveDialog({
+        defaultPath,
+        filters: [
+          { name: 'CSV 文件', extensions: ['csv'] },
+          { name: '所有文件', extensions: ['*'] }
+        ]
+      });
+
+      if (!canceled && filePath) {
+        await fs.promises.writeFile(filePath, fileContent, 'utf-8');
+        return filePath;
+      }
+      return null;
+    } catch (error) {
+      console.error('保存文件失败:', error);
+      throw error;
+    }
+  });
+
+  // 支持的文件类型
+  const SUPPORTED_FILE_EXTENSIONS = {
+    '.java': 'Java',
+    '.js': 'JavaScript',
+    '.jsx': 'JavaScript React',
+    '.ts': 'TypeScript',
+    '.tsx': 'TypeScript React',
+    '.html': 'HTML',
+    '.htm': 'HTML',
+    '.vue': 'Vue',
+    '.jsp': 'JSP',
+    '.php': 'PHP',
+    '.py': 'Python',
+    '.rb': 'Ruby',
+    '.go': 'Go',
+    '.cs': 'C#',
+    '.cpp': 'C++',
+    '.c': 'C',
+    '.log': 'Log',
+    '.xml': 'XML',
+    '.properties': 'Properties',
+    '.yml': 'YAML',
+    '.yaml': 'YAML',
+    '.json': 'JSON',
+    '.md': 'Markdown',
+    '.sql': 'SQL'
+  } as const;
+
+  type FileType = typeof SUPPORTED_FILE_EXTENSIONS[keyof typeof SUPPORTED_FILE_EXTENSIONS];
+
+  // 检查一行代码是否包含日志语句
+  function isLogStatement(line: string, fileType: FileType): boolean {
+    const logPatterns = {
+      // Java相关的日志模式
+      java: [
+        /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\bSystem\.(?:out|err)\.print(?:ln)?\s*\(/i,
+        /\.printStackTrace\s*\(/i,
+        /\b(?:log4j|Log4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:slf4j|Slf4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:logback|Logback)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:commons-logging|CommonsLogging)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:Logger|LOGGER)\.getLogger\s*\(/i,
+        /\b(?:LogUtils?|LogHelper|LogManager)\b.*\.(?:log|write|record|print)\s*\(/i,
+      ],
+      // JavaScript/TypeScript相关的日志模式
+      javascript: [
+        /\bconsole\.[a-zA-Z]+\s*\(/i,
+        /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:window\.)?(?:alert|confirm|prompt)\s*\(/i,
+        /\bdebugger\b/,
+      ],
+      // Python相关的日志模式
+      python: [
+        /\b(?:print|logging)\b.*\(/i,
+        /\blogger\.[a-zA-Z]+\s*\(/i,
+      ],
+      // 通用的日志模式
+      common: [
+        /\.log\s*\(/i,
+        /\.debug\s*\(/i,
+        /\.info\s*\(/i,
+        /\.warn\s*\(/i,
+        /\.error\s*\(/i,
+        /\.trace\s*\(/i,
+        /\.fatal\s*\(/i,
+        /\blog\b/i,
+      ],
+    };
+
+    // 根据文件类型选择要检查的模式
+    let patternsToCheck: RegExp[] = [...logPatterns.common];
+    
+    if (fileType === 'Java' || fileType === 'JSP') {
+      patternsToCheck.push(...logPatterns.java);
+    }
+    
+    if (fileType.includes('JavaScript') || fileType.includes('TypeScript') || fileType === 'Vue') {
+      patternsToCheck.push(...logPatterns.javascript);
+    }
+    
+    if (fileType === 'Python') {
+      patternsToCheck.push(...logPatterns.python);
+    }
+
+    return patternsToCheck.some(pattern => pattern.test(line.trim()));
+  }
+
+  // 扫描敏感日志
+  ipcMain.handle('scan-sensitive-logs', async (_: IpcMainInvokeEvent, { projectPath, sensitiveWords, fileTypes }) => {
+    try {
+      const results = [];
+      const files: string[] = [];
       
-      async function scanJavaFiles(dir: string) {
-        const files = await fs.promises.readdir(dir);
+      // 递归获取所有支持的文件
+      async function scanFiles(dir: string) {
+        const entries = await fs.promises.readdir(dir);
         
-        for (const file of files) {
-          const fullPath = path.join(dir, file);
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry);
           const stats = await fs.promises.stat(fullPath);
           
           // 忽略 node_modules、.git 等目录
-          if (file === 'node_modules' || file === '.git' || file === 'target' || file === 'build') {
+          if (entry === 'node_modules' || entry === '.git' || entry === 'target' || entry === 'build' || entry === 'dist') {
             continue;
           }
           
           if (stats.isDirectory()) {
-            await scanJavaFiles(fullPath);
-          } else if (file.endsWith('.java')) {
-            javaFiles.push(fullPath);
+            await scanFiles(fullPath);
+          } else {
+            const ext = path.extname(fullPath).toLowerCase();
+            if (fileTypes.includes(ext)) {
+              files.push(fullPath);
+            }
           }
         }
       }
       
-      await scanJavaFiles(projectPath);
+      await scanFiles(projectPath);
       
-      // 扫描每个 Java 文件中的敏感日志
-      const results = [];
-      
-      for (const file of javaFiles) {
+      for (const file of files) {
+        const ext = path.extname(file).toLowerCase();
+        const fileType = SUPPORTED_FILE_EXTENSIONS[ext as keyof typeof SUPPORTED_FILE_EXTENSIONS];
         const content = await fs.promises.readFile(file, 'utf-8');
         const lines = content.split('\n');
         
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
-          // 只检查包含日志相关方法调用的行
-          if (line.match(/\b(log|logger|LOG|LOGGER)\b.*\.(info|debug|warn|error|trace)\b/i)) {
+          if (isLogStatement(line, fileType)) {
             for (const word of sensitiveWords) {
               if (line.includes(word)) {
                 results.push({
                   filePath: file,
+                  fileType,
                   line: i + 1,
                   content: line.trim(),
                   sensitiveWord: word
@@ -414,4 +528,62 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-}); 
+});
+
+// 检查一行代码是否包含日志语句
+function isLogStatement(line: string, fileType: FileType): boolean {
+  const logPatterns = {
+    // Java相关的日志模式
+    java: [
+      /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+      /\bSystem\.(?:out|err)\.print(?:ln)?\s*\(/i,
+      /\.printStackTrace\s*\(/i,
+      /\b(?:log4j|Log4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+      /\b(?:slf4j|Slf4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+      /\b(?:logback|Logback)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+      /\b(?:commons-logging|CommonsLogging)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+      /\b(?:Logger|LOGGER)\.getLogger\s*\(/i,
+      /\b(?:LogUtils?|LogHelper|LogManager)\b.*\.(?:log|write|record|print)\s*\(/i,
+    ],
+    // JavaScript/TypeScript相关的日志模式
+    javascript: [
+      /\bconsole\.[a-zA-Z]+\s*\(/i,
+      /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+      /\b(?:window\.)?(?:alert|confirm|prompt)\s*\(/i,
+      /\bdebugger\b/,
+    ],
+    // Python相关的日志模式
+    python: [
+      /\b(?:print|logging)\b.*\(/i,
+      /\blogger\.[a-zA-Z]+\s*\(/i,
+    ],
+    // 通用的日志模式
+    common: [
+      /\.log\s*\(/i,
+      /\.debug\s*\(/i,
+      /\.info\s*\(/i,
+      /\.warn\s*\(/i,
+      /\.error\s*\(/i,
+      /\.trace\s*\(/i,
+      /\.fatal\s*\(/i,
+      /\blog\b/i,
+    ],
+  };
+
+  // 根据文件类型选择要检查的模式
+  let patternsToCheck: RegExp[] = [...logPatterns.common];
+  
+  if (fileType === 'Java' || fileType === 'JSP') {
+    patternsToCheck.push(...logPatterns.java);
+  }
+  
+  if (fileType.includes('JavaScript') || fileType.includes('TypeScript') || fileType === 'Vue') {
+    patternsToCheck.push(...logPatterns.javascript);
+  }
+  
+  if (fileType === 'Python') {
+    patternsToCheck.push(...logPatterns.python);
+  }
+
+  return patternsToCheck.some(pattern => pattern.test(line.trim()));
+} 

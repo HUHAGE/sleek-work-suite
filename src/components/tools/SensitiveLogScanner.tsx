@@ -5,9 +5,9 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Shield, FolderOpen, Search, ExternalLink, X } from "lucide-react";
+import { Loader2, Shield, FolderOpen, Search, ExternalLink, X, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { SUPPORTED_FILE_EXTENSIONS } from '@/types/file-types';
 import {
   Command,
   CommandEmpty,
@@ -28,15 +28,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const MAX_HISTORY = 10;
 
 interface ScanResult {
   filePath: string;
+  fileType: string;
   line: number;
   content: string;
   sensitiveWord: string;
 }
+
+// 支持的文件类型
+const FILE_TYPES = [
+  { ext: '.java', name: 'Java' },
+  { ext: '.html', name: 'HTML' },
+  { ext: '.js', name: 'JavaScript' },
+] as const;
+
+// 默认选中的文件类型（除了 JavaScript）
+const DEFAULT_SELECTED_TYPES = FILE_TYPES
+  .filter(type => type.name !== 'JavaScript')
+  .map(type => type.ext);
 
 const defaultSensitiveWords = [
   "danweiguid",
@@ -59,6 +78,7 @@ export function SensitiveLogScanner() {
   const [useDefaultWords, setUseDefaultWords] = useState(true);
   const [pathHistory, setPathHistory] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>(DEFAULT_SELECTED_TYPES);
   const { toast } = useToast();
 
   // 加载历史记录
@@ -140,11 +160,21 @@ export function SensitiveLogScanner() {
       return;
     }
 
+    if (selectedFileTypes.length === 0) {
+      toast({
+        title: "未选择文件类型",
+        description: "请至少选择一种要扫描的文件类型",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsScanning(true);
     try {
       const scanResults = await window.electron.ipcRenderer.invoke('scan-sensitive-logs', {
         projectPath,
-        sensitiveWords
+        sensitiveWords,
+        fileTypes: selectedFileTypes
       });
       setResults(scanResults);
       toast({
@@ -176,6 +206,66 @@ export function SensitiveLogScanner() {
       customWords.split(",").map(word => word.trim()).filter(Boolean));
   };
 
+  // 处理文件类型选择
+  const handleFileTypeChange = (checked: boolean, fileType: string) => {
+    setSelectedFileTypes(prev => 
+      checked 
+        ? [...prev, fileType]
+        : prev.filter(type => type !== fileType)
+    );
+  };
+
+  // 导出扫描结果
+  const handleExport = async () => {
+    if (results.length === 0) {
+      toast({
+        title: "无数据可导出",
+        description: "请先进行扫描",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // 构建CSV内容
+      const headers = ['序号', '敏感词', '文件类型', '敏感段落', '行号', '文件路径'];
+      const rows = results.map((result, index) => [
+        (index + 1).toString(),
+        result.sensitiveWord,
+        result.fileType,
+        result.content,
+        result.line.toString(),
+        result.filePath
+      ]);
+      
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      // 调用主进程保存文件
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const defaultPath = `sensitive-logs-scan-${timestamp}.csv`;
+      
+      await window.electron.ipcRenderer.invoke('save-file', {
+        defaultPath,
+        fileContent: csvContent
+      });
+
+      toast({
+        title: "导出成功",
+        description: "扫描结果已保存",
+      });
+    } catch (error) {
+      console.error('导出失败:', error);
+      toast({
+        title: "导出失败",
+        description: error.message || "导出过程中出错",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="tool-card">
@@ -190,7 +280,7 @@ export function SensitiveLogScanner() {
               <Input
                 value={projectPath}
                 onChange={(e) => setProjectPath(e.target.value)}
-                placeholder="请输入或选择要扫描的Java项目路径..."
+                placeholder="请输入或选择要扫描的项目路径..."
                 className="flex-1"
               />
               {pathHistory.length > 0 && (
@@ -257,25 +347,45 @@ export function SensitiveLogScanner() {
             </Button>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="use-default"
-                checked={useDefaultWords}
-                onCheckedChange={toggleDefaultWords}
-              />
-              <Label htmlFor="use-default">使用默认敏感词</Label>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium mb-2">选择要扫描的文件类型：</h4>
+              <div className="grid grid-cols-3 gap-4">
+                {FILE_TYPES.map((type) => (
+                  <div key={type.ext} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={type.ext}
+                      checked={selectedFileTypes.includes(type.ext)}
+                      onCheckedChange={(checked) => handleFileTypeChange(!!checked, type.ext)}
+                    />
+                    <Label htmlFor={type.ext}>
+                      {type.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="custom-words">自定义敏感词（用逗号分隔）</Label>
-              <Input
-                id="custom-words"
-                placeholder="输入自定义敏感词，用逗号分隔"
-                value={customWords}
-                onChange={(e) => handleCustomWordsChange(e.target.value)}
-                disabled={useDefaultWords}
-              />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="use-default"
+                  checked={useDefaultWords}
+                  onCheckedChange={toggleDefaultWords}
+                />
+                <Label htmlFor="use-default">使用默认敏感词</Label>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="custom-words">自定义敏感词（用逗号分隔）</Label>
+                <Input
+                  id="custom-words"
+                  placeholder="输入自定义敏感词，用逗号分隔"
+                  value={customWords}
+                  onChange={(e) => handleCustomWordsChange(e.target.value)}
+                  disabled={useDefaultWords}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -301,28 +411,40 @@ export function SensitiveLogScanner() {
 
       {results.length > 0 && (
         <div className="tool-card">
-          <h3 className="text-lg font-semibold mb-4">扫描结果：</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">扫描结果：</h3>
+            <Button onClick={handleExport} variant="outline" className="shrink-0">
+              <FileDown className="w-4 h-4 mr-2" />
+              导出结果
+            </Button>
+          </div>
           <ScrollArea className="h-[400px]">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">序号</TableHead>
-                  <TableHead className="w-[120px]">敏感词</TableHead>
-                  <TableHead>敏感段落</TableHead>
+                  <TableHead className="w-[60px]">序号</TableHead>
+                  <TableHead className="w-[100px]">敏感词</TableHead>
+                  <TableHead className="w-[100px]">文件类型</TableHead>
+                  <TableHead className="w-[300px]">敏感段落</TableHead>
                   <TableHead className="w-[200px]">文件路径</TableHead>
-                  <TableHead className="w-[100px]">操作</TableHead>
+                  <TableHead className="w-[80px]">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {results.map((result, index) => (
-                  <TableRow key={index}>
+                  <TableRow key={index} className="h-[100px]">
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>{result.sensitiveWord}</TableCell>
-                    <TableCell>
-                      <div className="font-mono text-sm bg-gray-100 p-2 rounded">
-                        {result.content}
-                        <div className="text-gray-500 text-xs mt-1">
-                          行号：{result.line}
+                    <TableCell>{result.fileType}</TableCell>
+                    <TableCell className="max-w-[300px] p-0">
+                      <div className="h-[100px] overflow-y-auto">
+                        <div className="font-mono text-sm bg-gray-100 p-2">
+                          <div className="whitespace-pre-wrap break-all">
+                            {result.content}
+                          </div>
+                          <div className="text-gray-500 text-xs mt-1">
+                            行号：{result.line}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
