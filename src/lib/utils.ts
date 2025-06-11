@@ -27,42 +27,82 @@ const fixedBackground = {
 const themeColorMap = {
   blue: {
     light: {
-      primary: "221.2 83.2% 53.3%",
+      primary: "221.2 50% 53.3%",
     },
     dark: {
-      primary: "221.2 83.2% 53.3%",
+      primary: "221.2 50% 53.3%",
     }
   },
   green: {
     light: {
-      primary: "142.1 76.2% 36.3%",
+      primary: "150 40% 40%",
     },
     dark: {
-      primary: "142.1 76.2% 36.3%",
+      primary: "150 40% 45%",
     }
   },
   purple: {
     light: {
-      primary: "262.1 83.3% 57.8%",
+      primary: "262 45% 55%",
     },
     dark: {
-      primary: "262.1 83.3% 57.8%",
+      primary: "262 45% 60%",
     }
   },
   rose: {
     light: {
-      primary: "346.8 77.2% 49.8%",
+      primary: "346 40% 45%",
     },
     dark: {
-      primary: "346.8 77.2% 49.8%",
+      primary: "346 40% 50%",
     }
   },
   orange: {
     light: {
-      primary: "24.6 95% 53.1%",
+      primary: "30 40% 45%",
     },
     dark: {
-      primary: "24.6 95% 53.1%",
+      primary: "30 40% 50%",
+    }
+  },
+  "blue-vibrant": {
+    light: {
+      primary: "221.2 83.2% 53.3%",
+    },
+    dark: {
+      primary: "221.2 83.2% 53.3%",
+    }
+  },
+  "green-vibrant": {
+    light: {
+      primary: "150 76.2% 36.3%",
+    },
+    dark: {
+      primary: "150 76.2% 41.3%",
+    }
+  },
+  "purple-vibrant": {
+    light: {
+      primary: "262 83.3% 57.8%",
+    },
+    dark: {
+      primary: "262 83.3% 62.8%",
+    }
+  },
+  "rose-vibrant": {
+    light: {
+      primary: "346 77.2% 49.8%",
+    },
+    dark: {
+      primary: "346 77.2% 54.8%",
+    }
+  },
+  "orange-vibrant": {
+    light: {
+      primary: "30 95% 53.1%",
+    },
+    dark: {
+      primary: "30 95% 58.1%",
     }
   }
 } as const

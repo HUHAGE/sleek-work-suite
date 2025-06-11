@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type ThemeColor = 'blue' | 'green' | 'purple' | 'rose' | 'orange'
+export type ThemeColor = 
+  | 'blue' | 'green' | 'purple' | 'rose' | 'orange'
+  | 'blue-vibrant' | 'green-vibrant' | 'purple-vibrant' | 'rose-vibrant' | 'orange-vibrant'
 
 interface SettingsState {
   sidebarOpen: boolean
@@ -16,8 +18,8 @@ export const useSettings = create<SettingsState>()(
   persist(
     (set) => ({
       sidebarOpen: true,
-      theme: 'system',
-      themeColor: 'blue',
+      theme: 'dark',
+      themeColor: 'green',
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       setTheme: (theme) => set({ theme }),
       setThemeColor: (color) => set({ themeColor: color }),

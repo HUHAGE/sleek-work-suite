@@ -1,4 +1,4 @@
-import { Settings, Sidebar, Palette, Sun, Info } from "lucide-react"
+import { Settings, Sidebar, Palette, Sun, Info, Check } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
@@ -9,8 +9,8 @@ const themeColors: { value: ThemeColor; label: string; lightClass: string; darkC
   { 
     value: 'blue', 
     label: '深邃蓝', 
-    lightClass: 'bg-[hsl(221.2,50%,45%)]',
-    darkClass: 'bg-[hsl(221.2,50%,55%)]'
+    lightClass: 'bg-[hsl(221.2,50%,53.3%)]',
+    darkClass: 'bg-[hsl(221.2,50%,53.3%)]'
   },
   { 
     value: 'green', 
@@ -35,6 +35,36 @@ const themeColors: { value: ThemeColor; label: string; lightClass: string; darkC
     label: '活力橙', 
     lightClass: 'bg-[hsl(30,40%,45%)]',
     darkClass: 'bg-[hsl(30,40%,50%)]'
+  },
+  { 
+    value: 'blue-vibrant', 
+    label: '亮蓝', 
+    lightClass: 'bg-[hsl(221.2,83.2%,53.3%)]',
+    darkClass: 'bg-[hsl(221.2,83.2%,53.3%)]'
+  },
+  { 
+    value: 'green-vibrant', 
+    label: '亮绿', 
+    lightClass: 'bg-[hsl(150,76.2%,36.3%)]',
+    darkClass: 'bg-[hsl(150,76.2%,41.3%)]'
+  },
+  { 
+    value: 'purple-vibrant', 
+    label: '亮紫', 
+    lightClass: 'bg-[hsl(262,83.3%,57.8%)]',
+    darkClass: 'bg-[hsl(262,83.3%,62.8%)]'
+  },
+  { 
+    value: 'rose-vibrant', 
+    label: '亮玫红', 
+    lightClass: 'bg-[hsl(346,77.2%,49.8%)]',
+    darkClass: 'bg-[hsl(346,77.2%,54.8%)]'
+  },
+  { 
+    value: 'orange-vibrant', 
+    label: '亮橙', 
+    lightClass: 'bg-[hsl(30,95%,53.1%)]',
+    darkClass: 'bg-[hsl(30,95%,58.1%)]'
   },
 ]
 
@@ -95,6 +125,10 @@ function ThemeColorSetting() {
   const { theme, themeColor, setThemeColor } = useSettings()
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
+  // 将颜色分为两组：柔和色和鲜艳色
+  const softColors = themeColors.slice(0, 5)
+  const vibrantColors = themeColors.slice(5)
+  
   return (
     <div className="tool-card">
       <div className="flex items-center gap-2 mb-4">
@@ -102,23 +136,81 @@ function ThemeColorSetting() {
         <h3 className="text-lg font-semibold">主题色设置</h3>
       </div>
       <div className="space-y-4">
-        <RadioGroup value={themeColor} onValueChange={(value: ThemeColor) => setThemeColor(value)}>
-          <div className="grid grid-cols-2 gap-4">
-            {themeColors.map((color) => (
-              <div key={color.value} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted/50">
-                <RadioGroupItem value={color.value} id={color.value} />
-                <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "w-4 h-4 rounded-full ring-2 ring-offset-2 ring-offset-background",
-                    isDark ? color.darkClass : color.lightClass,
-                    themeColor === color.value ? "ring-primary" : "ring-border"
-                  )} />
-                  <Label htmlFor={color.value} className="text-base">{color.label}</Label>
+        <div>
+          <div className="text-sm text-muted-foreground mb-2">柔和色调</div>
+          <div className="grid grid-cols-5 gap-2 max-w-[400px]">
+            {softColors.map((color) => (
+              <button
+                key={color.value}
+                onClick={() => setThemeColor(color.value)}
+                className={cn(
+                  "group relative w-16 aspect-square rounded-lg transition-all duration-300",
+                  "hover:scale-105 hover:shadow-lg",
+                  themeColor === color.value ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:ring-1 hover:ring-primary/50 hover:ring-offset-1 hover:ring-offset-background"
+                )}
+              >
+                <div className={cn(
+                  "absolute inset-0 rounded-lg",
+                  isDark ? color.darkClass : color.lightClass
+                )}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/20 rounded-lg" />
                 </div>
-              </div>
+                {themeColor === color.value && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                      <Check size={12} className="text-white" />
+                    </div>
+                  </div>
+                )}
+                <div className={cn(
+                  "absolute bottom-0 left-0 right-0 p-1.5 text-[10px] font-medium text-center",
+                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                  "bg-gradient-to-t from-black/60 to-transparent text-white rounded-b-lg"
+                )}>
+                  {color.label}
+                </div>
+              </button>
             ))}
           </div>
-        </RadioGroup>
+        </div>
+        
+        <div>
+          <div className="text-sm text-muted-foreground mb-2">鲜艳色调</div>
+          <div className="grid grid-cols-5 gap-2 max-w-[400px]">
+            {vibrantColors.map((color) => (
+              <button
+                key={color.value}
+                onClick={() => setThemeColor(color.value)}
+                className={cn(
+                  "group relative w-16 aspect-square rounded-lg transition-all duration-300",
+                  "hover:scale-105 hover:shadow-lg",
+                  themeColor === color.value ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "hover:ring-1 hover:ring-primary/50 hover:ring-offset-1 hover:ring-offset-background"
+                )}
+              >
+                <div className={cn(
+                  "absolute inset-0 rounded-lg",
+                  isDark ? color.darkClass : color.lightClass
+                )}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/20 rounded-lg" />
+                </div>
+                {themeColor === color.value && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                      <Check size={12} className="text-white" />
+                    </div>
+                  </div>
+                )}
+                <div className={cn(
+                  "absolute bottom-0 left-0 right-0 p-1.5 text-[10px] font-medium text-center",
+                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                  "bg-gradient-to-t from-black/60 to-transparent text-white rounded-b-lg"
+                )}>
+                  {color.label}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )
