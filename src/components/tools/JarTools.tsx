@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,7 +12,19 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
-import { Archive, FolderOpen, Search, Copy, FileArchive, ExternalLink } from 'lucide-react'
+import { Archive, FolderOpen, Search, Copy, FileArchive, ExternalLink, X } from 'lucide-react'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface JarFile {
   id: string
@@ -22,18 +34,50 @@ interface JarFile {
   selected: boolean
 }
 
+const MAX_HISTORY = 10
+
 const JarTools = () => {
   const [path, setPath] = useState<string>('')
   const [jarFiles, setJarFiles] = useState<JarFile[]>([])
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [scanning, setScanning] = useState(false)
+  const [pathHistory, setPathHistory] = useState<string[]>([])
+  const [open, setOpen] = useState(false)
   const { toast } = useToast()
+
+  // 加载历史记录
+  useEffect(() => {
+    const loadHistory = () => {
+      const history = localStorage.getItem('jarToolsPathHistory')
+      if (history) {
+        setPathHistory(JSON.parse(history))
+      }
+    }
+    loadHistory()
+  }, [])
+
+  // 保存路径到历史记录
+  const saveToHistory = (newPath: string) => {
+    if (!newPath || pathHistory.includes(newPath)) return
+    
+    const newHistory = [newPath, ...pathHistory].slice(0, MAX_HISTORY)
+    setPathHistory(newHistory)
+    localStorage.setItem('jarToolsPathHistory', JSON.stringify(newHistory))
+  }
+
+  // 从历史记录中删除路径
+  const removeFromHistory = (pathToRemove: string) => {
+    const newHistory = pathHistory.filter(p => p !== pathToRemove)
+    setPathHistory(newHistory)
+    localStorage.setItem('jarToolsPathHistory', JSON.stringify(newHistory))
+  }
 
   const handleSelectPath = async () => {
     try {
       const result = await window.electron.ipcRenderer.invoke('select-directory')
       if (result) {
         setPath(result)
+        saveToHistory(result)
       }
     } catch (error) {
       console.error('选择目录失败:', error)
@@ -58,6 +102,7 @@ const JarTools = () => {
         selected: false
       }))
       setJarFiles(jarFiles)
+      saveToHistory(path)
       toast({
         title: "扫描完成",
         description: `共找到 ${jarFiles.length} 个JAR文件`,
@@ -162,12 +207,54 @@ const JarTools = () => {
           <h3 className="text-xl font-semibold">JAR文件扫描</h3>
         </div>
         <div className="flex gap-2">
-          <Input
-            value={path}
-            onChange={(e) => setPath(e.target.value)}
-            placeholder="请输入或选择要扫描的路径..."
-            className="flex-1"
-          />
+          <div className="flex-1 flex gap-2">
+            <Input
+              value={path}
+              onChange={(e) => setPath(e.target.value)}
+              placeholder="请输入或选择要扫描的路径..."
+              className="flex-1"
+            />
+            {pathHistory.length > 0 && (
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="shrink-0 w-[120px]">
+                    历史记录
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[500px]" align="start">
+                  <Command className="w-full">
+                    <CommandInput placeholder="搜索历史路径..." />
+                    <CommandEmpty>未找到匹配的路径</CommandEmpty>
+                    <CommandGroup>
+                      {pathHistory.map((historyPath) => (
+                        <CommandItem
+                          key={historyPath}
+                          onSelect={() => {
+                            setPath(historyPath)
+                            setOpen(false)
+                          }}
+                          className="flex justify-between items-center"
+                        >
+                          <span className="truncate flex-1 mr-4">{historyPath}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeFromHistory(historyPath)
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
           <Button onClick={handleSelectPath} variant="outline" className="shrink-0">
             <FolderOpen className="w-4 h-4 mr-2" />
             选择
