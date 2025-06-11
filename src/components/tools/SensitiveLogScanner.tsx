@@ -399,7 +399,7 @@ export function SensitiveLogScanner() {
               {sensitiveWords.map((word, index) => (
                 <span
                   key={index}
-                  className="inline-block bg-gray-100 rounded px-2 py-1 text-sm mb-2 mr-2"
+                  className="inline-block bg-secondary text-secondary-foreground rounded px-2 py-1 text-sm mb-2 mr-2 border border-border"
                 >
                   {word}
                 </span>
@@ -438,11 +438,11 @@ export function SensitiveLogScanner() {
                     <TableCell>{result.fileType}</TableCell>
                     <TableCell className="max-w-[300px] p-0">
                       <div className="h-[100px] overflow-y-auto">
-                        <div className="font-mono text-sm bg-gray-100 p-2">
+                        <div className="font-mono text-sm bg-muted p-2 dark:bg-muted/30">
                           <div className="whitespace-pre-wrap break-all">
                             {result.content}
                           </div>
-                          <div className="text-gray-500 text-xs mt-1">
+                          <div className="text-muted-foreground text-xs mt-1">
                             行号：{result.line}
                           </div>
                         </div>
