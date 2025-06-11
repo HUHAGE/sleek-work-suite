@@ -108,12 +108,14 @@ const themeColorMap = {
 } as const
 
 export function getThemeColorVariables(color: ThemeColor, isDark: boolean = false) {
-  const theme = themeColorMap[color][isDark ? 'dark' : 'light']
+  // 如果找不到对应的颜色配置，使用默认的蓝色主题
+  const theme = themeColorMap[color] || themeColorMap.blue
+  const themeMode = theme[isDark ? 'dark' : 'light']
   const background = fixedBackground[isDark ? 'dark' : 'light']
   const variables: Record<string, string> = {}
 
   // 设置基础变量
-  Object.entries(theme).forEach(([key, value]) => {
+  Object.entries(themeMode).forEach(([key, value]) => {
     variables[`--${key}`] = value
   })
 
@@ -129,7 +131,7 @@ export function getThemeColorVariables(color: ThemeColor, isDark: boolean = fals
   variables['--accent-foreground'] = isDark ? background.foreground : '220 13% 91%'
   variables['--destructive'] = '0 84.2% 60.2%'
   variables['--destructive-foreground'] = background.foreground
-  variables['--ring'] = theme.primary
+  variables['--ring'] = themeMode.primary
   variables['--radius'] = '0.75rem'
 
   return variables
