@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings, Archive, FileCode, ChevronLeft, Globe, Info } from 'lucide-react';
+import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings, Archive, FileCode, ChevronLeft, Globe, Info, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import TimeTools from '@/components/tools/TimeTools';
@@ -14,6 +14,7 @@ import SettingsTools from '@/components/tools/SettingsTools';
 import { useSettings } from '@/lib/store/settings';
 import TitleBar from '@/components/TitleBar';
 import { LucideIcon } from 'lucide-react';
+import { SensitiveLogScanner } from '@/components/tools/SensitiveLogScanner';
 
 interface Tool {
   id: string;
@@ -37,6 +38,7 @@ const Index = () => {
     { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
     { id: 'huha', name: 'HUHA工具集', icon: Globe, component: HuhaTools },
+    { id: 'sensitive-log', name: '敏感日志扫描', dec: '扫描Java代码中的敏感信息日志记录', icon: Shield, component: SensitiveLogScanner },
   ];
 
   const settingsTool: Tool = { id: 'settings', name: '设置', icon: Settings, component: SettingsTools };

@@ -7,6 +7,16 @@ interface IElectronAPI {
       createTime: number
     }>>
     invoke(channel: 'copy-to-clipboard', paths: string[]): Promise<void>
+    invoke(channel: 'open-path', path: string): Promise<void>
+    invoke(channel: 'scan-sensitive-logs', params: { 
+      projectPath: string
+      sensitiveWords: string[] 
+    }): Promise<Array<{
+      filePath: string
+      line: number
+      content: string
+      sensitiveWord: string
+    }>>
   }
 }
 

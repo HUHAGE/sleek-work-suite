@@ -12,7 +12,8 @@ contextBridge.exposeInMainWorld('electron', {
         'scan-job-classes',
         'open-file',
         'add-annotation',
-        'open-path'
+        'open-path',
+        'scan-sensitive-logs'
       ]
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args)

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme, shell } = require('electron');
+import { app, BrowserWindow, ipcMain, dialog, clipboard, nativeTheme, shell, IpcMainInvokeEvent } from 'electron';
 import path from 'path';
 import * as fs from 'fs';
 import { exec } from 'child_process';
@@ -336,6 +336,67 @@ function createWindow() {
       return true;
     } catch (error) {
       console.error('Error adding annotation:', error);
+      throw error;
+    }
+  });
+
+  // 扫描敏感日志
+  ipcMain.handle('scan-sensitive-logs', async (_: IpcMainInvokeEvent, { projectPath, sensitiveWords }) => {
+    try {
+      // 递归获取所有 Java 文件
+      const javaFiles: string[] = [];
+      
+      async function scanJavaFiles(dir: string) {
+        const files = await fs.promises.readdir(dir);
+        
+        for (const file of files) {
+          const fullPath = path.join(dir, file);
+          const stats = await fs.promises.stat(fullPath);
+          
+          // 忽略 node_modules、.git 等目录
+          if (file === 'node_modules' || file === '.git' || file === 'target' || file === 'build') {
+            continue;
+          }
+          
+          if (stats.isDirectory()) {
+            await scanJavaFiles(fullPath);
+          } else if (file.endsWith('.java')) {
+            javaFiles.push(fullPath);
+          }
+        }
+      }
+      
+      await scanJavaFiles(projectPath);
+      
+      // 扫描每个 Java 文件中的敏感日志
+      const results = [];
+      
+      for (const file of javaFiles) {
+        const content = await fs.promises.readFile(file, 'utf-8');
+        const lines = content.split('\n');
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // 只检查包含日志相关方法调用的行
+          if (line.match(/\b(log|logger|LOG|LOGGER)\b.*\.(info|debug|warn|error|trace)\b/i)) {
+            for (const word of sensitiveWords) {
+              if (line.includes(word)) {
+                results.push({
+                  filePath: file,
+                  line: i + 1,
+                  content: line.trim(),
+                  sensitiveWord: word
+                });
+                break; // 一行只记录一次，即使可能包含多个敏感词
+              }
+            }
+          }
+        }
+      }
+      
+      return results;
+    } catch (error) {
+      console.error('扫描敏感日志失败:', error);
       throw error;
     }
   });
