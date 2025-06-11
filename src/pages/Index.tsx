@@ -13,12 +13,21 @@ import HuhaTools from '@/components/tools/HuhaTools';
 import SettingsTools from '@/components/tools/SettingsTools';
 import { useSettings } from '@/lib/store/settings';
 import TitleBar from '@/components/TitleBar';
+import { LucideIcon } from 'lucide-react';
+
+interface Tool {
+  id: string;
+  name: string;
+  dec?: string;
+  icon: LucideIcon;
+  component: React.ComponentType;
+}
 
 const Index = () => {
   const [activeTool, setActiveTool] = useState('text');
   const { sidebarOpen, setSidebarOpen } = useSettings();
 
-  const tools = [
+  const tools: Tool[] = [
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
     // { id: 'time', name: '时间工具', icon: Clock, component: TimeTools },
     // { id: 'calculator', name: '计算器', icon: Calculator, component: CalculatorTool },
@@ -28,11 +37,12 @@ const Index = () => {
     { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
     { id: 'huha', name: 'HUHA工具集', icon: Globe, component: HuhaTools },
-    { id: 'settings', name: '设置', icon: Settings, component: SettingsTools }
   ];
 
-  const ActiveComponent = tools.find(tool => tool.id === activeTool)?.component || TextTools;
-  const activeToolInfo = tools.find(tool => tool.id === activeTool);
+  const settingsTool: Tool = { id: 'settings', name: '设置', icon: Settings, component: SettingsTools };
+
+  const ActiveComponent = (activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool))?.component || TextTools;
+  const activeToolInfo = activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-width', sidebarOpen ? '288px' : '80px');
@@ -51,10 +61,10 @@ const Index = () => {
         <div className="relative flex h-full overflow-hidden">
           {/* 侧边栏 */}
           <div className={cn(
-            "bg-background/80 border-r border-border/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-20",
+            "bg-background/80 border-r border-border/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-20 flex flex-col",
             sidebarOpen ? "w-72" : "w-20"
           )}>
-            <div className="relative h-full">
+            <div className="relative flex-1">
               {/* 折叠按钮 */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -73,7 +83,7 @@ const Index = () => {
                 <div className="mb-8">
                   <h1 className={cn(
                     "text-2xl font-bold gradient-text mb-2",
-                    !sidebarOpen && "text-center text-lg"
+                    !sidebarOpen && "text-center text-sm"
                   )}>
                     {!sidebarOpen ? "HUHA" : "工作提效小助手"}
                   </h1>
@@ -93,7 +103,7 @@ const Index = () => {
                           "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                           "hover:bg-primary/5 hover:scale-[1.02]",
                           activeTool === tool.id
-                            ? "bg-primary/10 text-primary border border-primary/30 shadow-lg shadow-primary/20"
+                            ? "bg-primary/10 text-primary border border-primary/30"
                             : "text-muted-foreground hover:text-foreground",
                           !sidebarOpen && "justify-center px-2"
                         )}
@@ -108,6 +118,27 @@ const Index = () => {
                   })}
                 </nav>
               </div>
+            </div>
+
+            {/* 设置按钮 */}
+            <div className="p-4 border-t border-border/50">
+              <button
+                onClick={() => setActiveTool('settings')}
+                className={cn(
+                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                  "hover:bg-primary/5 hover:scale-[1.02]",
+                  activeTool === 'settings'
+                    ? "bg-primary/10 text-primary border border-primary/30"
+                    : "text-muted-foreground hover:text-foreground",
+                  !sidebarOpen && "justify-center px-2"
+                )}
+                title={!sidebarOpen ? settingsTool.name : undefined}
+              >
+                <Settings size={20} />
+                {sidebarOpen && (
+                  <span className="font-medium">{settingsTool.name}</span>
+                )}
+              </button>
             </div>
           </div>
 
