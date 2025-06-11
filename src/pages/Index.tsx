@@ -95,7 +95,7 @@ const Index = () => {
                 </div>
 
                 <nav className="space-y-2">
-                  {tools.map((tool) => {
+                  {tools.filter(tool => tool.id !== 'huha').map((tool) => {
                     const Icon = tool.icon;
                     return (
                       <button
@@ -120,6 +120,33 @@ const Index = () => {
                   })}
                 </nav>
               </div>
+            </div>
+
+            {/* HUHA工具集按钮 */}
+            <div className="p-4 border-t border-border/50">
+              {tools.find(tool => tool.id === 'huha') && (() => {
+                const tool = tools.find(tool => tool.id === 'huha')!;
+                const Icon = tool.icon;
+                return (
+                  <button
+                    onClick={() => setActiveTool(tool.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+                      "hover:bg-primary/5 hover:scale-[1.02]",
+                      activeTool === tool.id
+                        ? "bg-primary/10 text-primary border border-primary/30"
+                        : "text-muted-foreground hover:text-foreground",
+                      !sidebarOpen && "justify-center px-2"
+                    )}
+                    title={!sidebarOpen ? tool.name : undefined}
+                  >
+                    <Icon size={20} />
+                    {sidebarOpen && (
+                      <span className="font-medium">{tool.name}</span>
+                    )}
+                  </button>
+                );
+              })()}
             </div>
 
             {/* 设置按钮 */}
