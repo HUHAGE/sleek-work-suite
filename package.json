@@ -1,7 +1,7 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "commonjs",
   "main": "dist-electron/main.js",
   "description": "快速定制，随时更新，随时使用的工作提效工具",
@@ -91,6 +91,7 @@
     "postcss": "^8.4.47",
     "tailwind-scrollbar-hide": "^4.0.0",
     "tailwindcss": "^3.4.11",
+    "terser": "^5.42.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1",
@@ -102,7 +103,7 @@
     "productName": "HUHAToolBox",
     "directories": {
       "output": "release",
-      "buildResources": "assets"
+      "buildResources": "build"
     },
     "files": [
       "dist/**/*",
@@ -110,8 +111,34 @@
       "package.json"
     ],
     "win": {
-      "target": "dir"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icons/icon.ico"
     },
-    "asar": true
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HUHAToolBox",
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/icon.ico",
+      "installerHeaderIcon": "build/icons/icon.ico",
+      "license": "LICENSE",
+      "include": "build/installer.nsh"
+    },
+    "asar": true,
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "removePackageKeywords": true,
+    "afterPack": "./electron/scripts/afterPack.js"
   }
 }
