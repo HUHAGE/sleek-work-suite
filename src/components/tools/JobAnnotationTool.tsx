@@ -188,6 +188,7 @@ const JobAnnotationTool: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[80px]">序号</TableHead>
                   <TableHead>类名</TableHead>
                   <TableHead>类路径</TableHead>
                   <TableHead>注解状态</TableHead>
@@ -195,8 +196,9 @@ const JobAnnotationTool: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jobClasses.map((jobClass) => (
+                {jobClasses.map((jobClass, index) => (
                   <TableRow key={jobClass.classPath}>
+                    <TableCell className="text-center">{index + 1}</TableCell>
                     <TableCell className="font-medium">{jobClass.className}</TableCell>
                     <TableCell className="max-w-md truncate" title={jobClass.classPath}>
                       {jobClass.classPath}

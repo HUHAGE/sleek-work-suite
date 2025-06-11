@@ -211,6 +211,7 @@ const JarTools = () => {
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
+                  <TableHead className="w-[80px]">序号</TableHead>
                   <TableHead>文件名</TableHead>
                   <TableHead 
                     className="cursor-pointer hover:text-primary transition-colors"
@@ -226,7 +227,7 @@ const JarTools = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jarFiles.map((file) => (
+                {jarFiles.map((file, index) => (
                   <TableRow key={file.id}>
                     <TableCell>
                       <Checkbox
@@ -234,6 +235,7 @@ const JarTools = () => {
                         onCheckedChange={() => toggleSelect(file.id)}
                       />
                     </TableCell>
+                    <TableCell className="text-center">{index + 1}</TableCell>
                     <TableCell className="font-medium">{file.name}</TableCell>
                     <TableCell>
                       {format(file.createTime, 'yyyy-MM-dd HH:mm:ss')}

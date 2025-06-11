@@ -143,8 +143,8 @@ const Index = () => {
           </div>
 
           {/* 主内容区域 */}
-          <div className="flex-1 overflow-auto bg-background/50 backdrop-blur-sm h-[calc(100vh-32px)] scrollbar-hide">
-            <div className="container mx-auto p-6 h-full">
+          <div className="flex-1 overflow-auto bg-background/50 backdrop-blur-sm h-[calc(100vh-40px)] scrollbar-hide">
+            <div className="container mx-auto p-6">
               {activeToolInfo?.dec && (
                 <div className="mb-6 p-4 rounded-xl bg-card/50 border border-primary/20 backdrop-blur-sm">
                   <div className="flex items-start gap-3">
@@ -156,7 +156,7 @@ const Index = () => {
                   </div>
                 </div>
               )}
-              <div className="h-[calc(100%-theme(space.6)-2px)]">
+              <div className="min-h-0 flex-1">
                 <ActiveComponent />
               </div>
             </div>
