@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Calculator, Clock, Type, Palette, QrCode, Clipboard, Settings, Archive, FileCode, ChevronLeft, Globe, Info, Shield } from 'lucide-react';
+import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
-import TimeTools from '@/components/tools/TimeTools';
-import CalculatorTool from '@/components/tools/CalculatorTool';
-import ColorPicker from '@/components/tools/ColorPicker';
-import QRGenerator from '@/components/tools/QRGenerator';
-import ClipboardHistory from '@/components/tools/ClipboardHistory';
 import JarTools from '@/components/tools/JarTools';
 import JobAnnotationTool from '@/components/tools/JobAnnotationTool';
 import HuhaTools from '@/components/tools/HuhaTools';
@@ -15,6 +10,7 @@ import { useSettings } from '@/lib/store/settings';
 import TitleBar from '@/components/TitleBar';
 import { LucideIcon } from 'lucide-react';
 import { SensitiveLogScanner } from '@/components/tools/SensitiveLogScanner';
+import JarQuickPuller from '@/components/tools/JarQuickPuller';
 
 interface Tool {
   id: string;
@@ -30,7 +26,8 @@ const Index = () => {
 
   const tools: Tool[] = [
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
-    { id: 'jar', name: '个性化JAR管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
+    { id: 'jar', name: '个性化Jar管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
+    { id: 'jar-quick-puller', name: 'Jar快速拉取', dec: '拉取产品的Jar包，方便整改，支持单个Jar包拉取和批量Maven依赖拉取', icon: Download, component: JarQuickPuller },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
     { id: 'huha', name: 'HUHA工具集', icon: Globe, component: HuhaTools },
     { id: 'sensitive-log', name: '敏感日志扫描', dec: '扫描代码中的敏感信息日志记录', icon: Shield, component: SensitiveLogScanner },

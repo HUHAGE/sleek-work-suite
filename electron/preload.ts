@@ -11,7 +11,8 @@ contextBridge.exposeInMainWorld('electron', {
         'open-path',
         'add-annotation',
         'load-logs',
-        'save-file'
+        'save-file',
+        'select-directory-and-pull-jar'
       ];
       
       if (validChannels.includes(channel)) {

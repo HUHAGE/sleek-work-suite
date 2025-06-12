@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import glob from 'glob';
 import { SUPPORTED_FILE_EXTENSIONS, FileType } from '../src/types/file-types';
+import axios from 'axios';
 
 const execAsync = promisify(exec);
 const globPromise = promisify(glob);
@@ -266,6 +267,69 @@ function registerIpcHandlers() {
     console.log('收到添加注解请求:', filePath);
     await addJobAnnotation(filePath);
     return true;
+  });
+
+  // 处理jar包下载
+  ipcMain.handle('select-directory-and-pull-jar', async (event, { type, repoUrl, username, password, jar, dependencies }) => {
+    try {
+      // 验证仓库地址格式
+      if (!repoUrl.startsWith('http://') && !repoUrl.startsWith('https://')) {
+        throw new Error('仓库地址格式不正确，必须以 http:// 或 https:// 开头');
+      }
+
+      // 选择保存目录
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory', 'createDirectory'],
+        title: '选择保存位置',
+        buttonLabel: '选择文件夹'
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        throw new Error('未选择保存位置');
+      }
+
+      const targetDir = result.filePaths[0];
+
+      if (type === 'single') {
+        // 单个jar包下载
+        const { groupId, artifactId, version } = jar;
+        if (!groupId || !artifactId || !version) {
+          throw new Error('GroupId、ArtifactId和Version都不能为空');
+        }
+        await downloadJar(repoUrl, groupId, artifactId, version, targetDir, username, password);
+      } else {
+        // 批量下载
+        const dependencyMatches = dependencies.match(/<dependency>[\s\S]*?<\/dependency>/g);
+        if (!dependencyMatches) {
+          throw new Error('未找到有效的Maven依赖配置');
+        }
+
+        let successCount = 0;
+        let failureCount = 0;
+        const errors = [];
+
+        for (const depXml of dependencyMatches) {
+          const depInfo = parseMavenDependency(depXml);
+          if (depInfo) {
+            try {
+              await downloadJar(repoUrl, depInfo.groupId, depInfo.artifactId, depInfo.version, targetDir, username, password);
+              successCount++;
+            } catch (error) {
+              failureCount++;
+              errors.push(`${depInfo.artifactId}: ${error.message}`);
+            }
+          }
+        }
+
+        if (failureCount > 0) {
+          throw new Error(`批量下载完成，成功 ${successCount} 个，失败 ${failureCount} 个。\n失败详情：\n${errors.join('\n')}`);
+        }
+      }
+
+      return { success: true };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   });
 }
 
@@ -629,60 +693,71 @@ app.on('activate', () => {
   }
 });
 
-// 检查一行代码是否包含日志语句
-function isLogStatement(line: string, fileType: FileType): boolean {
-  const logPatterns = {
-    // Java相关的日志模式
-    java: [
-      /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
-      /\bSystem\.(?:out|err)\.print(?:ln)?\s*\(/i,
-      /\.printStackTrace\s*\(/i,
-      /\b(?:log4j|Log4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
-      /\b(?:slf4j|Slf4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
-      /\b(?:logback|Logback)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
-      /\b(?:commons-logging|CommonsLogging)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
-      /\b(?:Logger|LOGGER)\.getLogger\s*\(/i,
-      /\b(?:LogUtils?|LogHelper|LogManager)\b.*\.(?:log|write|record|print)\s*\(/i,
-    ],
-    // JavaScript/TypeScript相关的日志模式
-    javascript: [
-      /\bconsole\.[a-zA-Z]+\s*\(/i,
-      /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
-      /\b(?:window\.)?(?:alert|confirm|prompt)\s*\(/i,
-      /\bdebugger\b/,
-    ],
-    // Python相关的日志模式
-    python: [
-      /\b(?:print|logging)\b.*\(/i,
-      /\blogger\.[a-zA-Z]+\s*\(/i,
-    ],
-    // 通用的日志模式
-    common: [
-      /\.log\s*\(/i,
-      /\.debug\s*\(/i,
-      /\.info\s*\(/i,
-      /\.warn\s*\(/i,
-      /\.error\s*\(/i,
-      /\.trace\s*\(/i,
-      /\.fatal\s*\(/i,
-      /\blog\b/i,
-    ],
-  };
+// 处理Maven依赖字符串，提取groupId、artifactId和version
+function parseMavenDependency(xmlString: string): { groupId: string; artifactId: string; version: string } | null {
+  const groupIdMatch = xmlString.match(/<groupId>([^<]+)<\/groupId>/);
+  const artifactIdMatch = xmlString.match(/<artifactId>([^<]+)<\/artifactId>/);
+  const versionMatch = xmlString.match(/<version>([^<]+)<\/version>/);
 
-  // 根据文件类型选择要检查的模式
-  let patternsToCheck: RegExp[] = [...logPatterns.common];
-  
-  if (fileType === 'Java' || fileType === 'JSP') {
-    patternsToCheck.push(...logPatterns.java);
+  if (groupIdMatch && artifactIdMatch && versionMatch) {
+    return {
+      groupId: groupIdMatch[1],
+      artifactId: artifactIdMatch[1],
+      version: versionMatch[1]
+    };
   }
-  
-  if (fileType.includes('JavaScript') || fileType.includes('TypeScript') || fileType === 'Vue') {
-    patternsToCheck.push(...logPatterns.javascript);
-  }
-  
-  if (fileType === 'Python') {
-    patternsToCheck.push(...logPatterns.python);
-  }
+  return null;
+}
 
-  return patternsToCheck.some(pattern => pattern.test(line.trim()));
+// 从Maven仓库下载jar包
+async function downloadJar(repoUrl: string, groupId: string, artifactId: string, version: string, targetDir: string, username: string, password: string): Promise<string> {
+  const groupPath = groupId.replace(/\./g, '/');
+  const jarName = `${artifactId}-${version}.jar`;
+  const jarUrl = `${repoUrl}${groupPath}/${artifactId}/${version}/${jarName}`;
+
+  try {
+    const response = await axios({
+      method: 'get',
+      url: jarUrl,
+      responseType: 'stream',
+      auth: { username, password },
+      timeout: 30000, // 30秒超时
+      timeoutErrorMessage: '下载超时，请检查网络连接或仓库地址是否正确'
+    });
+
+    const targetPath = path.join(targetDir, jarName);
+    const writer = fs.createWriteStream(targetPath);
+
+    response.data.pipe(writer);
+
+    return new Promise((resolve, reject) => {
+      writer.on('finish', () => resolve(targetPath));
+      writer.on('error', reject);
+    });
+  } catch (error) {
+    let errorMessage = '下载失败';
+    if (error.code === 'ECONNABORTED') {
+      errorMessage = '下载超时，请检查网络连接或仓库地址是否正确';
+    } else if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          errorMessage = '认证失败，请检查用户名和密码是否正确';
+          break;
+        case 403:
+          errorMessage = '没有权限访问该资源，请检查用户权限';
+          break;
+        case 404:
+          errorMessage = '找不到指定的Jar包，请检查GroupId、ArtifactId和Version是否正确';
+          break;
+        case 500:
+          errorMessage = '服务器错误，请稍后重试';
+          break;
+        default:
+          errorMessage = `服务器返回错误: ${error.response.status}`;
+      }
+    } else if (error.request) {
+      errorMessage = '无法连接到服务器，请检查仓库地址是否正确';
+    }
+    throw new Error(errorMessage);
+  }
 } 

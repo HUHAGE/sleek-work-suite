@@ -94,8 +94,8 @@
   }
 
   .tool-card {
-    @apply bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 
-           hover:bg-card/70 hover:border-primary/30 transition-all duration-300
+    @apply bg-white dark:bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 
+           hover:bg-white dark:hover:bg-card/70 hover:border-primary/30 transition-all duration-300
            hover:shadow-lg hover:shadow-primary/20;
   }
 

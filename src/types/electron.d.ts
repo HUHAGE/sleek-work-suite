@@ -17,6 +17,18 @@ declare global {
         invoke(channel: 'open-file', path: string): Promise<void>;
         invoke(channel: 'open-path', path: string): Promise<void>;
         invoke(channel: 'load-logs'): Promise<LogEntry[]>;
+        invoke(channel: 'select-directory-and-pull-jar', params: {
+          type: 'single' | 'batch';
+          repoUrl: string;
+          username: string;
+          password: string;
+          jar?: {
+            groupId: string;
+            artifactId: string;
+            version: string;
+          };
+          dependencies?: string;
+        }): Promise<{ success: boolean }>;
       };
     };
   }
@@ -25,14 +37,7 @@ declare global {
 export {};
 
 interface IpcRenderer {
-  invoke(channel: 'scan-jar-files', path: string): Promise<{ name: string; path: string; createTime: number; }[]>;
-  invoke(channel: 'copy-to-clipboard', paths: string[]): Promise<void>;
-  invoke(channel: 'scan-sensitive-logs', params: { projectPath: string; sensitiveWords: string[] }): Promise<{
-    filePath: string;
-    line: number;
-    content: string;
-    sensitiveWord: string;
-  }[]>;
+  invoke(channel: string, args: any): Promise<any>;
 }
 
 interface JobClass {
