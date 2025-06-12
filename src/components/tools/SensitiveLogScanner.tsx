@@ -62,11 +62,11 @@ const defaultSensitiveWords = [
   "danweiname",
   "单位唯一标识",
   "单位名称",
-  "专家名称",
+  "专家",
   "密码",
   "password",
   "联系电话",
-  "身份证号"
+  "身份证"
 ];
 
 export function SensitiveLogScanner() {
