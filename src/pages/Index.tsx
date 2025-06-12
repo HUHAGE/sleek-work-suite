@@ -22,7 +22,7 @@ interface Tool {
 }
 
 const Index = () => {
-  const [activeTool, setActiveTool] = useState('text');
+  const [activeTool, setActiveTool] = useState('work-starter');
   const { sidebarOpen, setSidebarOpen } = useSettings();
 
   const tools: Tool[] = [
