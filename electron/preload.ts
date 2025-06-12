@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import { IElectronAPI } from '../src/types/electron'
 
 // 暴露给渲染进程的API
 contextBridge.exposeInMainWorld('electron', {
@@ -31,7 +32,17 @@ contextBridge.exposeInMainWorld('electron', {
       }
     }
   },
+  platform: () => ipcRenderer.invoke('platform'),
+  openSoftware: (path: string) => ipcRenderer.invoke('openSoftware', path),
+  openExternal: (url: string) => ipcRenderer.invoke('openExternal', url),
   minimize: () => ipcRenderer.send('minimize'),
   maximize: () => ipcRenderer.send('maximize'),
   close: () => ipcRenderer.send('close'),
-}) 
+})
+
+// 暴露给渲染进程的API
+const api: IElectronAPI = {
+  platform: () => ipcRenderer.invoke('platform'),
+  openSoftware: (path: string) => ipcRenderer.invoke('openSoftware', path),
+  // ... existing code ...
+} 

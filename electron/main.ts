@@ -331,6 +331,311 @@ function registerIpcHandlers() {
       throw new Error(error.message);
     }
   });
+
+  // 处理打开软件的请求
+  ipcMain.handle('openSoftware', async (_, path: string) => {
+    try {
+      if (process.platform === 'win32') {
+        await execAsync(`start "" "${path}"`, { shell: true })
+      } else if (process.platform === 'darwin') {
+        await execAsync(`open "${path}"`)
+      } else {
+        await execAsync(`xdg-open "${path}"`)
+      }
+      return 'success'
+    } catch (error) {
+      console.error('打开软件失败:', error)
+      throw error
+    }
+  })
+
+  // 选择目录
+  ipcMain.handle('select-directory', async (_: IpcMainInvokeEvent) => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory']
+    });
+    return result.filePaths[0];
+  });
+
+  // 打开路径
+  ipcMain.handle('open-path', async (_: IpcMainInvokeEvent, dirPath: string) => {
+    try {
+      await shell.openPath(dirPath);
+      return true;
+    } catch (error) {
+      console.error('Error opening path:', error);
+      throw error;
+    }
+  });
+
+  // 扫描JAR文件
+  ipcMain.handle('scan-jar-files', async (_: IpcMainInvokeEvent, dirPath: string) => {
+    try {
+      const jarPaths = await scanDirectory(dirPath);
+      return jarPaths.map(filePath => ({
+        name: path.basename(filePath),
+        path: path.dirname(filePath) + path.sep,
+        createTime: fs.statSync(filePath).birthtime.getTime()
+      }));
+    } catch (error) {
+      console.error('Error scanning JAR files:', error);
+      throw error;
+    }
+  });
+
+  // 复制文件到剪贴板
+  ipcMain.handle('copy-files', async (_: IpcMainInvokeEvent, files: { path: string, name: string }[]) => {
+    try {
+      const filePaths = files.map(file => path.join(file.path, file.name));
+      
+      if (process.platform === 'win32') {
+        // 构建 PowerShell 命令来复制文件到剪贴板
+        const psScript = `
+          Add-Type -AssemblyName System.Windows.Forms
+          $paths = @(
+            ${filePaths.map(p => `'${p.replace(/'/g, "''")}'`).join(",\n            ")}
+          )
+          $fileCollection = New-Object System.Collections.Specialized.StringCollection
+          foreach ($path in $paths) {
+            $fileCollection.Add($path)
+          }
+          [System.Windows.Forms.Clipboard]::SetFileDropList($fileCollection)
+        `;
+        
+        // 将 PowerShell 脚本保存到临时文件
+        const tempScriptPath = path.join(app.getPath('temp'), 'copy-files.ps1');
+        fs.writeFileSync(tempScriptPath, psScript);
+        
+        // 执行 PowerShell 脚本
+        await execAsync(`powershell -ExecutionPolicy Bypass -File "${tempScriptPath}"`);
+        
+        // 删除临时脚本文件
+        fs.unlinkSync(tempScriptPath);
+      } else {
+        clipboard.writeText(filePaths.join('\n'));
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error copying files:', error);
+      throw error;
+    }
+  });
+
+  // 设置窗口标题
+  ipcMain.handle('set-window-title', async (_: IpcMainInvokeEvent, title: string) => {
+    mainWindow?.setTitle(title);
+    return true;
+  });
+
+  // 扫描Job类
+  ipcMain.handle('scan-job-classes', async (_: IpcMainInvokeEvent, dirPath: string) => {
+    try {
+      return await scanJobClasses(dirPath);
+    } catch (error) {
+      console.error('Error scanning Job classes:', error);
+      throw error;
+    }
+  });
+
+  // 打开文件
+  ipcMain.handle('open-file', async (_: IpcMainInvokeEvent, filePath: string) => {
+    try {
+      if (process.platform === 'win32') {
+        await execAsync(`code "${filePath}"`);
+      } else {
+        await execAsync(`open "${filePath}"`);
+      }
+    } catch (error) {
+      console.error('Error opening file:', error);
+      throw error;
+    }
+  });
+
+  // 保存文件
+  ipcMain.handle('save-file', async (_: IpcMainInvokeEvent, { defaultPath, fileContent }) => {
+    try {
+      const { filePath, canceled } = await dialog.showSaveDialog({
+        defaultPath,
+        filters: [
+          { name: 'CSV 文件', extensions: ['csv'] },
+          { name: '所有文件', extensions: ['*'] }
+        ]
+      });
+
+      if (!canceled && filePath) {
+        await fs.promises.writeFile(filePath, fileContent, 'utf-8');
+        return filePath;
+      }
+      return null;
+    } catch (error) {
+      console.error('保存文件失败:', error);
+      throw error;
+    }
+  });
+
+  // 支持的文件类型
+  const SUPPORTED_FILE_EXTENSIONS = {
+    '.java': 'Java',
+    '.js': 'JavaScript',
+    '.jsx': 'JavaScript React',
+    '.ts': 'TypeScript',
+    '.tsx': 'TypeScript React',
+    '.html': 'HTML',
+    '.htm': 'HTML',
+    '.vue': 'Vue',
+    '.jsp': 'JSP',
+    '.php': 'PHP',
+    '.py': 'Python',
+    '.rb': 'Ruby',
+    '.go': 'Go',
+    '.cs': 'C#',
+    '.cpp': 'C++',
+    '.c': 'C',
+    '.log': 'Log',
+    '.xml': 'XML',
+    '.properties': 'Properties',
+    '.yml': 'YAML',
+    '.yaml': 'YAML',
+    '.json': 'JSON',
+    '.md': 'Markdown',
+    '.sql': 'SQL'
+  } as const;
+
+  type FileType = typeof SUPPORTED_FILE_EXTENSIONS[keyof typeof SUPPORTED_FILE_EXTENSIONS];
+
+  // 检查一行代码是否包含日志语句
+  function isLogStatement(line: string, fileType: FileType): boolean {
+    const logPatterns = {
+      // Java相关的日志模式
+      java: [
+        /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\bSystem\.(?:out|err)\.print(?:ln)?\s*\(/i,
+        /\.printStackTrace\s*\(/i,
+        /\b(?:log4j|Log4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:slf4j|Slf4j)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:logback|Logback)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:commons-logging|CommonsLogging)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:Logger|LOGGER)\.getLogger\s*\(/i,
+        /\b(?:LogUtils?|LogHelper|LogManager)\b.*\.(?:log|write|record|print)\s*\(/i,
+      ],
+      // JavaScript/TypeScript相关的日志模式
+      javascript: [
+        /\bconsole\.[a-zA-Z]+\s*\(/i,
+        /\b(?:log|logger|LOG|LOGGER)\b.*\.(?:info|debug|warn|error|trace|fatal)\s*\(/i,
+        /\b(?:window\.)?(?:alert|confirm|prompt)\s*\(/i,
+        /\bdebugger\b/,
+      ],
+      // Python相关的日志模式
+      python: [
+        /\b(?:print|logging)\b.*\(/i,
+        /\blogger\.[a-zA-Z]+\s*\(/i,
+      ],
+      // 通用的日志模式
+      common: [
+        /\.log\s*\(/i,
+        /\.debug\s*\(/i,
+        /\.info\s*\(/i,
+        /\.warn\s*\(/i,
+        /\.error\s*\(/i,
+        /\.trace\s*\(/i,
+        /\.fatal\s*\(/i,
+        /\blog\b/i,
+      ],
+    };
+
+    // 根据文件类型选择要检查的模式
+    let patternsToCheck: RegExp[] = [...logPatterns.common];
+    
+    if (fileType === 'Java' || fileType === 'JSP') {
+      patternsToCheck.push(...logPatterns.java);
+    }
+    
+    if (fileType.includes('JavaScript') || fileType.includes('TypeScript') || fileType === 'Vue') {
+      patternsToCheck.push(...logPatterns.javascript);
+    }
+    
+    if (fileType === 'Python') {
+      patternsToCheck.push(...logPatterns.python);
+    }
+
+    return patternsToCheck.some(pattern => pattern.test(line.trim()));
+  }
+
+  // 扫描敏感日志
+  ipcMain.handle('scan-sensitive-logs', async (_: IpcMainInvokeEvent, { projectPath, sensitiveWords, fileTypes }) => {
+    try {
+      const results = [];
+      const files: string[] = [];
+      
+      // 递归获取所有支持的文件
+      async function scanFiles(dir: string) {
+        const entries = await fs.promises.readdir(dir);
+        
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry);
+          const stats = await fs.promises.stat(fullPath);
+          
+          // 忽略 node_modules、.git 等目录
+          if (entry === 'node_modules' || entry === '.git' || entry === 'target' || entry === 'build' || entry === 'dist') {
+            continue;
+          }
+          
+          if (stats.isDirectory()) {
+            await scanFiles(fullPath);
+          } else {
+            const ext = path.extname(fullPath).toLowerCase();
+            if (fileTypes.includes(ext)) {
+              files.push(fullPath);
+            }
+          }
+        }
+      }
+      
+      await scanFiles(projectPath);
+      
+      for (const file of files) {
+        const ext = path.extname(file).toLowerCase();
+        const fileType = SUPPORTED_FILE_EXTENSIONS[ext as keyof typeof SUPPORTED_FILE_EXTENSIONS];
+        const content = await fs.promises.readFile(file, 'utf-8');
+        const lines = content.split('\n');
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (isLogStatement(line, fileType)) {
+            for (const word of sensitiveWords) {
+              if (line.includes(word)) {
+                results.push({
+                  filePath: file,
+                  fileType,
+                  line: i + 1,
+                  content: line.trim(),
+                  sensitiveWord: word
+                });
+                break; // 一行只记录一次，即使可能包含多个敏感词
+              }
+            }
+          }
+        }
+      }
+      
+      return results;
+    } catch (error) {
+      console.error('扫描敏感日志失败:', error);
+      throw error;
+    }
+  });
+
+  // 处理打开网页的请求
+  ipcMain.handle('openExternal', async (_, url: string) => {
+    try {
+      await shell.openExternal(url)
+      return 'success'
+    } catch (error) {
+      console.error('打开网页失败:', error)
+      throw error
+    }
+  })
 }
 
 let mainWindow: BrowserWindow | null = null;

@@ -24,6 +24,8 @@ interface IElectronAPI {
       fileContent: string
     }): Promise<string | null>
   }
+  openSoftware: (path: string) => Promise<void>
+  openExternal: (url: string) => Promise<void>
 }
 
 declare interface Window {

@@ -1,17 +1,30 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+// 工作启动项类型定义
+interface WorkItem {
+  id: string
+  name: string
+  path: string
+  type: 'software' | 'website'
+}
+
 // 用户数据类型定义
 interface UserData {
   jarToolsPathHistory: string[]
   jobToolsPathHistory: string[]
   sensitiveLogPathHistory: string[]
+  workItems: WorkItem[] // 新增工作启动项配置
 }
 
 interface UserDataState extends UserData {
   setJarToolsPathHistory: (history: string[]) => void
   setJobToolsPathHistory: (history: string[]) => void
   setSensitiveLogPathHistory: (history: string[]) => void
+  // 新增工作启动项相关方法
+  addWorkItem: (item: Omit<WorkItem, 'id'>) => void
+  removeWorkItem: (id: string) => void
+  updateWorkItem: (id: string, item: Partial<Omit<WorkItem, 'id'>>) => void
   migrateFromLocalStorage: () => void
 }
 
@@ -23,11 +36,25 @@ export const useUserData = create<UserDataState>()(
       jarToolsPathHistory: [],
       jobToolsPathHistory: [],
       sensitiveLogPathHistory: [],
+      workItems: [], // 新增工作启动项初始值
 
       // 更新方法
       setJarToolsPathHistory: (history) => set({ jarToolsPathHistory: history }),
       setJobToolsPathHistory: (history) => set({ jobToolsPathHistory: history }),
       setSensitiveLogPathHistory: (history) => set({ sensitiveLogPathHistory: history }),
+
+      // 工作启动项相关方法
+      addWorkItem: (item) => set((state) => ({
+        workItems: [...state.workItems, { ...item, id: crypto.randomUUID() }]
+      })),
+      removeWorkItem: (id) => set((state) => ({
+        workItems: state.workItems.filter(item => item.id !== id)
+      })),
+      updateWorkItem: (id, item) => set((state) => ({
+        workItems: state.workItems.map(existingItem =>
+          existingItem.id === id ? { ...existingItem, ...item } : existingItem
+        )
+      })),
 
       // 从localStorage迁移数据
       migrateFromLocalStorage: () => {
@@ -63,4 +90,4 @@ export const useUserData = create<UserDataState>()(
       version: 1,
     }
   )
-) 
+)

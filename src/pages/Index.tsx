@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info } from 'lucide-react';
+import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info, PlayCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import JarTools from '@/components/tools/JarTools';
@@ -11,6 +11,7 @@ import TitleBar from '@/components/TitleBar';
 import { LucideIcon } from 'lucide-react';
 import { SensitiveLogScanner } from '@/components/tools/SensitiveLogScanner';
 import JarQuickPuller from '@/components/tools/JarQuickPuller';
+import WorkStarter from '@/components/tools/WorkStarter';
 
 interface Tool {
   id: string;
@@ -31,6 +32,7 @@ const Index = () => {
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
     { id: 'huha', name: 'HUHA工具集', icon: Globe, component: HuhaTools },
     { id: 'sensitive-log', name: '敏感日志扫描', dec: '扫描代码中的敏感信息日志记录', icon: Shield, component: SensitiveLogScanner },
+    { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
   ];
 
   const settingsTool: Tool = { id: 'settings', name: '设置', icon: Settings, component: SettingsTools };

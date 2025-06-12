@@ -30,6 +30,8 @@ declare global {
           dependencies?: string;
         }): Promise<{ success: boolean }>;
       };
+      openSoftware: (path: string) => Promise<void>;
+      openExternal: (url: string) => Promise<void>;
     };
   }
 }
@@ -44,4 +46,10 @@ interface JobClass {
   className: string;
   classPath: string;
   hasAnnotation: boolean;
+}
+
+export interface IElectronAPI {
+  platform: () => Promise<string>
+  openSoftware: (path: string) => Promise<string>
+  openExternal: (url: string) => Promise<string>
 } 
