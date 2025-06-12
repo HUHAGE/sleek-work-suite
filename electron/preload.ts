@@ -6,20 +6,20 @@ contextBridge.exposeInMainWorld('electron', {
     invoke: (channel: string, ...args: any[]) => {
       const validChannels = [
         'select-directory',
-        'scan-jar-files',
-        'copy-files',
-        'set-window-title',
         'scan-job-classes',
         'open-file',
-        'add-annotation',
         'open-path',
-        'scan-sensitive-logs',
+        'add-annotation',
+        'load-logs',
         'save-file'
-      ]
+      ];
+      
       if (validChannels.includes(channel)) {
-        return ipcRenderer.invoke(channel, ...args)
+        console.log('IPC调用:', channel, args);
+        return ipcRenderer.invoke(channel, ...args);
       }
-      throw new Error(`不允许调用未注册的IPC通道: ${channel}`)
+      
+      throw new Error(`不允许调用未注册的IPC通道: ${channel}`);
     },
     send: (channel: string, ...args: any[]) => {
       const validChannels = ['open-external-url']

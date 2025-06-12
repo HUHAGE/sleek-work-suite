@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { FileCode, FolderOpen, Search, ExternalLink, Plus, X } from 'lucide-react'
+import { FileCode, FolderOpen, Search, ExternalLink, Plus, X, Clock, AlertCircle, Maximize2, Minimize2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
   Command,
@@ -23,12 +23,28 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { useUserData } from '@/lib/store/userDataManager'
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
 
 interface JobClass {
   className: string;
   classPath: string;
   hasAnnotation: boolean;
+}
+
+interface LogEntry {
+  timestamp: string;
+  filePath: string;
+  action: string;
 }
 
 const MAX_HISTORY = 10;
@@ -38,9 +54,28 @@ const JobAnnotationTool: React.FC = () => {
   const [jobClasses, setJobClasses] = useState<JobClass[]>([]);
   const [scanning, setScanning] = useState(false);
   const [open, setOpen] = useState(false);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [isAddingAnnotations, setIsAddingAnnotations] = useState(false);
   const { toast } = useToast();
   
   const { jobToolsPathHistory, setJobToolsPathHistory } = useUserData();
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    // 加载日志
+    loadLogs();
+  }, []);
+
+  const loadLogs = async () => {
+    try {
+      console.log('开始加载日志');
+      const loadedLogs = await window.electron.ipcRenderer.invoke('load-logs');
+      console.log('获取到日志数据:', loadedLogs);
+      setLogs(loadedLogs);
+    } catch (error) {
+      console.error('加载日志失败:', error);
+    }
+  };
 
   // 保存路径到历史记录
   const saveToHistory = (newPath: string) => {
@@ -124,6 +159,7 @@ const JobAnnotationTool: React.FC = () => {
 
   const handleAddAnnotation = async (classPath: string) => {
     try {
+      console.log('开始添加注解:', classPath);
       await window.electron.ipcRenderer.invoke('add-annotation', classPath);
       // 更新列表中的注解状态
       setJobClasses(prevClasses =>
@@ -133,6 +169,9 @@ const JobAnnotationTool: React.FC = () => {
             : cls
         )
       );
+      // 刷新日志
+      console.log('刷新日志');
+      await loadLogs();
       toast({
         title: "添加成功",
         description: "已成功添加@DisallowConcurrentExecution注解",
@@ -144,6 +183,60 @@ const JobAnnotationTool: React.FC = () => {
         description: "添加注解时出现错误",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleAddAllAnnotations = async () => {
+    const unannotatedClasses = jobClasses.filter(job => !job.hasAnnotation);
+    if (unannotatedClasses.length === 0) {
+      toast({
+        title: "提示",
+        description: "没有需要添加注解的类",
+      });
+      return;
+    }
+
+    setIsAddingAnnotations(true);
+    try {
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const jobClass of unannotatedClasses) {
+        try {
+          console.log('批量添加注解:', jobClass.classPath);
+          await window.electron.ipcRenderer.invoke('add-annotation', jobClass.classPath);
+          successCount++;
+        } catch (error) {
+          console.error(`为 ${jobClass.classPath} 添加注解失败:`, error);
+          failCount++;
+        }
+      }
+
+      // 更新列表中的注解状态
+      setJobClasses(prevClasses =>
+        prevClasses.map(cls =>
+          !cls.hasAnnotation ? { ...cls, hasAnnotation: true } : cls
+        )
+      );
+
+      // 刷新日志
+      console.log('批量添加完成，刷新日志');
+      await loadLogs();
+
+      toast({
+        title: "批量添加完成",
+        description: `成功: ${successCount} 个, 失败: ${failCount} 个`,
+        variant: successCount > 0 ? "default" : "destructive"
+      });
+    } catch (error) {
+      console.error('批量添加注解失败:', error);
+      toast({
+        title: "批量添加失败",
+        description: "处理过程中出现错误",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAddingAnnotations(false);
     }
   };
 
@@ -170,6 +263,22 @@ const JobAnnotationTool: React.FC = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
+  const formatLogAction = (action: string, filePath: string) => {
+    const fileName = filePath.split('\\').pop() || filePath;
+    return `${action}：${fileName}`;
   };
 
   return (
@@ -241,6 +350,77 @@ const JobAnnotationTool: React.FC = () => {
             <Search className="w-4 h-4 mr-2" />
             {scanning ? '扫描中...' : '扫描'}
           </Button>
+          <Dialog onOpenChange={(open) => !open && setIsFullscreen(false)}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="shrink-0">
+                <Clock className="w-4 h-4 mr-2" />
+                查看日志
+              </Button>
+            </DialogTrigger>
+            <DialogContent className={cn(
+              "duration-300 transition-all",
+              isFullscreen 
+                ? "max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh]" 
+                : "max-w-4xl max-h-[80vh]"
+            )}>
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="absolute right-[40px] top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+              >
+                {isFullscreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+                <span className="sr-only">
+                  {isFullscreen ? '退出全屏' : '全屏'}
+                </span>
+              </button>
+              <DialogHeader>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  <DialogTitle>操作日志记录</DialogTitle>
+                </div>
+              </DialogHeader>
+              <div className="text-sm text-muted-foreground mb-4 border-b pb-2">
+                记录了所有Job类注解的添加历史，包括文件路径和操作时间。
+              </div>
+              <ScrollArea className={cn(
+                "w-full rounded-md border",
+                isFullscreen ? "h-[calc(95vh-140px)]" : "h-[600px]"
+              )}>
+                {logs.length > 0 ? (
+                  <div className="space-y-1 p-4">
+                    {logs.map((log, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center text-sm py-1.5 px-2 hover:bg-muted/50 rounded-sm"
+                      >
+                        <span className="text-muted-foreground min-w-[160px] font-mono text-xs">
+                          {formatDate(log.timestamp)}
+                        </span>
+                        <span className="truncate flex-1">
+                          {log.filePath}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={cn(
+                    "flex flex-col items-center justify-center text-muted-foreground",
+                    isFullscreen ? "h-[calc(95vh-140px)]" : "h-[600px]"
+                  )}>
+                    <Clock className="w-12 h-12 mb-4" />
+                    <p className="text-lg mb-2">暂无操作日志</p>
+                    <p className="text-sm text-center max-w-md">
+                      当你对Job类添加@DisallowConcurrentExecution注解时，操作记录会显示在这里
+                    </p>
+                  </div>
+                )}
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -258,6 +438,16 @@ const JobAnnotationTool: React.FC = () => {
                 </span>
               </span>
             </div>
+            {jobClasses.some(job => !job.hasAnnotation) && (
+              <Button 
+                onClick={handleAddAllAnnotations}
+                disabled={isAddingAnnotations}
+                className="flex items-center gap-2"
+              >
+                <AlertCircle className="w-4 h-4" />
+                {isAddingAnnotations ? '添加中...' : '一键添加所有注解'}
+              </Button>
+            )}
           </div>
 
           <div className="border rounded-lg">
@@ -334,4 +524,4 @@ const JobAnnotationTool: React.FC = () => {
   );
 };
 
-export default JobAnnotationTool; 
+export default JobAnnotationTool;

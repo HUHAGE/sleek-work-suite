@@ -132,15 +132,18 @@ async function scanJobClasses(dirPath: string): Promise<any[]> {
 // 添加@DisallowConcurrentExecution注解
 async function addJobAnnotation(filePath: string): Promise<void> {
   try {
+    console.log('开始添加注解:', filePath);
     let content = await fs.promises.readFile(filePath, 'utf-8');
     
     // 如果已经有注解，直接返回
     if (content.includes('@DisallowConcurrentExecution')) {
+      console.log('文件已有注解，跳过');
       return;
     }
     
     // 添加import语句（如果不存在）
     if (!content.includes('import org.quartz.DisallowConcurrentExecution;')) {
+      console.log('添加import语句');
       const importStatement = 'import org.quartz.DisallowConcurrentExecution;\n';
       // 在package语句后或文件开头添加import
       if (content.includes('package ')) {
@@ -151,16 +154,119 @@ async function addJobAnnotation(filePath: string): Promise<void> {
     }
     
     // 在class声明前添加注解
+    console.log('添加注解到类定义前');
     content = content.replace(
       /(public\s+class\s+[^{]+)/,
       '@DisallowConcurrentExecution\n$1'
     );
     
     await fs.promises.writeFile(filePath, content, 'utf-8');
+    console.log('文件已更新，准备记录日志');
+    
+    // 记录日志
+    await logManager.addLog(filePath, '添加@DisallowConcurrentExecution注解');
+    console.log('注解添加完成');
   } catch (error) {
-    console.error('Error adding annotation:', error);
+    console.error('添加注解失败:', error);
     throw error;
   }
+}
+
+// 在createWindow函数之前添加日志管理器
+class LogManager {
+  private logFilePath: string;
+
+  constructor() {
+    const userDataPath = app.getPath('userData');
+    this.logFilePath = path.join(userDataPath, 'job_annotation_logs.json');
+    console.log('日志文件路径:', this.logFilePath);
+    this.initLogFile();
+  }
+
+  private initLogFile() {
+    try {
+      if (!fs.existsSync(this.logFilePath)) {
+        console.log('创建新的日志文件');
+        fs.writeFileSync(this.logFilePath, JSON.stringify([], null, 2));
+      } else {
+        console.log('日志文件已存在');
+        // 验证文件内容是否是有效的JSON
+        const content = fs.readFileSync(this.logFilePath, 'utf-8');
+        try {
+          JSON.parse(content);
+        } catch (e) {
+          console.log('日志文件内容无效，重新初始化');
+          fs.writeFileSync(this.logFilePath, JSON.stringify([], null, 2));
+        }
+      }
+    } catch (error) {
+      console.error('初始化日志文件失败:', error);
+    }
+  }
+
+  async addLog(filePath: string, action: string) {
+    try {
+      console.log('添加新日志:', { filePath, action });
+      const logs = await this.getLogs();
+      
+      // 获取文件名
+      const fileName = path.basename(filePath);
+      
+      const newLog = {
+        timestamp: new Date().toISOString(),
+        filePath,
+        fileName,
+        action: `${action}：${fileName}`
+      };
+      
+      // 限制日志数量，保留最新的1000条
+      const MAX_LOGS = 1000;
+      logs.unshift(newLog);
+      if (logs.length > MAX_LOGS) {
+        logs.length = MAX_LOGS;
+      }
+      
+      await fs.promises.writeFile(this.logFilePath, JSON.stringify(logs, null, 2));
+      console.log('日志添加成功');
+      return newLog;
+    } catch (error) {
+      console.error('添加日志失败:', error);
+      throw error;
+    }
+  }
+
+  async getLogs() {
+    try {
+      console.log('读取日志文件');
+      const data = await fs.promises.readFile(this.logFilePath, 'utf-8');
+      const logs = JSON.parse(data);
+      console.log('当前日志数量:', logs.length);
+      return logs;
+    } catch (error) {
+      console.error('读取日志失败:', error);
+      return [];
+    }
+  }
+}
+
+const logManager = new LogManager();
+
+// 注册IPC处理器
+function registerIpcHandlers() {
+  // 加载日志
+  ipcMain.handle('load-logs', async () => {
+    console.log('收到加载日志请求');
+    const logs = await logManager.getLogs();
+    console.log('返回日志数据:', logs);
+    return logs;
+  });
+
+  // 添加注解
+  ipcMain.handle('add-annotation', async (_, filePath: string) => {
+    console.log('收到添加注解请求:', filePath);
+    await addJobAnnotation(filePath);
+    return true;
+  });
 }
 
 let mainWindow: BrowserWindow | null = null;
@@ -326,17 +432,6 @@ function createWindow() {
       }
     } catch (error) {
       console.error('Error opening file:', error);
-      throw error;
-    }
-  });
-
-  // 添加注解
-  ipcMain.handle('add-annotation', async (_, filePath: string) => {
-    try {
-      await addJobAnnotation(filePath);
-      return true;
-    } catch (error) {
-      console.error('Error adding annotation:', error);
       throw error;
     }
   });
@@ -516,7 +611,11 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+// 在app.whenReady()中注册IPC处理器
+app.whenReady().then(() => {
+  registerIpcHandlers();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -525,7 +624,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  if (mainWindow === null) {
     createWindow();
   }
 });
