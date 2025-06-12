@@ -14,6 +14,13 @@ export default defineConfig({
     react(),
     electron({
       entry: "electron/main.ts",
+      vite: {
+        build: {
+          rollupOptions: {
+            external: ['axios']
+          }
+        }
+      }
     }),
     electron({
       entry: "electron/preload.ts",
