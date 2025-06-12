@@ -26,13 +26,13 @@ const Index = () => {
   const { sidebarOpen, setSidebarOpen } = useSettings();
 
   const tools: Tool[] = [
+    { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
     { id: 'jar', name: '个性化Jar管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
     { id: 'jar-quick-puller', name: 'Jar快速拉取', dec: '拉取产品的Jar包，方便整改，支持单个Jar包拉取和批量Maven依赖拉取', icon: Download, component: JarQuickPuller },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
     { id: 'huha', name: 'HUHA工具集', icon: Globe, component: HuhaTools },
     { id: 'sensitive-log', name: '敏感日志扫描', dec: '扫描代码中的敏感信息日志记录', icon: Shield, component: SensitiveLogScanner },
-    { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
   ];
 
   const settingsTool: Tool = { id: 'settings', name: '设置', icon: Settings, component: SettingsTools };
