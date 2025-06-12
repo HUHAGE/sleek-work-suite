@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { getThemeColorVariables } from '@/lib/utils';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -20,6 +21,17 @@ const App = () => {
   useEffect(() => {
     migrateFromLocalStorage()
   }, [migrateFromLocalStorage])
+
+  // 移除初始加载动画
+  useEffect(() => {
+    const loader = document.getElementById('initial-loader')
+    if (loader) {
+      loader.classList.add('fade-out')
+      setTimeout(() => {
+        loader.remove()
+      }, 200)
+    }
+  }, [])
 
   // 计算当前是否为深色模式
   const isDarkMode = useMemo(() => {
