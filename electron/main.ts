@@ -339,14 +339,16 @@ const isDev = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD =
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
+    icon: path.join(__dirname, '../resources/icon.ico'),
     minWidth: 800,
     minHeight: 600,
     frame: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      webSecurity: false,
       preload: path.join(__dirname, 'preload.js')
     },
     backgroundColor: '#ffffff',
