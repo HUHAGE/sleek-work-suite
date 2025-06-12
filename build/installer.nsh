@@ -23,9 +23,8 @@
     # 写入卸载信息到注册表
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_GUID}" "InstallLocation" "$INSTDIR"
     
-    # 保护用户数据目录
+    # 创建用户数据目录
     CreateDirectory "$APPDATA\${APP_FILENAME}"
-    AccessControl::GrantOnFile "$APPDATA\${APP_FILENAME}" "(S-1-5-32-545)" "FullAccess"
 !macroend
 
 !macro customUnInstall
