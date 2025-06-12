@@ -243,6 +243,17 @@ function AboutSetting() {
               wsyhok@126.com
             </a>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">问题反馈</span>
+            <a 
+              href="https://y6ero6gpth.feishu.cn/share/base/form/shrcnhUsDhClwkrb28UAaCrKWid" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              点击反馈
+            </a>
+          </div>
         </div>
       </div>
     </div>
