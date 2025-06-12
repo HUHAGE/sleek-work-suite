@@ -25,6 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useUserData } from '@/lib/store/userDataManager'
 
 interface JarFile {
   id: string
@@ -41,35 +42,23 @@ const JarTools = () => {
   const [jarFiles, setJarFiles] = useState<JarFile[]>([])
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [scanning, setScanning] = useState(false)
-  const [pathHistory, setPathHistory] = useState<string[]>([])
   const [open, setOpen] = useState(false)
   const { toast } = useToast()
-
-  // 加载历史记录
-  useEffect(() => {
-    const loadHistory = () => {
-      const history = localStorage.getItem('jarToolsPathHistory')
-      if (history) {
-        setPathHistory(JSON.parse(history))
-      }
-    }
-    loadHistory()
-  }, [])
+  
+  const { jarToolsPathHistory, setJarToolsPathHistory } = useUserData()
 
   // 保存路径到历史记录
   const saveToHistory = (newPath: string) => {
-    if (!newPath || pathHistory.includes(newPath)) return
+    if (!newPath || jarToolsPathHistory.includes(newPath)) return
     
-    const newHistory = [newPath, ...pathHistory].slice(0, MAX_HISTORY)
-    setPathHistory(newHistory)
-    localStorage.setItem('jarToolsPathHistory', JSON.stringify(newHistory))
+    const newHistory = [newPath, ...jarToolsPathHistory].slice(0, MAX_HISTORY)
+    setJarToolsPathHistory(newHistory)
   }
 
   // 从历史记录中删除路径
   const removeFromHistory = (pathToRemove: string) => {
-    const newHistory = pathHistory.filter(p => p !== pathToRemove)
-    setPathHistory(newHistory)
-    localStorage.setItem('jarToolsPathHistory', JSON.stringify(newHistory))
+    const newHistory = jarToolsPathHistory.filter(p => p !== pathToRemove)
+    setJarToolsPathHistory(newHistory)
   }
 
   const handleSelectPath = async () => {
@@ -214,7 +203,7 @@ const JarTools = () => {
               placeholder="请输入或选择要扫描的路径..."
               className="flex-1"
             />
-            {pathHistory.length > 0 && (
+            {jarToolsPathHistory.length > 0 && (
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="shrink-0 w-[120px]">
@@ -226,7 +215,7 @@ const JarTools = () => {
                     <CommandInput placeholder="搜索历史路径..." />
                     <CommandEmpty>未找到匹配的路径</CommandEmpty>
                     <CommandGroup>
-                      {pathHistory.map((historyPath) => (
+                      {jarToolsPathHistory.map((historyPath) => (
                         <CommandItem
                           key={historyPath}
                           onSelect={() => {

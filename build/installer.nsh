@@ -11,6 +11,9 @@
     ${If} $R0 != ""
         StrCpy $INSTDIR $R0
     ${EndIf}
+
+    # 确保用户数据目录存在
+    CreateDirectory "$APPDATA\${APP_FILENAME}"
 !macroend
 
 !macro customInstall
@@ -19,6 +22,10 @@
     
     # 写入卸载信息到注册表
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_GUID}" "InstallLocation" "$INSTDIR"
+    
+    # 保护用户数据目录
+    CreateDirectory "$APPDATA\${APP_FILENAME}"
+    AccessControl::GrantOnFile "$APPDATA\${APP_FILENAME}" "(S-1-5-32-545)" "FullAccess"
 !macroend
 
 !macro customUnInstall
@@ -27,4 +34,7 @@
     
     # 删除注册表信息
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_GUID}"
+    
+    # 不删除用户数据目录
+    # $APPDATA\${APP_FILENAME} 将被保留
 !macroend 

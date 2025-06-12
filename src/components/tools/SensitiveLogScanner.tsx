@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Shield, FolderOpen, Search, ExternalLink, X, FileDown } from "lucide-react";
+import { Loader2, Shield, FolderOpen, Search, ExternalLink, X, FileDown, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SUPPORTED_FILE_EXTENSIONS } from '@/types/file-types';
 import {
@@ -34,6 +34,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useUserData } from '@/lib/store/userDataManager';
 
 const MAX_HISTORY = 10;
 
@@ -76,36 +77,24 @@ export function SensitiveLogScanner() {
   const [results, setResults] = useState<ScanResult[]>([]);
   const [sensitiveWords, setSensitiveWords] = useState<string[]>(defaultSensitiveWords);
   const [useDefaultWords, setUseDefaultWords] = useState(true);
-  const [pathHistory, setPathHistory] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedFileTypes, setSelectedFileTypes] = useState<string[]>(DEFAULT_SELECTED_TYPES);
   const { toast } = useToast();
-
-  // 加载历史记录
-  useEffect(() => {
-    const loadHistory = () => {
-      const history = localStorage.getItem('sensitiveLogPathHistory')
-      if (history) {
-        setPathHistory(JSON.parse(history))
-      }
-    }
-    loadHistory()
-  }, [])
+  
+  const { sensitiveLogPathHistory, setSensitiveLogPathHistory } = useUserData();
 
   // 保存路径到历史记录
   const saveToHistory = (newPath: string) => {
-    if (!newPath || pathHistory.includes(newPath)) return
+    if (!newPath || sensitiveLogPathHistory.includes(newPath)) return;
     
-    const newHistory = [newPath, ...pathHistory].slice(0, MAX_HISTORY)
-    setPathHistory(newHistory)
-    localStorage.setItem('sensitiveLogPathHistory', JSON.stringify(newHistory))
+    const newHistory = [newPath, ...sensitiveLogPathHistory].slice(0, MAX_HISTORY);
+    setSensitiveLogPathHistory(newHistory);
   }
 
   // 从历史记录中删除路径
   const removeFromHistory = (pathToRemove: string) => {
-    const newHistory = pathHistory.filter(p => p !== pathToRemove)
-    setPathHistory(newHistory)
-    localStorage.setItem('sensitiveLogPathHistory', JSON.stringify(newHistory))
+    const newHistory = sensitiveLogPathHistory.filter(p => p !== pathToRemove);
+    setSensitiveLogPathHistory(newHistory);
   }
 
   const handleSelectPath = async () => {
@@ -283,38 +272,43 @@ export function SensitiveLogScanner() {
                 placeholder="请输入或选择要扫描的项目路径..."
                 className="flex-1"
               />
-              {pathHistory.length > 0 && (
+              {sensitiveLogPathHistory.length > 0 && (
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="shrink-0 w-[120px]">
-                      历史记录
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                    >
+                      <Clock className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="p-0 w-[500px]" align="start">
-                    <Command className="w-full">
+                  <PopoverContent className="p-0" side="bottom" align="end">
+                    <Command>
                       <CommandInput placeholder="搜索历史路径..." />
                       <CommandEmpty>未找到匹配的路径</CommandEmpty>
                       <CommandGroup>
-                        {pathHistory.map((historyPath) => (
+                        {sensitiveLogPathHistory.map((historyPath) => (
                           <CommandItem
                             key={historyPath}
-                            onSelect={() => {
-                              setProjectPath(historyPath)
-                              setOpen(false)
+                            value={historyPath}
+                            onSelect={(value) => {
+                              setProjectPath(value);
+                              setOpen(false);
                             }}
-                            className="flex justify-between items-center"
+                            className="flex items-center justify-between"
                           >
-                            <span className="truncate flex-1 mr-4">{historyPath}</span>
+                            <span className="truncate flex-1">{historyPath}</span>
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6 shrink-0"
+                              className="ml-2 h-4 w-4 shrink-0"
                               onClick={(e) => {
-                                e.stopPropagation()
-                                removeFromHistory(historyPath)
+                                e.stopPropagation();
+                                removeFromHistory(historyPath);
                               }}
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-3 w-3" />
                             </Button>
                           </CommandItem>
                         ))}

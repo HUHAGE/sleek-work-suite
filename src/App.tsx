@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useSettings } from './lib/store/settings'
+import { useUserData } from './lib/store/userDataManager'
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,12 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const { theme, themeColor } = useSettings()
+  const { migrateFromLocalStorage } = useUserData()
+
+  // 在应用启动时迁移数据
+  useEffect(() => {
+    migrateFromLocalStorage()
+  }, [migrateFromLocalStorage])
 
   // 计算当前是否为深色模式
   const isDarkMode = useMemo(() => {

@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { useUserData } from '@/lib/store/userDataManager'
 
 interface JobClass {
   className: string;
@@ -36,35 +37,23 @@ const JobAnnotationTool: React.FC = () => {
   const [path, setPath] = useState('');
   const [jobClasses, setJobClasses] = useState<JobClass[]>([]);
   const [scanning, setScanning] = useState(false);
-  const [pathHistory, setPathHistory] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-
-  // 加载历史记录
-  useEffect(() => {
-    const loadHistory = () => {
-      const history = localStorage.getItem('jobToolsPathHistory')
-      if (history) {
-        setPathHistory(JSON.parse(history))
-      }
-    }
-    loadHistory()
-  }, [])
+  
+  const { jobToolsPathHistory, setJobToolsPathHistory } = useUserData();
 
   // 保存路径到历史记录
   const saveToHistory = (newPath: string) => {
-    if (!newPath || pathHistory.includes(newPath)) return
+    if (!newPath || jobToolsPathHistory.includes(newPath)) return;
     
-    const newHistory = [newPath, ...pathHistory].slice(0, MAX_HISTORY)
-    setPathHistory(newHistory)
-    localStorage.setItem('jobToolsPathHistory', JSON.stringify(newHistory))
+    const newHistory = [newPath, ...jobToolsPathHistory].slice(0, MAX_HISTORY);
+    setJobToolsPathHistory(newHistory);
   }
 
   // 从历史记录中删除路径
   const removeFromHistory = (pathToRemove: string) => {
-    const newHistory = pathHistory.filter(p => p !== pathToRemove)
-    setPathHistory(newHistory)
-    localStorage.setItem('jobToolsPathHistory', JSON.stringify(newHistory))
+    const newHistory = jobToolsPathHistory.filter(p => p !== pathToRemove);
+    setJobToolsPathHistory(newHistory);
   }
 
   const handleSelectPath = async () => {
@@ -199,7 +188,7 @@ const JobAnnotationTool: React.FC = () => {
               placeholder="请输入或选择Java项目路径..."
               className="flex-1"
             />
-            {pathHistory.length > 0 && (
+            {jobToolsPathHistory.length > 0 && (
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="shrink-0 w-[120px]">
@@ -211,7 +200,7 @@ const JobAnnotationTool: React.FC = () => {
                     <CommandInput placeholder="搜索历史路径..." />
                     <CommandEmpty>未找到匹配的路径</CommandEmpty>
                     <CommandGroup>
-                      {pathHistory.map((historyPath) => (
+                      {jobToolsPathHistory.map((historyPath) => (
                         <CommandItem
                           key={historyPath}
                           onSelect={() => {
