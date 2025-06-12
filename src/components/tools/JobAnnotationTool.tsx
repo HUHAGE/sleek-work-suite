@@ -276,11 +276,6 @@ const JobAnnotationTool: React.FC = () => {
     });
   };
 
-  const formatLogAction = (action: string, filePath: string) => {
-    const fileName = filePath.split('\\').pop() || filePath;
-    return `${action}：${fileName}`;
-  };
-
   return (
     <div className="space-y-6">
       {/* 路径输入区域 */}
@@ -358,7 +353,7 @@ const JobAnnotationTool: React.FC = () => {
               </Button>
             </DialogTrigger>
             <DialogContent className={cn(
-              "duration-300 transition-all",
+              "duration-300 transition-all p-4",
               isFullscreen 
                 ? "max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh]" 
                 : "max-w-4xl max-h-[80vh]"
@@ -388,7 +383,7 @@ const JobAnnotationTool: React.FC = () => {
               </div>
               <ScrollArea className={cn(
                 "w-full rounded-md border",
-                isFullscreen ? "h-[calc(95vh-140px)]" : "h-[600px]"
+                isFullscreen ? "h-[calc(95vh-180px)]" : "h-[calc(80vh-180px)]"
               )}>
                 {logs.length > 0 ? (
                   <div className="space-y-1 p-4">
@@ -400,7 +395,7 @@ const JobAnnotationTool: React.FC = () => {
                         <span className="text-muted-foreground min-w-[160px] font-mono text-xs">
                           {formatDate(log.timestamp)}
                         </span>
-                        <span className="truncate flex-1">
+                        <span className="truncate flex-1 text-xs">
                           {log.filePath}
                         </span>
                       </div>
@@ -408,8 +403,8 @@ const JobAnnotationTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className={cn(
-                    "flex flex-col items-center justify-center text-muted-foreground",
-                    isFullscreen ? "h-[calc(95vh-140px)]" : "h-[600px]"
+                    "flex flex-col items-center justify-center text-muted-foreground p-4",
+                    isFullscreen ? "h-[calc(95vh-180px)]" : "h-[calc(80vh-180px)]"
                   )}>
                     <Clock className="w-12 h-12 mb-4" />
                     <p className="text-lg mb-2">暂无操作日志</p>
