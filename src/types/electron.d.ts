@@ -49,7 +49,14 @@ interface JobClass {
 }
 
 export interface IElectronAPI {
-  platform: () => Promise<string>
-  openSoftware: (path: string) => Promise<string>
-  openExternal: (url: string) => Promise<string>
+  ipcRenderer: {
+    invoke(channel: string, ...args: any[]): Promise<any>;
+    send(channel: string, ...args: any[]): void;
+  };
+  platform: () => Promise<string>;
+  openSoftware: (path: string) => Promise<void>;
+  openExternal: (url: string) => Promise<void>;
+  minimize: () => void;
+  maximize: () => void;
+  close: () => void;
 } 

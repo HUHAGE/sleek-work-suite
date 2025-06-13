@@ -13,7 +13,8 @@ contextBridge.exposeInMainWorld('electron', {
         'add-annotation',
         'load-logs',
         'save-file',
-        'select-directory-and-pull-jar'
+        'select-directory-and-pull-jar',
+        'scan-jar-files'
       ];
       
       if (validChannels.includes(channel)) {
@@ -37,8 +38,8 @@ contextBridge.exposeInMainWorld('electron', {
   openExternal: (url: string) => ipcRenderer.invoke('openExternal', url),
   minimize: () => ipcRenderer.send('minimize'),
   maximize: () => ipcRenderer.send('maximize'),
-  close: () => ipcRenderer.send('close'),
-})
+  close: () => ipcRenderer.send('close')
+} as unknown as IElectronAPI)
 
 // 暴露给渲染进程的API
 const api: IElectronAPI = {
