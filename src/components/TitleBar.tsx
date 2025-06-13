@@ -35,7 +35,7 @@ const TitleBar = () => {
       </div>
       <div className="flex-1 flex justify-center">
         <div className="text-sm text-muted-foreground">
-          HUHA • 工作提效小助手
+        AiDo • 工作提效小助手
         </div>
       </div>
     </div>

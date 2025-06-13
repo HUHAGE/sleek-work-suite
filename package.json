@@ -1,7 +1,7 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "1.0.0",
+  "version": "4.0",
   "type": "commonjs",
   "main": "dist-electron/main.js",
   "description": "快速定制，随时更新，随时使用的工作提效工具",
@@ -103,7 +103,7 @@
   },
   "build": {
     "appId": "com.electron.sleek-work-suite",
-    "productName": "HUHAToolBox",
+    "productName": "AiDo",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -132,7 +132,7 @@
       "deleteAppDataOnUninstall": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "HUHA提效小助手",
+      "shortcutName": "AiDo",
       "license": "LICENSE",
       "include": "build/installer.nsh"
     },

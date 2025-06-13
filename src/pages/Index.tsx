@@ -81,7 +81,7 @@ const Index = () => {
                     "text-2xl font-bold gradient-text mb-2",
                     !sidebarOpen && "text-center text-sm"
                   )}>
-                    {!sidebarOpen ? "HUHA" : "工作提效小助手"}
+                    {!sidebarOpen ? "AiDo" : "工作提效小助手"}
                   </h1>
                   {sidebarOpen && (
                     <p className="text-muted-foreground text-sm">快速定制，随时更新，随时使用</p>
