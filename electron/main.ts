@@ -646,7 +646,9 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
-    icon: path.join(__dirname, '../resources/icon.ico'),
+    icon: isDev 
+      ? path.join(__dirname, '../resources/icon.ico')
+      : path.join(__dirname, '../build/icons/icon.ico'),
     minWidth: 800,
     minHeight: 600,
     frame: false,

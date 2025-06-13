@@ -111,7 +111,8 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "package.json"
+      "package.json",
+      "build/**/*"
     ],
     "win": {
       "target": [
