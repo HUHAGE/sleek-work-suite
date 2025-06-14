@@ -22,12 +22,23 @@ const TextTools = () => {
   };
 
   const getWordCount = () => {
+    const chineseChars = text.match(/[\u4e00-\u9fa5]/g) || [];
+    const englishWords = text.match(/[a-zA-Z]+/g) || [];
+    const numbers = text.match(/\d+/g) || [];
+    const punctuation = text.match(/[^\w\s\u4e00-\u9fa5]/g) || [];
+    const spaces = text.match(/\s/g) || [];
+    
     return {
       characters: text.length,
       charactersNoSpaces: text.replace(/\s/g, '').length,
       words: text.trim() ? text.trim().split(/\s+/).length : 0,
       lines: text.trim() ? text.split('\n').length : 0,
-      paragraphs: text.split(/\n\s*\n/).filter(p => p.trim()).length
+      paragraphs: text.split(/\n\s*\n/).filter(p => p.trim()).length,
+      chineseChars: chineseChars.length,
+      englishWords: englishWords.length,
+      numbers: numbers.length,
+      punctuation: punctuation.length,
+      spaces: spaces.length,
     };
   };
 
@@ -88,25 +99,45 @@ const TextTools = () => {
           <h3 className="text-2xl font-semibold">文本统计</h3>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="bg-background/70 rounded-xl p-5 text-center shadow-sm">
-            <div className="text-3xl font-bold text-primary mb-2">{stats.characters}</div>
-            <div className="text-sm text-muted-foreground font-medium">字符数</div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-primary/30 dark:hover:border-primary/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-primary dark:text-primary/90 mb-2 tracking-tight">{stats.characters}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">总字符数</div>
           </div>
-          <div className="bg-background/70 rounded-xl p-5 text-center shadow-sm">
-            <div className="text-3xl font-bold text-blue-500 mb-2">{stats.charactersNoSpaces}</div>
-            <div className="text-sm text-muted-foreground font-medium">字符数(无空格)</div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-blue-500/30 dark:hover:border-blue-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-blue-500 dark:text-blue-400 mb-2 tracking-tight">{stats.chineseChars}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">中文字数</div>
           </div>
-          <div className="bg-background/70 rounded-xl p-5 text-center shadow-sm">
-            <div className="text-3xl font-bold text-green-500 mb-2">{stats.words}</div>
-            <div className="text-sm text-muted-foreground font-medium">单词数</div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-green-500/30 dark:hover:border-green-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-green-500 dark:text-green-400 mb-2 tracking-tight">{stats.englishWords}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">英文单词</div>
           </div>
-          <div className="bg-background/70 rounded-xl p-5 text-center shadow-sm">
-            <div className="text-3xl font-bold text-yellow-500 mb-2">{stats.lines}</div>
-            <div className="text-sm text-muted-foreground font-medium">行数</div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-yellow-500/30 dark:hover:border-yellow-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-yellow-500 dark:text-yellow-400 mb-2 tracking-tight">{stats.numbers}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">数字个数</div>
           </div>
-          <div className="bg-background/70 rounded-xl p-5 text-center shadow-sm">
-            <div className="text-3xl font-bold text-purple-500 mb-2">{stats.paragraphs}</div>
-            <div className="text-sm text-muted-foreground font-medium">段落数</div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-purple-500/30 dark:hover:border-purple-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-purple-500 dark:text-purple-400 mb-2 tracking-tight">{stats.punctuation}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">标点符号</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-pink-500/30 dark:hover:border-pink-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-pink-500 dark:text-pink-400 mb-2 tracking-tight">{stats.spaces}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">空格数</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-indigo-500/30 dark:hover:border-indigo-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-indigo-500 dark:text-indigo-400 mb-2 tracking-tight">{stats.charactersNoSpaces}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">无空格字符</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-orange-500/30 dark:hover:border-orange-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-orange-500 dark:text-orange-400 mb-2 tracking-tight">{stats.words}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">总单词数</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-teal-500/30 dark:hover:border-teal-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-teal-500 dark:text-teal-400 mb-2 tracking-tight">{stats.lines}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">行数</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-5 text-center shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-cyan-500/30 dark:hover:border-cyan-500/50 hover:scale-[1.02] backdrop-blur-sm">
+            <div className="text-4xl font-bold text-cyan-500 dark:text-cyan-400 mb-2 tracking-tight">{stats.paragraphs}</div>
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground/90 font-medium tracking-wide">段落数</div>
           </div>
         </div>
       </div>
@@ -123,11 +154,11 @@ const TextTools = () => {
           {transformations.map((transform) => {
             const transformedText = transformText(transform.key);
             return (
-              <div key={transform.key} className="bg-background/70 rounded-xl p-6 shadow-sm">
+              <div key={transform.key} className="bg-background/80 dark:bg-background/40 rounded-xl p-6 shadow-md dark:shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(0,0,0,0.4)] transition-all duration-300 border border-border/30 dark:border-border/20 hover:border-primary/30 dark:hover:border-primary/50 hover:scale-[1.02] backdrop-blur-sm">
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-semibold flex items-center gap-3 text-lg">
-                    <div className="bg-primary/10 w-8 h-8 flex items-center justify-center rounded-lg">
-                      <span className="text-primary text-lg">{transform.icon}</span>
+                    <div className="bg-primary/10 dark:bg-primary/20 w-10 h-10 flex items-center justify-center rounded-xl shadow-sm">
+                      <span className="text-primary dark:text-primary/90 text-xl">{transform.icon}</span>
                     </div>
                     {transform.label}
                   </span>
@@ -135,16 +166,16 @@ const TextTools = () => {
                     size="sm"
                     variant="ghost"
                     onClick={() => copyToClipboard(transformedText, transform.key)}
-                    className="hover:bg-primary/10 transition-colors"
+                    className="hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors rounded-lg"
                   >
                     {copiedStates[transform.key] ? (
-                      <Check size={18} className="text-green-500" />
+                      <Check size={18} className="text-green-500 dark:text-green-400" />
                     ) : (
-                      <Copy size={18} className="text-muted-foreground" />
+                      <Copy size={18} className="text-muted-foreground dark:text-muted-foreground/90" />
                     )}
                   </Button>
                 </div>
-                <div className="text-base bg-muted/30 rounded-xl p-4 min-h-[80px] max-h-32 overflow-y-auto border border-border/50">
+                <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-xl p-4 min-h-[80px] max-h-32 overflow-y-auto border border-border/50 dark:border-border/30 shadow-inner">
                   {transformedText || '请输入文本...'}
                 </div>
               </div>
