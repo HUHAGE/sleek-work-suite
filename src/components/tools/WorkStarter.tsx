@@ -7,6 +7,7 @@ import { Laptop, Globe, Trash2, Plus, Play } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useToast } from "@/components/ui/use-toast"
 
 type ItemType = 'software' | 'website'
 
@@ -19,6 +20,7 @@ interface NewItem {
 const WorkStarter = () => {
   const { workItems, addWorkItem, removeWorkItem } = useUserData()
   const [newItem, setNewItem] = useState<NewItem>({ name: '', path: '', type: 'software' })
+  const { toast } = useToast()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,6 +31,15 @@ const WorkStarter = () => {
   }
 
   const handleStartAll = async () => {
+    if (workItems.length === 0) {
+      toast({
+        title: "没有配置项",
+        description: "请先添加需要启动的软件或网页",
+        variant: "destructive"
+      })
+      return
+    }
+
     for (const item of workItems) {
       if (item.type === 'website') {
         try {
