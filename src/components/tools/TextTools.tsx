@@ -105,130 +105,130 @@ You can use it to test various text processing features.`;
   ];
 
   return (
-    <div className="space-y-8">
-      {/* 输入区域 */}
+    <div className="grid grid-cols-[1fr_auto_1fr] gap-6 h-full">
+      {/* 左侧区域：输入和统计 */}
+      <div className="space-y-4">
+        {/* 输入区域 */}
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <FileText size={24} className="text-primary" />
+              </div>
+              <h3 className="text-2xl font-semibold">文本输入</h3>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 hover:bg-primary/10 dark:hover:bg-primary/20 border-primary/20 hover:border-primary/40 transition-all"
+              onClick={insertSampleText}
+            >
+              <Sparkles size={16} className="text-primary" />
+              <span>示例文字</span>
+            </Button>
+          </div>
+          <Textarea
+            placeholder="在此输入您要处理的文本..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="min-h-[400px] bg-background/50 border-border/50 focus:border-primary/50 resize-none text-base"
+          />
+        </div>
+
+        {/* 统计信息 */}
+        <div className="bg-card rounded-xl p-4 shadow-sm border border-border/50">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Hash size={20} className="text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold">文本统计</h3>
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-primary">{stats.characters}</div>
+              <div className="text-xs text-muted-foreground">总字符</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-blue-500">{stats.chineseChars}</div>
+              <div className="text-xs text-muted-foreground">中文</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-green-500">{stats.englishWords}</div>
+              <div className="text-xs text-muted-foreground">英文</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-yellow-500">{stats.numbers}</div>
+              <div className="text-xs text-muted-foreground">数字</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-purple-500">{stats.punctuation}</div>
+              <div className="text-xs text-muted-foreground">标点</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-pink-500">{stats.spaces}</div>
+              <div className="text-xs text-muted-foreground">空格</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-indigo-500">{stats.charactersNoSpaces}</div>
+              <div className="text-xs text-muted-foreground">无空格</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-orange-500">{stats.words}</div>
+              <div className="text-xs text-muted-foreground">单词</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-teal-500">{stats.lines}</div>
+              <div className="text-xs text-muted-foreground">行数</div>
+            </div>
+            <div className="bg-background/80 dark:bg-background/40 rounded-lg p-2 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+              <div className="text-lg font-bold text-cyan-500">{stats.paragraphs}</div>
+              <div className="text-xs text-muted-foreground">段落</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 中间区域：操作按钮 */}
+      <div className="flex flex-col gap-2 py-6">
+        {transformations.map((transform) => (
+          <Button
+            key={transform.key}
+            variant="outline"
+            className="w-32 h-auto py-3 flex items-center gap-2 bg-background/50 hover:bg-primary/5 dark:hover:bg-primary/10 border-primary/20 hover:border-primary/40 transition-all group"
+            onClick={() => transformText(transform.key)}
+          >
+            <div className="bg-primary/10 dark:bg-primary/20 w-8 h-8 flex items-center justify-center rounded-lg group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors">
+              <span className="text-primary text-lg group-hover:text-primary/90">{transform.icon}</span>
+            </div>
+            <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground">{transform.label}</span>
+          </Button>
+        ))}
+      </div>
+
+      {/* 右侧区域：输出结果 */}
       <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 p-2 rounded-lg">
-              <FileText size={24} className="text-primary" />
+              <Link size={24} className="text-primary" />
             </div>
-            <h3 className="text-2xl font-semibold">文本输入</h3>
+            <h3 className="text-2xl font-semibold">处理结果</h3>
           </div>
           <Button
-            variant="outline"
             size="sm"
-            className="flex items-center gap-2 hover:bg-primary/10 dark:hover:bg-primary/20 border-primary/20 hover:border-primary/40 transition-all"
-            onClick={insertSampleText}
+            variant="ghost"
+            onClick={() => copyToClipboard(result, 'result')}
+            className="hover:bg-primary/10 dark:hover:bg-primary/20"
           >
-            <Sparkles size={16} className="text-primary" />
-            <span>示例文字</span>
+            {copiedStates['result'] ? (
+              <Check size={16} className="text-green-500" />
+            ) : (
+              <Copy size={16} className="text-muted-foreground" />
+            )}
           </Button>
         </div>
-        <Textarea
-          placeholder="在此输入您要处理的文本..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="min-h-[200px] bg-background/50 border-border/50 focus:border-primary/50 resize-none text-base"
-        />
-      </div>
-
-      {/* 统计信息 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Hash size={24} className="text-primary" />
-          </div>
-          <h3 className="text-2xl font-semibold">文本统计</h3>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-primary mb-2">{stats.characters}</div>
-            <div className="text-sm text-muted-foreground">总字符数</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-blue-500 mb-2">{stats.chineseChars}</div>
-            <div className="text-sm text-muted-foreground">中文字数</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-green-500 mb-2">{stats.englishWords}</div>
-            <div className="text-sm text-muted-foreground">英文单词</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-yellow-500 mb-2">{stats.numbers}</div>
-            <div className="text-sm text-muted-foreground">数字个数</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-purple-500 mb-2">{stats.punctuation}</div>
-            <div className="text-sm text-muted-foreground">标点符号</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-pink-500 mb-2">{stats.spaces}</div>
-            <div className="text-sm text-muted-foreground">空格数</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-indigo-500 mb-2">{stats.charactersNoSpaces}</div>
-            <div className="text-sm text-muted-foreground">无空格字符</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-orange-500 mb-2">{stats.words}</div>
-            <div className="text-sm text-muted-foreground">总单词数</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-teal-500 mb-2">{stats.lines}</div>
-            <div className="text-sm text-muted-foreground">行数</div>
-          </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-            <div className="text-2xl font-bold text-cyan-500 mb-2">{stats.paragraphs}</div>
-            <div className="text-sm text-muted-foreground">段落数</div>
-          </div>
-        </div>
-      </div>
-
-      {/* 文本转换 */}
-      <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-primary/10 p-2 rounded-lg">
-            <Link size={24} className="text-primary" />
-          </div>
-          <h3 className="text-2xl font-semibold">文本转换</h3>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
-          {transformations.map((transform) => (
-            <Button
-              key={transform.key}
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2 bg-background/50 hover:bg-primary/5 dark:hover:bg-primary/10 border-primary/20 hover:border-primary/40 transition-all group"
-              onClick={() => transformText(transform.key)}
-            >
-              <div className="bg-primary/10 dark:bg-primary/20 w-10 h-10 flex items-center justify-center rounded-lg group-hover:bg-primary/20 dark:group-hover:bg-primary/30 transition-colors">
-                <span className="text-primary text-lg group-hover:text-primary/90">{transform.icon}</span>
-              </div>
-              <span className="text-sm font-medium text-foreground/80 group-hover:text-foreground">{transform.label}</span>
-            </Button>
-          ))}
-        </div>
-        
-        {/* 处理结果输出框 */}
-        <div className="bg-background/80 dark:bg-background/40 rounded-xl p-4 border border-border/30">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-muted-foreground">处理结果</span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => copyToClipboard(result, 'result')}
-              className="hover:bg-primary/10 dark:hover:bg-primary/20"
-            >
-              {copiedStates['result'] ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <Copy size={16} className="text-muted-foreground" />
-              )}
-            </Button>
-          </div>
-          <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[150px] max-h-[300px] overflow-y-auto border border-border/50 dark:border-border/30 shadow-inner">
-            {result || '处理结果将显示在这里...'}
-          </div>
+        <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto border border-border/50 dark:border-border/30 shadow-inner">
+          {result || '处理结果将显示在这里...'}
         </div>
       </div>
     </div>
