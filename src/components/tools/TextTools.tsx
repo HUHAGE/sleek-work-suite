@@ -193,6 +193,8 @@ You can use it to test various text processing features.`;
         { key: 'base64decode', label: 'Base64解码', icon: '#' },
         { key: 'url', label: 'URL编码', icon: '@' },
         { key: 'urldecode', label: 'URL解码', icon: '@' },
+        { key: 'unicode', label: 'Unicode编码', icon: 'U' },
+        { key: 'unicodedecode', label: 'Unicode解码', icon: 'U' },
       ]
     },
     {
@@ -257,6 +259,29 @@ You can use it to test various text processing features.`;
           setResultType('text');
         } catch (error) {
           transformed = '解码失败：输入不是有效的URL编码';
+          setResultType('text');
+        }
+        break;
+      case 'unicode':
+        try {
+          transformed = text.split('').map(char => {
+            const code = char.charCodeAt(0);
+            return code > 127 ? `\\u${code.toString(16).padStart(4, '0')}` : char;
+          }).join('');
+          setResultType('text');
+        } catch (error) {
+          transformed = '编码失败：输入包含无效字符';
+          setResultType('text');
+        }
+        break;
+      case 'unicodedecode':
+        try {
+          transformed = text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => 
+            String.fromCharCode(parseInt(hex, 16))
+          );
+          setResultType('text');
+        } catch (error) {
+          transformed = '解码失败：输入不是有效的Unicode编码';
           setResultType('text');
         }
         break;
@@ -351,7 +376,7 @@ You can use it to test various text processing features.`;
               placeholder="在此输入您要处理的文本..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[400px] bg-background/50 border-border/50 focus:border-primary/50 resize-none text-base"
+              className="min-h-[400px] bg-background/50 border-2 border-primary/20 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none text-base shadow-lg shadow-primary/5 transition-all duration-200 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
             />
           </div>
 
