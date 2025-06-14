@@ -18,6 +18,7 @@ const TextTools = () => {
     toast({
       title: "已复制到剪贴板",
       description: "内容已成功复制",
+      variant: "success"
     });
   };
 
