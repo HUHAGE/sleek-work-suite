@@ -172,7 +172,7 @@ const SqlInFill = () => {
           <Textarea
             value={result}
             readOnly
-            placeholder="填充后的SQL将在这里显示..."
+            placeholder=""
             className="min-h-[420px] font-mono text-sm"
           />
         </CardContent>
@@ -738,6 +738,126 @@ const TruncateDetector: React.FC = () => {
   );
 };
 
+// SQL IN生成器组件
+const SqlInGenerator = () => {
+  const [fields, setFields] = useState('');
+  const [result, setResult] = useState('');
+  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleGenerate = () => {
+    try {
+      // 分割并过滤空行
+      const fieldList = fields.split('\n')
+        .map(field => field.trim())
+        .filter(field => field);
+
+      if (fieldList.length === 0) {
+        throw new Error('请输入至少一个字段值');
+      }
+
+      // 生成IN语句
+      const inClause = fieldList
+        .map(field => `'${field}'`)
+        .join(', ');
+
+      setResult(`IN (${inClause})`);
+      
+      toast({
+        title: "生成成功",
+        description: "SQL IN语句已生成",
+      });
+    } catch (error) {
+      toast({
+        title: "生成失败",
+        description: error instanceof Error ? error.message : "生成过程中发生错误",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(result);
+      setCopied(true);
+      toast({
+        title: "复制成功",
+        description: "SQL已复制到剪贴板",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "复制失败",
+        description: "无法访问剪贴板",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <Card className="shadow-md">
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Database className="h-4 w-4 text-primary" />
+              <CardTitle className="text-lg">字段值</CardTitle>
+            </div>
+            <Button onClick={handleGenerate} size="sm" className="h-8 gap-1.5 text-sm">
+              <ArrowRight className="h-3.5 w-3.5" />
+              生成
+            </Button>
+          </div>
+          <CardDescription className="text-sm mt-1">
+            每行输入一个字段值，将自动生成SQL IN语句
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <Textarea
+            placeholder=""
+            value={fields}
+            onChange={(e) => setFields(e.target.value)}
+            className="min-h-[420px] font-mono text-sm"
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-md">
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Database className="h-4 w-4 text-primary" />
+              <CardTitle className="text-lg">生成结果</CardTitle>
+            </div>
+            {result && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-sm"
+                onClick={handleCopy}
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? "已复制" : "复制"}
+              </Button>
+            )}
+          </div>
+          <CardDescription className="text-sm mt-1">
+            生成的SQL IN语句将在这里显示
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <Textarea
+            value={result}
+            readOnly
+            placeholder=""
+            className="min-h-[420px] font-mono text-sm"
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // 主组件
 const SqlTools = () => {
   return (
@@ -771,6 +891,15 @@ const SqlTools = () => {
               <span>截断检测</span>
             </div>
           </TabsTrigger>
+          <TabsTrigger 
+            value="in-generator"
+            className="h-10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              <span>IN生成器</span>
+            </div>
+          </TabsTrigger>
         </TabsList>
         <div className="mt-6">
           <TabsContent value="sql-in">
@@ -781,6 +910,9 @@ const SqlTools = () => {
           </TabsContent>
           <TabsContent value="truncate-detector">
             <TruncateDetector />
+          </TabsContent>
+          <TabsContent value="in-generator">
+            <SqlInGenerator />
           </TabsContent>
         </div>
       </Tabs>
