@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info, PlayCircle } from 'lucide-react';
+import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info, PlayCircle, Database } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import JarTools from '@/components/tools/JarTools';
 import JobAnnotationTool from '@/components/tools/JobAnnotationTool';
 import HuhaTools from '@/components/tools/HuhaTools';
 import SettingsTools from '@/components/tools/SettingsTools';
+import SqlTools from '@/components/tools/SqlTools';
 import { useSettings } from '@/lib/store/settings';
 import TitleBar from '@/components/TitleBar';
 import { LucideIcon } from 'lucide-react';
@@ -28,6 +29,7 @@ const Index = () => {
   const tools: Tool[] = [
     { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
+    { id: 'sql', name: 'SQL工具', dec: '', icon: Database, component: SqlTools },
     { id: 'jar', name: '个性化Jar管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
     { id: 'jar-quick-puller', name: 'Jar快速拉取', dec: '拉取产品的Jar包，方便整改，支持单个Jar包拉取和批量Maven依赖拉取', icon: Download, component: JarQuickPuller },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },
