@@ -1,9 +1,21 @@
 import { useState } from 'react';
-import { Copy, Check, FileText, Hash, Link, Sparkles } from 'lucide-react';
+import { Copy, Check, FileText, Hash, Link, Sparkles, List, WrapText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import {
+  oneDark,
+  oneLight,
+  vscDarkPlus,
+  dracula,
+  materialDark,
+  materialLight,
+  atomDark,
+  solarizedlight as github
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { format } from 'sql-formatter';
 
 const JsonPreview = ({ json }: { json: string }) => {
   const formatJson = (json: string) => {
@@ -41,6 +53,67 @@ const JsonPreview = ({ json }: { json: string }) => {
   );
 };
 
+// 添加主题配置
+const themes = [
+  { name: '深色主题', value: 'oneDark', style: oneDark },
+  { name: '浅色主题', value: 'oneLight', style: oneLight },
+  { name: 'VSCode深色', value: 'vscDarkPlus', style: vscDarkPlus },
+  { name: 'Dracula', value: 'dracula', style: dracula },
+  { name: 'Material深色', value: 'materialDark', style: materialDark },
+  { name: 'Material浅色', value: 'materialLight', style: materialLight },
+  { name: 'Atom深色', value: 'atomDark', style: atomDark },
+  { name: 'GitHub', value: 'github', style: github },
+];
+
+type SqlPreviewProps = {
+  sql: string;
+  showLineNumbers: boolean;
+  wrapLines: boolean;
+  selectedTheme: typeof themes[0];
+};
+
+const SqlPreview = ({ sql, showLineNumbers, wrapLines, selectedTheme }: SqlPreviewProps) => {
+  return (
+    <div className="min-h-[500px] overflow-y-auto overflow-x-hidden border border-border/50 dark:border-border/30 shadow-inner rounded-lg bg-muted/30 dark:bg-muted/20">
+      <SyntaxHighlighter
+        language="sql"
+        style={selectedTheme.style}
+        showLineNumbers={showLineNumbers}
+        wrapLines={wrapLines}
+        wrapLongLines={wrapLines}
+        customStyle={{
+          margin: 0,
+          padding: '1rem',
+          background: 'transparent',
+          minHeight: '500px',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        }}
+        codeTagProps={{
+          style: {
+            background: 'transparent',
+            lineHeight: 1.5,
+            fontFamily: 'inherit',
+          }
+        }}
+        lineProps={{
+          style: {
+            background: 'transparent',
+            whiteSpace: wrapLines ? 'pre-wrap' : 'pre',
+          }
+        }}
+        lineNumberStyle={{
+          minWidth: '3em',
+          paddingRight: '1em',
+          textAlign: 'right',
+          userSelect: 'none',
+        }}
+      >
+        {sql}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
 type TextStats = {
   characters: number;
   charactersNoSpaces: number;
@@ -69,8 +142,11 @@ type JsonStats = {
 const TextTools = () => {
   const [text, setText] = useState('');
   const [result, setResult] = useState('');
-  const [resultType, setResultType] = useState<'text' | 'json'>('text');
+  const [resultType, setResultType] = useState<'text' | 'json' | 'sql'>('text');
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
+  const [showLineNumbers, setShowLineNumbers] = useState(true);
+  const [wrapLines, setWrapLines] = useState(true);
+  const [selectedTheme, setSelectedTheme] = useState(themes[0]);
   const { toast } = useToast();
 
   const sampleText = `这是一个示例文本，包含了中英文混合内容。
@@ -86,11 +162,84 @@ This is a sample text with mixed Chinese and English content.
 你可以用它来测试各种文本处理功能。
 You can use it to test various text processing features.`;
 
-  const insertSampleText = () => {
-    setText(sampleText);
+const sampleJson = `{
+  "name": "示例JSON",
+  "description": "这是一个JSON示例",
+  "features": ["中文", "English", "Numbers"],
+  "details": {
+    "version": 1.0,
+    "isDemo": true,
+    "stats": {
+      "items": 3,
+      "type": "basic"
+    }
+  },
+  "tags": ["示例", "测试", "demo"],
+  "date": "2024-03-21"
+}`;
+
+const sampleXml = `<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <header>
+    <title>示例XML</title>
+    <description>这是一个XML示例</description>
+  </header>
+  <content>
+    <item id="1">
+      <name>测试项目1</name>
+      <value>100</value>
+    </item>
+    <item id="2">
+      <name>Test Item 2</name>
+      <value>200</value>
+    </item>
+  </content>
+  <footer>
+    <timestamp>2024-03-21</timestamp>
+  </footer>
+</root>`;
+
+const sampleSql = `-- 创建用户表
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 插入示例数据
+INSERT INTO users (username, email) VALUES
+  ('张三', 'zhangsan@example.com'),
+  ('李四', 'lisi@example.com');
+
+-- 查询示例
+SELECT 
+  u.username,
+  u.email,
+  DATE_FORMAT(u.created_at, '%Y-%m-%d') as join_date
+FROM users u
+WHERE u.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+ORDER BY u.created_at DESC;`;
+
+  const insertSampleText = (type: 'basic' | 'json' | 'xml' | 'sql') => {
+    let sample = '';
+    switch (type) {
+      case 'json':
+        sample = sampleJson;
+        break;
+      case 'xml':
+        sample = sampleXml;
+        break;
+      case 'sql':
+        sample = sampleSql;
+        break;
+      default:
+        sample = sampleText;
+    }
+    setText(sample);
     toast({
       title: "已插入示例文本",
-      description: "示例文本已成功填充到输入框",
+      description: `${type === 'basic' ? '基础' : type.toUpperCase()}示例文本已成功填充到输入框`,
       variant: "success"
     });
   };
@@ -175,6 +324,20 @@ You can use it to test various text processing features.`;
   const textStats = getWordCount();
   const jsonStats = resultType === 'json' ? getJsonStats(text) : null;
 
+  const formatSql = (sql: string): string => {
+    try {
+      return format(sql, {
+        language: 'sql' as const,
+        keywordCase: 'upper' as const,
+        tabWidth: 4,
+        useTabs: false,
+        linesBetweenQueries: 2,
+      });
+    } catch (error) {
+      return '无法格式化SQL：' + (error as Error).message;
+    }
+  };
+
   const buttonCategories = [
     {
       name: '大小写',
@@ -202,6 +365,7 @@ You can use it to test various text processing features.`;
       icon: '{',
       buttons: [
         { key: 'json', label: 'JSON格式化', icon: '{' },
+        { key: 'sql', label: 'SQL格式化', icon: '≡' },
         { key: 'reverse', label: '反转', icon: '↔' },
       ]
     }
@@ -302,6 +466,15 @@ You can use it to test various text processing features.`;
           }
         }
         break;
+      case 'sql':
+        try {
+          transformed = formatSql(text);
+          setResultType('sql');
+        } catch (error) {
+          transformed = 'SQL格式化失败：' + error.message;
+          setResultType('text');
+        }
+        break;
       default:
         transformed = text;
         setResultType('text');
@@ -324,7 +497,7 @@ You can use it to test various text processing features.`;
               </div>
               <span className="text-sm font-medium">{category.name}</span>
             </Button>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
               <div className="bg-card rounded-lg shadow-lg border border-border/50 p-2 min-w-[200px]">
                 <div className="flex flex-col gap-1">
                   {category.buttons.map((button) => (
@@ -355,38 +528,76 @@ You can use it to test various text processing features.`;
         <div className="space-y-4">
           {/* 输入区域 */}
           <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg">
-                  <FileText size={24} className="text-primary" />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/10 p-1.5 rounded-lg">
+                  <FileText size={18} className="text-primary" />
                 </div>
-                <h3 className="text-2xl font-semibold">文本输入</h3>
+                <h3 className="text-lg font-medium">文本输入</h3>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 hover:bg-primary/10 dark:hover:bg-primary/20 border-primary/20 hover:border-primary/40 transition-all"
-                onClick={insertSampleText}
+                className="flex items-center gap-2 hover:bg-primary/10 dark:hover:bg-primary/20 border-primary/20 hover:border-primary/40 transition-all relative group"
               >
-                <Sparkles size={16} className="text-primary" />
+                <Sparkles size={14} className="text-primary" />
                 <span>示例文字</span>
+                <div className="absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[55]">
+                  <div className="bg-primary rounded-lg shadow-lg border border-primary/50 p-2 min-w-[120px]">
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="justify-start font-normal text-primary-foreground hover:bg-primary-foreground/10"
+                        onClick={() => insertSampleText('basic')}
+                      >
+                        基础文本
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="justify-start font-normal text-primary-foreground hover:bg-primary-foreground/10"
+                        onClick={() => insertSampleText('json')}
+                      >
+                        JSON
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="justify-start font-normal text-primary-foreground hover:bg-primary-foreground/10"
+                        onClick={() => insertSampleText('xml')}
+                      >
+                        XML
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="justify-start font-normal text-primary-foreground hover:bg-primary-foreground/10"
+                        onClick={() => insertSampleText('sql')}
+                      >
+                        SQL
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
+                </div>
               </Button>
             </div>
             <Textarea
               placeholder="在此输入您要处理的文本..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[400px] bg-background/50 border-2 border-primary/20 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none text-base shadow-lg shadow-primary/5 transition-all duration-200 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
+              className="min-h-[300px] bg-background/50 border-2 border-primary/20 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none text-base shadow-lg shadow-primary/5 transition-all duration-200 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
             />
           </div>
 
           {/* 统计信息 */}
           <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Hash size={24} className="text-primary" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="bg-primary/10 p-1.5 rounded-lg">
+                <Hash size={18} className="text-primary" />
               </div>
-              <h3 className="text-2xl font-semibold">{resultType === 'json' ? 'JSON统计' : '文本统计'}</h3>
+              <h3 className="text-lg font-medium">{resultType === 'json' ? 'JSON统计' : resultType === 'sql' ? 'SQL统计' : '文本统计'}</h3>
             </div>
             <div className="grid grid-cols-5 gap-2">
               {resultType === 'json' && jsonStats ? (
@@ -426,6 +637,49 @@ You can use it to test various text processing features.`;
                   <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
                     <div className="text-2xl font-bold text-teal-500">{jsonStats.maxDepth}</div>
                     <div className="text-sm text-muted-foreground">最大深度</div>
+                  </div>
+                </>
+              ) : resultType === 'sql' ? (
+                <>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-primary">{textStats.characters}</div>
+                    <div className="text-sm text-muted-foreground">总字符</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-blue-500">{textStats.chineseChars}</div>
+                    <div className="text-sm text-muted-foreground">中文</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-green-500">{textStats.englishWords}</div>
+                    <div className="text-sm text-muted-foreground">英文</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-yellow-500">{textStats.numbers}</div>
+                    <div className="text-sm text-muted-foreground">数字</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-purple-500">{textStats.punctuation}</div>
+                    <div className="text-sm text-muted-foreground">标点</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-pink-500">{textStats.spaces}</div>
+                    <div className="text-sm text-muted-foreground">空格</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-indigo-500">{textStats.charactersNoSpaces}</div>
+                    <div className="text-sm text-muted-foreground">无空格</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-orange-500">{textStats.words}</div>
+                    <div className="text-sm text-muted-foreground">单词</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-teal-500">{textStats.lines}</div>
+                    <div className="text-sm text-muted-foreground">行数</div>
+                  </div>
+                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+                    <div className="text-2xl font-bold text-cyan-500">{textStats.paragraphs}</div>
+                    <div className="text-sm text-muted-foreground">段落</div>
                   </div>
                 </>
               ) : (
@@ -478,28 +732,94 @@ You can use it to test various text processing features.`;
 
         {/* 右侧区域：输出结果 */}
         <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Link size={24} className="text-primary" />
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/10 p-1.5 rounded-lg">
+                <Link size={18} className="text-primary" />
               </div>
-              <h3 className="text-2xl font-semibold">处理结果</h3>
+              <h3 className="text-lg font-medium">处理结果</h3>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => copyToClipboard(result, 'result')}
-              className="hover:bg-primary/10 dark:hover:bg-primary/20"
-            >
-              {copiedStates['result'] ? (
-                <Check size={16} className="text-green-500" />
-              ) : (
-                <Copy size={16} className="text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              {resultType === 'sql' && (
+                <>
+                  <div className="relative group">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
+                      title="选择主题"
+                    >
+                      <span className="text-primary text-xs">Aa</span>
+                    </Button>
+                    <div className="absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
+                      <div className="bg-card rounded-lg shadow-lg border border-border/50 p-1.5 min-w-[140px]">
+                        <div className="flex flex-col gap-0.5">
+                          {themes.map((theme) => (
+                            <Button
+                              key={theme.value}
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 justify-start font-normal text-xs hover:bg-primary/10 dark:hover:bg-primary/20"
+                              onClick={() => setSelectedTheme(theme)}
+                            >
+                              {theme.name}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
+                    </div>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                      "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                      showLineNumbers && "bg-primary/10 dark:bg-primary/20"
+                    )}
+                    onClick={() => setShowLineNumbers(!showLineNumbers)}
+                    title="显示行号"
+                  >
+                    <List size={14} className="text-primary" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={cn(
+                      "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                      wrapLines && "bg-primary/10 dark:bg-primary/20"
+                    )}
+                    onClick={() => setWrapLines(!wrapLines)}
+                    title="自动换行"
+                  >
+                    <WrapText size={14} className="text-primary" />
+                  </Button>
+                </>
               )}
-            </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => copyToClipboard(result, 'result')}
+                className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
+                title="复制到剪贴板"
+              >
+                {copiedStates['result'] ? (
+                  <Check size={14} className="text-green-500" />
+                ) : (
+                  <Copy size={14} className="text-muted-foreground" />
+                )}
+              </Button>
+            </div>
           </div>
           {resultType === 'json' ? (
             <JsonPreview json={result} />
+          ) : resultType === 'sql' ? (
+            <SqlPreview 
+              sql={result}
+              showLineNumbers={showLineNumbers}
+              wrapLines={wrapLines}
+              selectedTheme={selectedTheme}
+            />
           ) : (
             <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto overflow-x-hidden break-words border border-border/50 dark:border-border/30 shadow-inner">
               {result || '处理结果将显示在这里...'}
