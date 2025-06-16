@@ -17,11 +17,19 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { format } from 'sql-formatter';
 
-const JsonPreview = ({ json }: { json: string }) => {
+type JsonPreviewProps = {
+  json: string;
+  showLineNumbers: boolean;
+  wrapLines: boolean;
+  selectedTheme: typeof themes[0];
+  collapsed: boolean;
+};
+
+const JsonPreview = ({ json, showLineNumbers, wrapLines, selectedTheme, collapsed }: JsonPreviewProps) => {
   const formatJson = (json: string) => {
     try {
       const parsed = JSON.parse(json);
-      return JSON.stringify(parsed, null, 2);
+      return JSON.stringify(parsed, null, collapsed ? 0 : 2);
     } catch {
       return json;
     }
@@ -46,10 +54,43 @@ const JsonPreview = ({ json }: { json: string }) => {
   };
 
   return (
-    <pre 
-      className="text-sm font-mono whitespace-pre-wrap break-words bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto overflow-x-hidden border border-border/50 dark:border-border/30 shadow-inner"
-      dangerouslySetInnerHTML={{ __html: highlightJson(formatJson(json)) }}
-    />
+    <div className="min-h-[500px] overflow-y-auto overflow-x-hidden border border-border/50 dark:border-border/30 shadow-inner rounded-lg bg-muted/30 dark:bg-muted/20">
+      <SyntaxHighlighter
+        language="json"
+        style={selectedTheme.style}
+        showLineNumbers={showLineNumbers}
+        wrapLines={wrapLines}
+        wrapLongLines={wrapLines}
+        customStyle={{
+          margin: 0,
+          padding: '1rem',
+          background: 'transparent',
+          minHeight: '500px',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        }}
+        codeTagProps={{
+          style: {
+            background: 'transparent',
+            lineHeight: 1.5,
+            fontFamily: 'inherit',
+          }
+        }}
+        lineProps={{
+          style: {
+            background: 'transparent',
+            whiteSpace: wrapLines ? 'pre-wrap' : 'pre',
+          }
+        }}
+        lineNumberStyle={{
+          minWidth: '3em',
+          paddingRight: '1em',
+          textAlign: 'right',
+          userSelect: 'none',
+        }}
+      >
+        {formatJson(json)}
+      </SyntaxHighlighter>
+    </div>
   );
 };
 
@@ -147,6 +188,7 @@ const TextTools = () => {
   const [showLineNumbers, setShowLineNumbers] = useState(true);
   const [wrapLines, setWrapLines] = useState(true);
   const [selectedTheme, setSelectedTheme] = useState(themes[0]);
+  const [collapsed, setCollapsed] = useState(false);
   const { toast } = useToast();
 
   const sampleText = `这是一个示例文本，包含了中英文混合内容。
@@ -740,7 +782,7 @@ ORDER BY u.created_at DESC;`;
               <h3 className="text-lg font-medium">处理结果</h3>
             </div>
             <div className="flex items-center gap-2">
-              {resultType === 'sql' && (
+              {(resultType === 'sql' || resultType === 'json') && (
                 <>
                   <div className="relative group">
                     <Button
@@ -794,6 +836,28 @@ ORDER BY u.created_at DESC;`;
                   >
                     <WrapText size={14} className="text-primary" />
                   </Button>
+                  {resultType === 'json' && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className={cn(
+                        "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                        collapsed && "bg-primary/10 dark:bg-primary/20"
+                      )}
+                      onClick={() => setCollapsed(!collapsed)}
+                      title={collapsed ? "展开" : "折叠"}
+                    >
+                      {collapsed ? (
+                        <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M19 9l-7 7-7-7" />
+                        </svg>
+                      )}
+                    </Button>
+                  )}
                 </>
               )}
               <Button
@@ -812,7 +876,13 @@ ORDER BY u.created_at DESC;`;
             </div>
           </div>
           {resultType === 'json' ? (
-            <JsonPreview json={result} />
+            <JsonPreview 
+              json={result}
+              showLineNumbers={showLineNumbers}
+              wrapLines={wrapLines}
+              selectedTheme={selectedTheme}
+              collapsed={collapsed}
+            />
           ) : resultType === 'sql' ? (
             <SqlPreview 
               sql={result}
