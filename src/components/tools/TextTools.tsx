@@ -16,6 +16,7 @@ import {
   solarizedlight as github
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { format } from 'sql-formatter';
+import formatXml from 'xml-formatter';
 
 type JsonPreviewProps = {
   json: string;
@@ -155,6 +156,55 @@ const SqlPreview = ({ sql, showLineNumbers, wrapLines, selectedTheme }: SqlPrevi
   );
 };
 
+type XmlPreviewProps = {
+  xml: string;
+  showLineNumbers: boolean;
+  wrapLines: boolean;
+  selectedTheme: typeof themes[0];
+};
+
+const XmlPreview = ({ xml, showLineNumbers, wrapLines, selectedTheme }: XmlPreviewProps) => {
+  return (
+    <div className="min-h-[500px] overflow-y-auto overflow-x-hidden border border-border/50 dark:border-border/30 shadow-inner rounded-lg bg-muted/30 dark:bg-muted/20">
+      <SyntaxHighlighter
+        language="xml"
+        style={selectedTheme.style}
+        showLineNumbers={showLineNumbers}
+        wrapLines={wrapLines}
+        wrapLongLines={wrapLines}
+        customStyle={{
+          margin: 0,
+          padding: '1rem',
+          background: 'transparent',
+          minHeight: '500px',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        }}
+        codeTagProps={{
+          style: {
+            background: 'transparent',
+            lineHeight: 1.5,
+            fontFamily: 'inherit',
+          }
+        }}
+        lineProps={{
+          style: {
+            background: 'transparent',
+            whiteSpace: wrapLines ? 'pre-wrap' : 'pre',
+          }
+        }}
+        lineNumberStyle={{
+          minWidth: '3em',
+          paddingRight: '1em',
+          textAlign: 'right',
+          userSelect: 'none',
+        }}
+      >
+        {xml}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
 type TextStats = {
   characters: number;
   charactersNoSpaces: number;
@@ -183,7 +233,7 @@ type JsonStats = {
 const TextTools = () => {
   const [text, setText] = useState('');
   const [result, setResult] = useState('');
-  const [resultType, setResultType] = useState<'text' | 'json' | 'sql'>('text');
+  const [resultType, setResultType] = useState<'text' | 'json' | 'sql' | 'xml'>('text');
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
   const [showLineNumbers, setShowLineNumbers] = useState(true);
   const [wrapLines, setWrapLines] = useState(true);
@@ -407,6 +457,7 @@ ORDER BY u.created_at DESC;`;
       icon: '{',
       buttons: [
         { key: 'json', label: 'JSON格式化', icon: '{' },
+        { key: 'xml', label: 'XML格式化', icon: '<' },
         { key: 'sql', label: 'SQL格式化', icon: '≡' },
         { key: 'reverse', label: '反转', icon: '↔' },
       ]
@@ -517,11 +568,115 @@ ORDER BY u.created_at DESC;`;
           setResultType('text');
         }
         break;
+      case 'xml':
+        try {
+          transformed = formatXml(text, {
+            indentation: '  ',
+            collapseContent: true,
+            lineSeparator: '\n'
+          });
+          setResultType('xml');
+        } catch (error) {
+          transformed = 'XML格式化失败：' + (error as Error).message;
+          setResultType('text');
+        }
+        break;
       default:
         transformed = text;
         setResultType('text');
     }
     setResult(transformed);
+  };
+
+  const renderStats = () => {
+    if (resultType === 'json' && jsonStats) {
+      return (
+        <>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-primary">{jsonStats.totalKeys}</div>
+            <div className="text-sm text-muted-foreground">总键数</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-blue-500">{jsonStats.totalValues}</div>
+            <div className="text-sm text-muted-foreground">总值数</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-green-500">{jsonStats.stringValues}</div>
+            <div className="text-sm text-muted-foreground">字符串</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-yellow-500">{jsonStats.numberValues}</div>
+            <div className="text-sm text-muted-foreground">数字</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-purple-500">{jsonStats.booleanValues}</div>
+            <div className="text-sm text-muted-foreground">布尔值</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-pink-500">{jsonStats.nullValues}</div>
+            <div className="text-sm text-muted-foreground">空值</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-indigo-500">{jsonStats.arrayValues}</div>
+            <div className="text-sm text-muted-foreground">数组</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-orange-500">{jsonStats.objectValues}</div>
+            <div className="text-sm text-muted-foreground">对象</div>
+          </div>
+          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+            <div className="text-2xl font-bold text-teal-500">{jsonStats.maxDepth}</div>
+            <div className="text-sm text-muted-foreground">最大深度</div>
+          </div>
+        </>
+      );
+    }
+
+    // 对于SQL、XML和普通文本，显示相同的文本统计信息
+    return (
+      <>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-primary">{textStats.characters}</div>
+          <div className="text-sm text-muted-foreground">总字符</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-blue-500">{textStats.chineseChars}</div>
+          <div className="text-sm text-muted-foreground">中文</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-green-500">{textStats.englishWords}</div>
+          <div className="text-sm text-muted-foreground">英文</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-yellow-500">{textStats.numbers}</div>
+          <div className="text-sm text-muted-foreground">数字</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-purple-500">{textStats.punctuation}</div>
+          <div className="text-sm text-muted-foreground">标点</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-pink-500">{textStats.spaces}</div>
+          <div className="text-sm text-muted-foreground">空格</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-indigo-500">{textStats.charactersNoSpaces}</div>
+          <div className="text-sm text-muted-foreground">无空格</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-orange-500">{textStats.words}</div>
+          <div className="text-sm text-muted-foreground">单词</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-teal-500">{textStats.lines}</div>
+          <div className="text-sm text-muted-foreground">行数</div>
+        </div>
+        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="text-2xl font-bold text-cyan-500">{textStats.paragraphs}</div>
+          <div className="text-sm text-muted-foreground">段落</div>
+        </div>
+      </>
+    );
   };
 
   return (
@@ -639,135 +794,12 @@ ORDER BY u.created_at DESC;`;
               <div className="bg-primary/10 p-1.5 rounded-lg">
                 <Hash size={18} className="text-primary" />
               </div>
-              <h3 className="text-lg font-medium">{resultType === 'json' ? 'JSON统计' : resultType === 'sql' ? 'SQL统计' : '文本统计'}</h3>
+              <h3 className="text-lg font-medium">
+                {resultType === 'json' ? 'JSON统计' : resultType === 'sql' ? 'SQL统计' : resultType === 'xml' ? 'XML统计' : '文本统计'}
+              </h3>
             </div>
             <div className="grid grid-cols-5 gap-2">
-              {resultType === 'json' && jsonStats ? (
-                <>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-primary">{jsonStats.totalKeys}</div>
-                    <div className="text-sm text-muted-foreground">总键数</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-blue-500">{jsonStats.totalValues}</div>
-                    <div className="text-sm text-muted-foreground">总值数</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-green-500">{jsonStats.stringValues}</div>
-                    <div className="text-sm text-muted-foreground">字符串</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-yellow-500">{jsonStats.numberValues}</div>
-                    <div className="text-sm text-muted-foreground">数字</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-purple-500">{jsonStats.booleanValues}</div>
-                    <div className="text-sm text-muted-foreground">布尔值</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-pink-500">{jsonStats.nullValues}</div>
-                    <div className="text-sm text-muted-foreground">空值</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-indigo-500">{jsonStats.arrayValues}</div>
-                    <div className="text-sm text-muted-foreground">数组</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-orange-500">{jsonStats.objectValues}</div>
-                    <div className="text-sm text-muted-foreground">对象</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-teal-500">{jsonStats.maxDepth}</div>
-                    <div className="text-sm text-muted-foreground">最大深度</div>
-                  </div>
-                </>
-              ) : resultType === 'sql' ? (
-                <>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-primary">{textStats.characters}</div>
-                    <div className="text-sm text-muted-foreground">总字符</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-blue-500">{textStats.chineseChars}</div>
-                    <div className="text-sm text-muted-foreground">中文</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-green-500">{textStats.englishWords}</div>
-                    <div className="text-sm text-muted-foreground">英文</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-yellow-500">{textStats.numbers}</div>
-                    <div className="text-sm text-muted-foreground">数字</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-purple-500">{textStats.punctuation}</div>
-                    <div className="text-sm text-muted-foreground">标点</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-pink-500">{textStats.spaces}</div>
-                    <div className="text-sm text-muted-foreground">空格</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-indigo-500">{textStats.charactersNoSpaces}</div>
-                    <div className="text-sm text-muted-foreground">无空格</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-orange-500">{textStats.words}</div>
-                    <div className="text-sm text-muted-foreground">单词</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-teal-500">{textStats.lines}</div>
-                    <div className="text-sm text-muted-foreground">行数</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-cyan-500">{textStats.paragraphs}</div>
-                    <div className="text-sm text-muted-foreground">段落</div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-primary">{textStats.characters}</div>
-                    <div className="text-sm text-muted-foreground">总字符</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-blue-500">{textStats.chineseChars}</div>
-                    <div className="text-sm text-muted-foreground">中文</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-green-500">{textStats.englishWords}</div>
-                    <div className="text-sm text-muted-foreground">英文</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-yellow-500">{textStats.numbers}</div>
-                    <div className="text-sm text-muted-foreground">数字</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-purple-500">{textStats.punctuation}</div>
-                    <div className="text-sm text-muted-foreground">标点</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-pink-500">{textStats.spaces}</div>
-                    <div className="text-sm text-muted-foreground">空格</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-indigo-500">{textStats.charactersNoSpaces}</div>
-                    <div className="text-sm text-muted-foreground">无空格</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-orange-500">{textStats.words}</div>
-                    <div className="text-sm text-muted-foreground">单词</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-teal-500">{textStats.lines}</div>
-                    <div className="text-sm text-muted-foreground">行数</div>
-                  </div>
-                  <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
-                    <div className="text-2xl font-bold text-cyan-500">{textStats.paragraphs}</div>
-                    <div className="text-sm text-muted-foreground">段落</div>
-                  </div>
-                </>
-              )}
+              {renderStats()}
             </div>
           </div>
         </div>
@@ -782,7 +814,7 @@ ORDER BY u.created_at DESC;`;
               <h3 className="text-lg font-medium">处理结果</h3>
             </div>
             <div className="flex items-center gap-2">
-              {(resultType === 'sql' || resultType === 'json') && (
+              {(resultType === 'sql' || resultType === 'json' || resultType === 'xml') && (
                 <>
                   <div className="relative group">
                     <Button
@@ -886,6 +918,13 @@ ORDER BY u.created_at DESC;`;
           ) : resultType === 'sql' ? (
             <SqlPreview 
               sql={result}
+              showLineNumbers={showLineNumbers}
+              wrapLines={wrapLines}
+              selectedTheme={selectedTheme}
+            />
+          ) : resultType === 'xml' ? (
+            <XmlPreview 
+              xml={result}
               showLineNumbers={showLineNumbers}
               wrapLines={wrapLines}
               selectedTheme={selectedTheme}
