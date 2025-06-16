@@ -230,6 +230,161 @@ type JsonStats = {
   maxDepth: number;
 };
 
+// 添加数字转人民币大写的函数
+const numberToChineseCurrency = (num: string): string => {
+  try {
+    const numbers = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+    const units = ['', '拾', '佰', '仟'];
+    const bigUnits = ['', '万', '亿', '万亿'];
+    const decimalUnits = ['角', '分'];
+
+    // 处理非法输入
+    if (!/^-?\d+(\.\d{1,2})?$/.test(num)) {
+      throw new Error('请输入合法的金额（最多支持两位小数）');
+    }
+
+    const [integerPart, decimalPart = ''] = Math.abs(Number(num)).toString().split('.');
+    if (integerPart.length > 16) {
+      throw new Error('金额超出范围（最大支持16位整数）');
+    }
+
+    // 处理整数部分
+    const processInteger = (intStr: string): string => {
+      if (intStr === '0') return '零';
+      let result = '';
+      const groups: string[] = [];
+      
+      // 按4位分组
+      for (let i = intStr.length; i > 0; i -= 4) {
+        groups.unshift(intStr.slice(Math.max(0, i - 4), i));
+      }
+
+      groups.forEach((group, groupIndex) => {
+        let groupResult = '';
+        let hasZero = false;
+        
+        for (let i = 0; i < group.length; i++) {
+          const digit = parseInt(group[i]);
+          if (digit === 0) {
+            hasZero = true;
+          } else {
+            if (hasZero) {
+              groupResult += '零';
+              hasZero = false;
+            }
+            groupResult += numbers[digit] + units[group.length - 1 - i];
+          }
+        }
+        
+        if (groupResult) {
+          result += groupResult + (groupIndex < groups.length - 1 ? bigUnits[groups.length - 1 - groupIndex] : '');
+        }
+      });
+
+      return result;
+    };
+
+    // 处理小数部分
+    const processDecimal = (decStr: string): string => {
+      if (!decStr) return '';
+      let result = '';
+      for (let i = 0; i < Math.min(2, decStr.length); i++) {
+        const digit = parseInt(decStr[i]);
+        if (digit !== 0) {
+          result += numbers[digit] + decimalUnits[i];
+        }
+      }
+      return result;
+    };
+
+    const isNegative = Number(num) < 0;
+    const intResult = processInteger(integerPart);
+    const decResult = processDecimal(decimalPart);
+
+    let result = '';
+    if (intResult) {
+      result += intResult + '圆';
+      if (!decResult) result += '整';
+    }
+    if (decResult) result += decResult;
+
+    return (isNegative ? '负' : '') + result;
+  } catch (error) {
+    return '转换失败：' + (error as Error).message;
+  }
+};
+
+// 添加人民币大写转数字的函数
+const chineseCurrencyToNumber = (str: string): string => {
+  try {
+    const numbers: { [key: string]: number } = {
+      '零': 0, '壹': 1, '贰': 2, '叁': 3, '肆': 4,
+      '伍': 5, '陆': 6, '柒': 7, '捌': 8, '玖': 9
+    };
+    const units: { [key: string]: number } = {
+      '拾': 10, '佰': 100, '仟': 1000,
+      '万': 10000, '亿': 100000000
+    };
+    const decimalUnits: { [key: string]: number } = {
+      '角': 0.1, '分': 0.01
+    };
+
+    str = str.replace(/^负/, '-');
+    const hasNegative = str.startsWith('-');
+    str = str.replace(/^-/, '');
+
+    // 分离整数和小数部分
+    const parts = str.split('圆');
+    if (parts.length > 2) throw new Error('格式错误：有多个"圆"字');
+    
+    let integerPart = parts[0] || '';
+    let decimalPart = parts[1] || '';
+    decimalPart = decimalPart.replace('整', '');
+
+    // 处理整数部分
+    let result = 0;
+    let section = 0;
+    let number = 0;
+
+    for (let i = 0; i < integerPart.length; i++) {
+      const char = integerPart[i];
+      if (numbers[char] !== undefined) {
+        number = numbers[char];
+      } else if (units[char] !== undefined) {
+        if (units[char] >= 10000) {
+          section = (section + number) * units[char];
+          result += section;
+          section = 0;
+          number = 0;
+        } else {
+          number *= units[char];
+          section += number;
+          number = 0;
+        }
+      } else if (char !== '零') {
+        throw new Error('包含非法字符：' + char);
+      }
+    }
+    result += section + number;
+
+    // 处理小数部分
+    let decimal = 0;
+    for (const unit in decimalUnits) {
+      const index = decimalPart.indexOf(unit);
+      if (index !== -1) {
+        const num = decimalPart[index - 1];
+        if (!numbers[num]) throw new Error('小数部分格式错误');
+        decimal += numbers[num] * decimalUnits[unit];
+      }
+    }
+
+    const finalResult = result + decimal;
+    return (hasNegative ? '-' : '') + finalResult.toString();
+  } catch (error) {
+    return '转换失败：' + (error as Error).message;
+  }
+};
+
 const TextTools = () => {
   const [text, setText] = useState('');
   const [result, setResult] = useState('');
@@ -460,6 +615,8 @@ ORDER BY u.created_at DESC;`;
         { key: 'xml', label: 'XML格式化', icon: '<' },
         { key: 'sql', label: 'SQL格式化', icon: '≡' },
         { key: 'reverse', label: '反转', icon: '↔' },
+        { key: 'rmb', label: '数字转大写', icon: '¥' },
+        { key: 'rmbToNumber', label: '大写转数字', icon: '1' },
       ]
     }
   ];
@@ -578,6 +735,24 @@ ORDER BY u.created_at DESC;`;
           setResultType('xml');
         } catch (error) {
           transformed = 'XML格式化失败：' + (error as Error).message;
+          setResultType('text');
+        }
+        break;
+      case 'rmb':
+        try {
+          transformed = numberToChineseCurrency(text.trim());
+          setResultType('text');
+        } catch (error) {
+          transformed = '转换失败：' + (error as Error).message;
+          setResultType('text');
+        }
+        break;
+      case 'rmbToNumber':
+        try {
+          transformed = chineseCurrencyToNumber(text.trim());
+          setResultType('text');
+        } catch (error) {
+          transformed = '转换失败：' + (error as Error).message;
           setResultType('text');
         }
         break;
