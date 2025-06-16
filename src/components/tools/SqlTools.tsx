@@ -655,7 +655,20 @@ const TruncateDetector: React.FC = () => {
               <Database className="h-4 w-4 text-primary" />
               <CardTitle className="text-lg">检测结果</CardTitle>
             </div>
-            <CardDescription className="text-sm mt-1">
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-sm font-medium">
+                总字段数: {detectionResult.length}
+              </span>
+              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
+                <Check className="h-3.5 w-3.5" />
+                正常: {detectionResult.filter(item => !item.isTruncated).length}
+              </span>
+              <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
+                <X className="h-3.5 w-3.5" />
+                截断: {detectionResult.filter(item => item.isTruncated).length}
+              </span>
+            </div>
+            <CardDescription className="text-sm mt-2">
               字段长度检测结果，红色背景表示可能发生截断
             </CardDescription>
           </CardHeader>
