@@ -659,11 +659,11 @@ const TruncateDetector: React.FC = () => {
               <span className="text-sm font-medium">
                 总字段数: {detectionResult.length}
               </span>
-              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
+              <span className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
                 <Check className="h-3.5 w-3.5" />
                 正常: {detectionResult.filter(item => !item.isTruncated).length}
               </span>
-              <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
+              <span className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
                 <X className="h-3.5 w-3.5" />
                 截断: {detectionResult.filter(item => item.isTruncated).length}
               </span>
@@ -689,19 +689,19 @@ const TruncateDetector: React.FC = () => {
                     <TableRow 
                       key={index} 
                       className={cn(
-                        item.isTruncated ? "bg-red-50 hover:bg-red-100" : "hover:bg-muted/50",
+                        item.isTruncated ? "bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30" : "hover:bg-muted/50",
                         "transition-colors"
                       )}
                     >
                       <TableCell className="font-medium">{item.field}</TableCell>
                       <TableCell>
-                        <span className="font-mono text-sm bg-slate-100 px-2 py-0.5 rounded">
+                        <span className="font-mono text-sm bg-muted px-2 py-0.5 rounded dark:bg-slate-800">
                           {item.fieldType}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
                         {item.definedLength > 0 ? (
-                          <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-sm">
+                          <span className="font-mono bg-muted px-2 py-0.5 rounded text-sm dark:bg-slate-800">
                             {item.definedLength}
                           </span>
                         ) : (
@@ -709,18 +709,18 @@ const TruncateDetector: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-sm">
+                        <span className="font-mono bg-muted px-2 py-0.5 rounded text-sm dark:bg-slate-800">
                           {item.actualLength}
                         </span>
                       </TableCell>
                       <TableCell className="text-center">
                         {item.isTruncated ? (
-                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
+                          <span className="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
                             <X className="h-3.5 w-3.5" />
                             会截断
                           </span>
                         ) : (
-                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
+                          <span className="bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200 px-2 py-0.5 rounded text-sm inline-flex items-center gap-1">
                             <Check className="h-3.5 w-3.5" />
                             正常
                           </span>
