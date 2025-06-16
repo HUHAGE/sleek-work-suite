@@ -1,11 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useUserData } from '@/lib/store/userDataManager';
-import { Copy, Check, Database, ArrowRight, X } from 'lucide-react';
+import { Copy, Check, Database, ArrowRight, X, List, WrapText } from 'lucide-react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { useTheme } from 'next-themes';
+import {
+  oneDark,
+  oneLight,
+  vscDarkPlus,
+  dracula,
+  materialDark,
+  materialLight,
+  atomDark,
+  solarizedlight as github
+} from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { format } from 'sql-formatter';
 import {
   Table,
   TableBody,
@@ -31,6 +44,274 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+
+// 添加主题配置
+const themes = [
+  { name: '深色主题', value: 'oneDark', style: oneDark },
+  { name: '浅色主题', value: 'oneLight', style: oneLight },
+  { name: 'VSCode深色', value: 'vscDarkPlus', style: vscDarkPlus },
+  { name: 'Dracula', value: 'dracula', style: dracula },
+  { name: 'Material深色', value: 'materialDark', style: materialDark },
+  { name: 'Material浅色', value: 'materialLight', style: materialLight },
+  { name: 'Atom深色', value: 'atomDark', style: atomDark },
+  { name: 'GitHub', value: 'github', style: github },
+];
+
+// SQL格式化组件
+const SqlFormatter = () => {
+  const [sql, setSql] = useState('');
+  const [result, setResult] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [showLineNumbers, setShowLineNumbers] = useState(true);
+  const [wrapLines, setWrapLines] = useState(true);
+  const { resolvedTheme } = useTheme();
+  const [selectedTheme, setSelectedTheme] = useState(themes[0]);
+  const { toast } = useToast();
+
+  // 根据系统主题自动设置初始主题
+  useEffect(() => {
+    const defaultTheme = resolvedTheme === 'dark' ? themes[0] : themes[1]; // dark: oneDark, light: oneLight
+    setSelectedTheme(defaultTheme);
+  }, [resolvedTheme]);
+
+  const sampleSql = `-- 创建用户表
+CREATE TABLE users (
+id INT PRIMARY KEY AUTO_INCREMENT,
+username VARCHAR(50) NOT NULL UNIQUE,
+email VARCHAR(100) NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 插入示例数据
+INSERT INTO users (username, email) VALUES
+('张三', 'zhangsan@example.com'),
+('李四', 'lisi@example.com');
+
+-- 查询示例
+SELECT 
+u.username,
+u.email,
+DATE_FORMAT(u.created_at, '%Y-%m-%d') as join_date
+FROM users u
+WHERE u.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+ORDER BY u.created_at DESC;`;
+
+  const handleFormat = () => {
+    try {
+      const formatted = format(sql, {
+        language: 'sql',
+        keywordCase: 'upper',
+        tabWidth: 2,
+        useTabs: false,
+        linesBetweenQueries: 2,
+      });
+      setResult(formatted);
+      toast({
+        title: "格式化成功",
+        description: "SQL已成功格式化",
+      });
+    } catch (error) {
+      toast({
+        title: "格式化失败",
+        description: error instanceof Error ? error.message : "SQL格式化过程中发生错误",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(result);
+      setCopied(true);
+      toast({
+        title: "复制成功",
+        description: "SQL已复制到剪贴板",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "复制失败",
+        description: "无法访问剪贴板",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const insertSample = () => {
+    setSql(sampleSql);
+    toast({
+      title: "已插入示例SQL",
+      description: "示例SQL已填充到输入框",
+    });
+  };
+
+  return (
+    <div className="grid grid-cols-2 gap-6">
+      <Card className="shadow-md">
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Database className="h-4 w-4 text-primary" />
+              <CardTitle className="text-lg">SQL输入</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-sm"
+                onClick={insertSample}
+              >
+                插入示例
+              </Button>
+              <Button onClick={handleFormat} size="sm" className="h-8 gap-1.5 text-sm">
+                <ArrowRight className="h-3.5 w-3.5" />
+                格式化
+              </Button>
+            </div>
+          </div>
+          <CardDescription className="text-sm mt-1">
+            输入需要格式化的SQL语句
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <Textarea
+            placeholder="在此输入SQL语句..."
+            value={sql}
+            onChange={(e) => setSql(e.target.value)}
+            className="min-h-[500px] font-mono text-sm"
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-md">
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Database className="h-4 w-4 text-primary" />
+              <CardTitle className="text-lg">格式化结果</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative group">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
+                  title="选择主题"
+                >
+                  <span className="text-primary text-xs">Aa</span>
+                </Button>
+                <div className="absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
+                  <div className="bg-card rounded-lg shadow-lg border border-border/50 p-1.5 min-w-[140px]">
+                    <div className="flex flex-col gap-0.5">
+                      {themes.map((theme) => (
+                        <Button
+                          key={theme.value}
+                          size="sm"
+                          variant="ghost"
+                          className={cn(
+                            "h-7 justify-start font-normal text-xs hover:bg-primary/10 dark:hover:bg-primary/20",
+                            selectedTheme.value === theme.value && "bg-primary/10 dark:bg-primary/20"
+                          )}
+                          onClick={() => setSelectedTheme(theme)}
+                        >
+                          {theme.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
+                </div>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className={cn(
+                  "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                  showLineNumbers && "bg-primary/10 dark:bg-primary/20"
+                )}
+                onClick={() => setShowLineNumbers(!showLineNumbers)}
+                title="显示行号"
+              >
+                <List size={14} className="text-primary" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className={cn(
+                  "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                  wrapLines && "bg-primary/10 dark:bg-primary/20"
+                )}
+                onClick={() => setWrapLines(!wrapLines)}
+                title="自动换行"
+              >
+                <WrapText size={14} className="text-primary" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleCopy}
+                className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
+                title="复制到剪贴板"
+              >
+                {copied ? (
+                  <Check size={14} className="text-green-500" />
+                ) : (
+                  <Copy size={14} className="text-muted-foreground" />
+                )}
+              </Button>
+            </div>
+          </div>
+          <CardDescription className="text-sm mt-1">
+            格式化后的SQL将在这里显示
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4">
+          <div className="min-h-[500px] overflow-y-auto overflow-x-hidden border border-border/50 dark:border-border/30 shadow-inner rounded-lg bg-muted/30 dark:bg-muted/20">
+            <SyntaxHighlighter
+              language="sql"
+              style={selectedTheme.style}
+              showLineNumbers={showLineNumbers}
+              wrapLines={wrapLines}
+              wrapLongLines={wrapLines}
+              customStyle={{
+                margin: 0,
+                padding: '1rem',
+                background: 'transparent',
+                minHeight: '500px',
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                textShadow: 'none', // 移除文字阴影
+              }}
+              codeTagProps={{
+                style: {
+                  background: 'transparent',
+                  lineHeight: 1.5,
+                  fontFamily: 'inherit',
+                  textShadow: 'none', // 移除文字阴影
+                }
+              }}
+              lineProps={{
+                style: {
+                  background: 'transparent',
+                  whiteSpace: wrapLines ? 'pre-wrap' : 'pre',
+                  textShadow: 'none', // 移除文字阴影
+                }
+              }}
+              lineNumberStyle={{
+                minWidth: '3em',
+                paddingRight: '1em',
+                textAlign: 'right',
+                userSelect: 'none',
+                textShadow: 'none', // 移除文字阴影
+              }}
+            >
+              {result || '格式化后的SQL将显示在这里...'}
+            </SyntaxHighlighter>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 // SQL In填充组件
 const SqlInFill = () => {
@@ -862,8 +1143,17 @@ const SqlInGenerator = () => {
 const SqlTools = () => {
   return (
     <div className="p-4">
-      <Tabs defaultValue="sql-in" className="w-full">
+      <Tabs defaultValue="sql-formatter" className="w-full">
         <TabsList className="w-full h-12 bg-primary/5 p-1">
+          <TabsTrigger 
+            value="sql-formatter" 
+            className="h-10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              <span>SQL格式化</span>
+            </div>
+          </TabsTrigger>
           <TabsTrigger 
             value="sql-in" 
             className="h-10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-colors"
@@ -902,6 +1192,9 @@ const SqlTools = () => {
           </TabsTrigger>
         </TabsList>
         <div className="mt-6">
+          <TabsContent value="sql-formatter">
+            <SqlFormatter />
+          </TabsContent>
           <TabsContent value="sql-in">
             <SqlInFill />
           </TabsContent>

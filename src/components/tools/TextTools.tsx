@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Check, FileText, Hash, Link, Sparkles, List, WrapText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +17,9 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { format } from 'sql-formatter';
 import formatXml from 'xml-formatter';
+import { useTheme } from 'next-themes';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Database } from 'lucide-react';
 
 type JsonPreviewProps = {
   json: string;
@@ -129,18 +132,21 @@ const SqlPreview = ({ sql, showLineNumbers, wrapLines, selectedTheme }: SqlPrevi
           background: 'transparent',
           minHeight: '500px',
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          textShadow: 'none',
         }}
         codeTagProps={{
           style: {
             background: 'transparent',
             lineHeight: 1.5,
             fontFamily: 'inherit',
+            textShadow: 'none',
           }
         }}
         lineProps={{
           style: {
             background: 'transparent',
             whiteSpace: wrapLines ? 'pre-wrap' : 'pre',
+            textShadow: 'none',
           }
         }}
         lineNumberStyle={{
@@ -148,6 +154,7 @@ const SqlPreview = ({ sql, showLineNumbers, wrapLines, selectedTheme }: SqlPrevi
           paddingRight: '1em',
           textAlign: 'right',
           userSelect: 'none',
+          textShadow: 'none',
         }}
       >
         {sql}
@@ -392,9 +399,16 @@ const TextTools = () => {
   const [copiedStates, setCopiedStates] = useState<{[key: string]: boolean}>({});
   const [showLineNumbers, setShowLineNumbers] = useState(true);
   const [wrapLines, setWrapLines] = useState(true);
+  const { resolvedTheme } = useTheme();
   const [selectedTheme, setSelectedTheme] = useState(themes[0]);
   const [collapsed, setCollapsed] = useState(false);
   const { toast } = useToast();
+
+  // 根据系统主题自动设置初始主题
+  useEffect(() => {
+    const defaultTheme = resolvedTheme === 'dark' ? themes[0] : themes[1]; // dark: oneDark, light: oneLight
+    setSelectedTheme(defaultTheme);
+  }, [resolvedTheme]);
 
   const sampleText = `这是一个示例文本，包含了中英文混合内容。
 This is a sample text with mixed Chinese and English content.
@@ -574,9 +588,9 @@ ORDER BY u.created_at DESC;`;
   const formatSql = (sql: string): string => {
     try {
       return format(sql, {
-        language: 'sql' as const,
-        keywordCase: 'upper' as const,
-        tabWidth: 4,
+        language: 'sql',
+        keywordCase: 'upper',
+        tabWidth: 2,
         useTabs: false,
         linesBetweenQueries: 2,
       });
@@ -980,136 +994,144 @@ ORDER BY u.created_at DESC;`;
         </div>
 
         {/* 右侧区域：输出结果 */}
-        <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 p-1.5 rounded-lg">
-                <Link size={18} className="text-primary" />
+        <Card className="shadow-md">
+          <CardHeader className="p-4 pb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Database className="h-4 w-4 text-primary" />
+                <CardTitle className="text-lg">处理结果</CardTitle>
               </div>
-              <h3 className="text-lg font-medium">处理结果</h3>
-            </div>
-            <div className="flex items-center gap-2">
-              {(resultType === 'sql' || resultType === 'json' || resultType === 'xml') && (
-                <>
-                  <div className="relative group">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
-                      title="选择主题"
-                    >
-                      <span className="text-primary text-xs">Aa</span>
-                    </Button>
-                    <div className="absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
-                      <div className="bg-card rounded-lg shadow-lg border border-border/50 p-1.5 min-w-[140px]">
-                        <div className="flex flex-col gap-0.5">
-                          {themes.map((theme) => (
-                            <Button
-                              key={theme.value}
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 justify-start font-normal text-xs hover:bg-primary/10 dark:hover:bg-primary/20"
-                              onClick={() => setSelectedTheme(theme)}
-                            >
-                              {theme.name}
-                            </Button>
-                          ))}
+              <div className="flex items-center gap-2">
+                {(resultType === 'sql' || resultType === 'json' || resultType === 'xml') && (
+                  <>
+                    <div className="relative group">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
+                        title="选择主题"
+                      >
+                        <span className="text-primary text-xs">Aa</span>
+                      </Button>
+                      <div className="absolute top-full right-0 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
+                        <div className="bg-card rounded-lg shadow-lg border border-border/50 p-1.5 min-w-[140px]">
+                          <div className="flex flex-col gap-0.5">
+                            {themes.map((theme) => (
+                              <Button
+                                key={theme.value}
+                                size="sm"
+                                variant="ghost"
+                                className={cn(
+                                  "h-7 justify-start font-normal text-xs hover:bg-primary/10 dark:hover:bg-primary/20",
+                                  selectedTheme.value === theme.value && "bg-primary/10 dark:bg-primary/20"
+                                )}
+                                onClick={() => setSelectedTheme(theme)}
+                              >
+                                {theme.name}
+                              </Button>
+                            ))}
+                          </div>
                         </div>
+                        <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
                       </div>
-                      <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
                     </div>
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                      "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
-                      showLineNumbers && "bg-primary/10 dark:bg-primary/20"
-                    )}
-                    onClick={() => setShowLineNumbers(!showLineNumbers)}
-                    title="显示行号"
-                  >
-                    <List size={14} className="text-primary" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                      "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
-                      wrapLines && "bg-primary/10 dark:bg-primary/20"
-                    )}
-                    onClick={() => setWrapLines(!wrapLines)}
-                    title="自动换行"
-                  >
-                    <WrapText size={14} className="text-primary" />
-                  </Button>
-                  {resultType === 'json' && (
                     <Button
                       size="icon"
                       variant="ghost"
                       className={cn(
                         "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
-                        collapsed && "bg-primary/10 dark:bg-primary/20"
+                        showLineNumbers && "bg-primary/10 dark:bg-primary/20"
                       )}
-                      onClick={() => setCollapsed(!collapsed)}
-                      title={collapsed ? "展开" : "折叠"}
+                      onClick={() => setShowLineNumbers(!showLineNumbers)}
+                      title="显示行号"
                     >
-                      {collapsed ? (
-                        <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 18l6-6-6-6" />
-                        </svg>
-                      ) : (
-                        <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M19 9l-7 7-7-7" />
-                        </svg>
-                      )}
+                      <List size={14} className="text-primary" />
                     </Button>
-                  )}
-                </>
-              )}
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => copyToClipboard(result, 'result')}
-                className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
-                title="复制到剪贴板"
-              >
-                {copiedStates['result'] ? (
-                  <Check size={14} className="text-green-500" />
-                ) : (
-                  <Copy size={14} className="text-muted-foreground" />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className={cn(
+                        "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                        wrapLines && "bg-primary/10 dark:bg-primary/20"
+                      )}
+                      onClick={() => setWrapLines(!wrapLines)}
+                      title="自动换行"
+                    >
+                      <WrapText size={14} className="text-primary" />
+                    </Button>
+                    {resultType === 'json' && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={cn(
+                          "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                          collapsed && "bg-primary/10 dark:bg-primary/20"
+                        )}
+                        onClick={() => setCollapsed(!collapsed)}
+                        title={collapsed ? "展开" : "折叠"}
+                      >
+                        {collapsed ? (
+                          <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 18l6-6-6-6" />
+                          </svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M19 9l-7 7-7-7" />
+                          </svg>
+                        )}
+                      </Button>
+                    )}
+                  </>
                 )}
-              </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => copyToClipboard(result, 'result')}
+                  className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
+                  title="复制到剪贴板"
+                >
+                  {copiedStates['result'] ? (
+                    <Check size={14} className="text-green-500" />
+                  ) : (
+                    <Copy size={14} className="text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-          {resultType === 'json' ? (
-            <JsonPreview 
-              json={result}
-              showLineNumbers={showLineNumbers}
-              wrapLines={wrapLines}
-              selectedTheme={selectedTheme}
-              collapsed={collapsed}
-            />
-          ) : resultType === 'sql' ? (
-            <SqlPreview 
-              sql={result}
-              showLineNumbers={showLineNumbers}
-              wrapLines={wrapLines}
-              selectedTheme={selectedTheme}
-            />
-          ) : resultType === 'xml' ? (
-            <XmlPreview 
-              xml={result}
-              showLineNumbers={showLineNumbers}
-              wrapLines={wrapLines}
-              selectedTheme={selectedTheme}
-            />
-          ) : (
-            <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto overflow-x-hidden break-words border border-border/50 dark:border-border/30 shadow-inner">
-              {result || '处理结果将显示在这里...'}
-            </div>
-          )}
-        </div>
+            <CardDescription className="text-sm mt-1">
+              处理结果将在这里显示
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4">
+            {resultType === 'json' ? (
+              <JsonPreview 
+                json={result}
+                showLineNumbers={showLineNumbers}
+                wrapLines={wrapLines}
+                selectedTheme={selectedTheme}
+                collapsed={collapsed}
+              />
+            ) : resultType === 'sql' ? (
+              <SqlPreview 
+                sql={result}
+                showLineNumbers={showLineNumbers}
+                wrapLines={wrapLines}
+                selectedTheme={selectedTheme}
+              />
+            ) : resultType === 'xml' ? (
+              <XmlPreview 
+                xml={result}
+                showLineNumbers={showLineNumbers}
+                wrapLines={wrapLines}
+                selectedTheme={selectedTheme}
+              />
+            ) : (
+              <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto overflow-x-hidden break-words border border-border/50 dark:border-border/30 shadow-inner">
+                {result || '处理结果将显示在这里...'}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
