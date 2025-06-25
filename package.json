@@ -117,11 +117,17 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "package.json",
-      "build/**/*"
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build",
+        "to": "build",
+        "filter": ["icon.ico"]
+      }
     ],
     "win": {
-      "icon": "./build/icon.ico",
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
