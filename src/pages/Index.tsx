@@ -64,7 +64,7 @@ const Index = () => {
             "bg-background/80 border-r border-border/50 backdrop-blur-xl transition-all duration-300 ease-in-out z-20 flex flex-col h-full",
             sidebarOpen ? "w-72" : "w-20"
           )}>
-            <div className="relative flex-1">
+            <div className="relative flex-1 flex flex-col">
               {/* 折叠按钮 */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -91,8 +91,14 @@ const Index = () => {
                     <p className="text-muted-foreground text-sm">快速定制，随时更新，随时使用</p>
                   )}
                 </div>
+              </div>
 
-                <nav className="space-y-2">
+              {/* 可滚动的菜单区域 */}
+              <div className="flex-1 overflow-y-auto">
+                <nav className={cn(
+                  "space-y-2",
+                  sidebarOpen ? "px-6" : "px-4"
+                )}>
                   {tools.filter(tool => tool.id !== 'huha').map((tool) => {
                     const Icon = tool.icon;
                     return (
@@ -120,7 +126,7 @@ const Index = () => {
               </div>
             </div>
 
-            {/* HUHA工具集按钮 */}
+            {/* HUHA工具集按钮 - 固定在底部 */}
             <div className="p-4 border-t border-border/50">
               {tools.find(tool => tool.id === 'huha') && (() => {
                 const tool = tools.find(tool => tool.id === 'huha')!;
