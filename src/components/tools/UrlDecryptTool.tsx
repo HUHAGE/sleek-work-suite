@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Lock, Unlock, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { trackToolUsage, trackButtonClick } from '@/lib/analytics';
 
 const DEFAULT_SYSTEM_URL = 'http://www.njsggzy.cn:181/epoint-ssonew_cs/default/login_tp';
 
@@ -42,6 +43,8 @@ const UrlDecryptTool: React.FC = () => {
   const { toast } = useToast();
 
   const handleDecrypt = async () => {
+    trackToolUsage('url_decrypt', 'decrypt_start');
+    
     if (!encryptedUrl.trim()) {
       toast({
         title: '错误',
@@ -73,11 +76,13 @@ const UrlDecryptTool: React.FC = () => {
         // 对解密后的URL进行解码
         const decoded = decodeUrl(result.decryptedUrl);
         setDecodedUrl(decoded);
+        trackToolUsage('url_decrypt', 'decrypt_success');
         toast({
           title: '解密成功',
           description: 'URL已成功解密',
         });
       } else {
+        trackToolUsage('url_decrypt', 'decrypt_failed');
         toast({
           title: '解密失败',
           description: result.error || '未知错误',
@@ -101,6 +106,7 @@ const UrlDecryptTool: React.FC = () => {
       // 复制解码后的URL
       await navigator.clipboard.writeText(decodedUrl);
       setIsCopied(true);
+      trackButtonClick('url_decrypt', 'copy_result');
       toast({
         title: '复制成功',
         description: '解密后的URL已复制到剪贴板',

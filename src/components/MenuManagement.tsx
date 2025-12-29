@@ -59,6 +59,15 @@ export default function MenuManagement({ tools }: MenuManagementProps) {
     )
     setLocalConfigs(newConfigs)
     setMenuConfigs(newConfigs)
+    
+    // 跟踪菜单切换
+    if (typeof window !== 'undefined' && (window as any).umami) {
+      const config = newConfigs.find(c => c.id === id);
+      (window as any).umami.track('menu_toggle', {
+        menu: id,
+        enabled: config?.enabled
+      });
+    }
   }
 
   // 向上移动
@@ -76,6 +85,14 @@ export default function MenuManagement({ tools }: MenuManagementProps) {
     
     setLocalConfigs(newConfigs)
     setMenuConfigs(newConfigs)
+    
+    // 跟踪菜单排序
+    if (typeof window !== 'undefined' && (window as any).umami) {
+      (window as any).umami.track('menu_reorder', {
+        menu: temp.id,
+        direction: 'up'
+      });
+    }
   }
 
   // 向下移动
@@ -93,6 +110,14 @@ export default function MenuManagement({ tools }: MenuManagementProps) {
     
     setLocalConfigs(newConfigs)
     setMenuConfigs(newConfigs)
+    
+    // 跟踪菜单排序
+    if (typeof window !== 'undefined' && (window as any).umami) {
+      (window as any).umami.track('menu_reorder', {
+        menu: temp.id,
+        direction: 'down'
+      });
+    }
   }
 
   return (

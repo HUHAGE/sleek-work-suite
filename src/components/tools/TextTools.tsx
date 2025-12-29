@@ -20,6 +20,7 @@ import formatXml from 'xml-formatter';
 import { useTheme } from 'next-themes';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Database } from 'lucide-react';
+import { trackToolUsage, trackButtonClick } from '@/lib/analytics';
 
 type JsonPreviewProps = {
   json: string;
@@ -486,6 +487,7 @@ WHERE u.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
 ORDER BY u.created_at DESC;`;
 
   const insertSampleText = (type: 'basic' | 'json' | 'xml' | 'sql') => {
+    trackButtonClick('text_tools', `insert_sample_${type}`);
     let sample = '';
     switch (type) {
       case 'json':
@@ -509,6 +511,7 @@ ORDER BY u.created_at DESC;`;
   };
 
   const copyToClipboard = (text: string, key: string) => {
+    trackButtonClick('text_tools', 'copy_result');
     navigator.clipboard.writeText(text);
     setCopiedStates(prev => ({ ...prev, [key]: true }));
     setTimeout(() => {
@@ -633,6 +636,7 @@ ORDER BY u.created_at DESC;`;
   ];
 
   const transformText = (type: string) => {
+    trackButtonClick('text_tools', type);
     let transformed = '';
     switch (type) {
       case 'uppercase':

@@ -17,6 +17,7 @@ import ApiDocGenerator from '@/components/tools/ApiDocGenerator';
 import UrlDecryptTool from '@/components/tools/UrlDecryptTool';
 import DbDecryptTool from '@/components/tools/DbDecryptTool';
 import CollapsibleDescription from '@/components/CollapsibleDescription';
+import { trackMenuSwitch } from '@/lib/analytics';
 
 interface Tool {
   id: string;
@@ -87,6 +88,11 @@ const Index = () => {
     }
   }, [menuConfigs, activeTool, visibleTools])
   
+  const handleToolSwitch = (toolId: string) => {
+    trackMenuSwitch(toolId);
+    setActiveTool(toolId);
+  };
+
   const ActiveComponent = (activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool))?.component || TextTools;
   const activeToolInfo = activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool);
 
@@ -156,7 +162,7 @@ const Index = () => {
                   return (
                     <button
                       key={tool.id}
-                      onClick={() => setActiveTool(tool.id)}
+                      onClick={() => handleToolSwitch(tool.id)}
                       className={cn(
                         "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
                         "hover:scale-[1.02] hover:shadow-md",
@@ -189,7 +195,7 @@ const Index = () => {
                   const Icon = tool.icon;
                   return (
                     <button
-                      onClick={() => setActiveTool(tool.id)}
+                      onClick={() => handleToolSwitch(tool.id)}
                       className={cn(
                         "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
                         "hover:scale-[1.02] hover:shadow-md",
@@ -215,7 +221,7 @@ const Index = () => {
               {/* 设置按钮 */}
               <div className="p-4 pt-0">
                 <button
-                  onClick={() => setActiveTool('settings')}
+                  onClick={() => handleToolSwitch('settings')}
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
                     "hover:scale-[1.02] hover:shadow-md",

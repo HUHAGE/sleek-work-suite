@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { trackToolUsage } from '@/lib/analytics';
 
 const HuhaTools: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -7,6 +8,9 @@ const HuhaTools: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // 跟踪工具加载
+    trackToolUsage('huha_tools', 'load_start');
+    
     // 启动入场动画
     setIsVisible(true);
 
@@ -100,6 +104,7 @@ const HuhaTools: React.FC = () => {
             setProgress(100);
             setTimeout(() => {
               setIsLoading(false);
+              trackToolUsage('huha_tools', 'load_complete');
             }, 300);
           }}
         />

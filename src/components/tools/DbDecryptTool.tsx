@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Lock, Unlock, Copy, Check, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { trackToolUsage, trackButtonClick } from '@/lib/analytics';
 
 const DbDecryptTool: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -16,6 +17,8 @@ const DbDecryptTool: React.FC = () => {
   const { toast } = useToast();
 
   const handleDecrypt = async () => {
+    trackToolUsage('db_decrypt', 'decrypt_start');
+    
     if (!inputText.trim()) {
       toast({
         title: '错误',
@@ -59,11 +62,13 @@ const DbDecryptTool: React.FC = () => {
       if (result.success) {
         const output = `url=${result.url}\nusername=${result.username}\npassword=${result.password}`;
         setOutputText(output);
+        trackToolUsage('db_decrypt', 'decrypt_success');
         toast({
           title: '解密成功',
           description: '数据库配置已成功解密',
         });
       } else {
+        trackToolUsage('db_decrypt', 'decrypt_failed');
         toast({
           title: '解密失败',
           description: result.error || '未知错误',
@@ -83,6 +88,8 @@ const DbDecryptTool: React.FC = () => {
   };
 
   const handleEncrypt = async () => {
+    trackToolUsage('db_decrypt', 'encrypt_start');
+    
     if (!inputText.trim()) {
       toast({
         title: '错误',
@@ -126,11 +133,13 @@ const DbDecryptTool: React.FC = () => {
       if (result.success) {
         const output = `url={SM4_1::}${result.urlCipher}\nusername={SM4_1::}${result.usernameCipher}\npassword={SM4_1::}${result.passwordCipher}`;
         setOutputText(output);
+        trackToolUsage('db_decrypt', 'encrypt_success');
         toast({
           title: '加密成功',
           description: '数据库配置已成功加密',
         });
       } else {
+        trackToolUsage('db_decrypt', 'encrypt_failed');
         toast({
           title: '加密失败',
           description: result.error || '未知错误',
@@ -161,6 +170,7 @@ const DbDecryptTool: React.FC = () => {
     try {
       await navigator.clipboard.writeText(outputText);
       setIsCopied(true);
+      trackButtonClick('db_decrypt', 'copy_result');
       toast({
         title: '复制成功',
         description: '解密结果已复制到剪贴板',
@@ -180,6 +190,8 @@ const DbDecryptTool: React.FC = () => {
   };
 
   const insertSample = () => {
+    trackButtonClick('db_decrypt', `insert_sample_${mode}`);
+    
     if (mode === 'encrypt') {
       // 加密模式示例
       const sample = `url=jdbc:sqlserver://localhost;databaseName=epointbid_JAVAYEWU_test
@@ -204,6 +216,7 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
   };
 
   const handleModeChange = (value: string) => {
+    trackButtonClick('db_decrypt', `switch_mode_${value}`);
     setMode(value as 'decrypt' | 'encrypt');
     setInputText('');
     setOutputText('');

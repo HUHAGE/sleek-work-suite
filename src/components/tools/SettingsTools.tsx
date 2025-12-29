@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { useSettings, type ThemeColor } from "@/lib/store/settings"
 import { cn } from "@/lib/utils"
 import MenuManagement from "@/components/MenuManagement"
+import { trackButtonClick } from "@/lib/analytics";
 
 interface ToolInfo {
   id: string
@@ -79,6 +80,11 @@ const themeColors: { value: ThemeColor; label: string; lightClass: string; darkC
 function SidebarSetting() {
   const { sidebarOpen, setSidebarOpen } = useSettings()
   
+  const handleToggle = (checked: boolean) => {
+    trackButtonClick('settings', `toggle_sidebar_${checked ? 'on' : 'off'}`);
+    setSidebarOpen(checked);
+  };
+  
   return (
     <div className="tool-card">
       <div className="flex items-center gap-2 mb-4">
@@ -90,7 +96,7 @@ function SidebarSetting() {
         <Switch
           id="sidebar"
           checked={sidebarOpen}
-          onCheckedChange={setSidebarOpen}
+          onCheckedChange={handleToggle}
         />
       </div>
     </div>
@@ -101,6 +107,11 @@ function SidebarSetting() {
 function ThemeSetting() {
   const { theme, setTheme } = useSettings()
   
+  const handleThemeChange = (value: any) => {
+    trackButtonClick('settings', `change_theme_${value}`);
+    setTheme(value);
+  };
+  
   return (
     <div className="tool-card">
       <div className="flex items-center gap-2 mb-4">
@@ -108,7 +119,7 @@ function ThemeSetting() {
         <h3 className="text-lg font-semibold">主题设置</h3>
       </div>
       <div className="space-y-4">
-        <RadioGroup value={theme} onValueChange={(value: any) => setTheme(value)}>
+        <RadioGroup value={theme} onValueChange={handleThemeChange}>
           <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted/50">
             <RadioGroupItem value="light" id="light" />
             <Label htmlFor="light" className="text-base">浅色</Label>
@@ -132,6 +143,11 @@ function ThemeColorSetting() {
   const { theme, themeColor, setThemeColor } = useSettings()
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   
+  const handleColorChange = (color: ThemeColor) => {
+    trackButtonClick('settings', `change_theme_color_${color}`);
+    setThemeColor(color);
+  };
+  
   // 将颜色分为两组：柔和色和鲜艳色
   const softColors = themeColors.slice(0, 5)
   const vibrantColors = themeColors.slice(5)
@@ -149,7 +165,7 @@ function ThemeColorSetting() {
             {softColors.map((color) => (
               <button
                 key={color.value}
-                onClick={() => setThemeColor(color.value)}
+                onClick={() => handleColorChange(color.value)}
                 className={cn(
                   "group relative w-16 aspect-square rounded-lg transition-all duration-300",
                   "hover:scale-105 hover:shadow-lg",
@@ -187,7 +203,7 @@ function ThemeColorSetting() {
             {vibrantColors.map((color) => (
               <button
                 key={color.value}
-                onClick={() => setThemeColor(color.value)}
+                onClick={() => handleColorChange(color.value)}
                 className={cn(
                   "group relative w-16 aspect-square rounded-lg transition-all duration-300",
                   "hover:scale-105 hover:shadow-lg",

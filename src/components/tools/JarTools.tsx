@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useUserData } from '@/lib/store/userDataManager'
+import { trackToolUsage, trackButtonClick } from '@/lib/analytics';
 
 interface JarFile {
   id: string
@@ -77,6 +78,7 @@ const JarTools = () => {
   }
 
   const handleSelectPath = async () => {
+    trackButtonClick('jar_tools', 'select_path');
     try {
       const result = await window.electron.ipcRenderer.invoke('select-directory')
       if (result) {
@@ -95,6 +97,7 @@ const JarTools = () => {
 
   const handleScan = async () => {
     if (!path) return
+    trackToolUsage('jar_tools', 'scan_start', { path });
     setScanning(true)
     try {
       const files = await window.electron.ipcRenderer.invoke('scan-jar-files', path)
@@ -110,12 +113,14 @@ const JarTools = () => {
       setJarFiles(sortedFiles)
       setSortOrder('desc')
       saveToHistory(path)
+      trackToolUsage('jar_tools', 'scan_success', { count: jarFiles.length });
       toast({
         title: "扫描完成",
         description: `共找到 ${jarFiles.length} 个JAR文件`,
       })
     } catch (error) {
       console.error('扫描JAR文件失败:', error)
+      trackToolUsage('jar_tools', 'scan_failed');
       toast({
         title: "扫描失败",
         description: "请检查目录权限或路径是否正确",
@@ -161,6 +166,7 @@ const JarTools = () => {
         name: file.name
       }))
     if (selectedFiles.length > 0) {
+      trackButtonClick('jar_tools', 'copy_batch', { count: selectedFiles.length });
       copyFiles(selectedFiles)
     }
   }
@@ -177,10 +183,12 @@ const JarTools = () => {
   }
 
   const handleCopyFile = (file: { path: string, name: string }) => {
+    trackButtonClick('jar_tools', 'copy_single');
     copyFiles([file])
   }
 
   const handleOpenPath = async () => {
+    trackButtonClick('jar_tools', 'open_path');
     if (!path) {
       toast({
         title: "路径为空",
