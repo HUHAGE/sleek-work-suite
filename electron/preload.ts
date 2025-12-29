@@ -19,7 +19,9 @@ contextBridge.exposeInMainWorld('electron', {
         'decrypt-url',
         'get-work-starter-config',
         'save-work-starter-config',
-        'scan-sensitive-logs'
+        'scan-sensitive-logs',
+        'get-app-settings',
+        'save-app-settings'
       ];
       
       if (validChannels.includes(channel)) {

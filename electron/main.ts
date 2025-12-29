@@ -233,6 +233,80 @@ class WorkStarterConfigManager {
 
 const workStarterConfigManager = new WorkStarterConfigManager();
 
+// 应用设置管理器
+class AppSettingsManager {
+  private configFilePath: string;
+
+  constructor() {
+    const userDataPath = app.getPath('userData');
+    this.configFilePath = path.join(userDataPath, 'app_settings.json');
+    console.log('应用设置文件路径:', this.configFilePath);
+    this.initConfigFile();
+  }
+
+  private initConfigFile() {
+    try {
+      if (!fs.existsSync(this.configFilePath)) {
+        console.log('创建新的应用设置文件');
+        const defaultSettings = {
+          sidebarOpen: true,
+          theme: 'dark',
+          themeColor: 'green'
+        };
+        fs.writeFileSync(this.configFilePath, JSON.stringify(defaultSettings, null, 2));
+      } else {
+        console.log('应用设置文件已存在');
+        // 验证文件内容是否是有效的JSON
+        const content = fs.readFileSync(this.configFilePath, 'utf-8');
+        try {
+          JSON.parse(content);
+        } catch (e) {
+          console.log('设置文件内容无效，重新初始化');
+          const defaultSettings = {
+            sidebarOpen: true,
+            theme: 'dark',
+            themeColor: 'green'
+          };
+          fs.writeFileSync(this.configFilePath, JSON.stringify(defaultSettings, null, 2));
+        }
+      }
+    } catch (error) {
+      console.error('初始化应用设置文件失败:', error);
+    }
+  }
+
+  async getSettings() {
+    try {
+      console.log('读取应用设置');
+      const data = await fs.promises.readFile(this.configFilePath, 'utf-8');
+      const settings = JSON.parse(data);
+      console.log('当前设置:', settings);
+      return settings;
+    } catch (error) {
+      console.error('读取设置失败:', error);
+      return {
+        sidebarOpen: true,
+        theme: 'dark',
+        themeColor: 'green'
+      };
+    }
+  }
+
+  async saveSettings(settings: any) {
+    try {
+      console.log('保存应用设置');
+      await fs.promises.writeFile(this.configFilePath, JSON.stringify(settings, null, 2));
+      console.log('设置保存成功');
+      return true;
+    } catch (error) {
+      console.error('保存设置失败:', error);
+      throw error;
+    }
+  }
+}
+
+const appSettingsManager = new AppSettingsManager();
+
 // 在createWindow函数之前添加日志管理器
 class LogManager {
   private logFilePath: string;
@@ -418,6 +492,17 @@ function registerIpcHandlers() {
   ipcMain.handle('save-work-starter-config', async (_, config) => {
     console.log('收到保存工作启动器配置请求');
     return await workStarterConfigManager.saveConfig(config);
+  })
+
+  // 应用设置相关
+  ipcMain.handle('get-app-settings', async () => {
+    console.log('收到获取应用设置请求');
+    return await appSettingsManager.getSettings();
+  })
+
+  ipcMain.handle('save-app-settings', async (_, settings) => {
+    console.log('收到保存应用设置请求');
+    return await appSettingsManager.saveSettings(settings);
   })
 
   // 选择目录

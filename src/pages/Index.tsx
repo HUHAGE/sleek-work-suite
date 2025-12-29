@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info, PlayCircle, Database, FileJson, KeyRound } from 'lucide-react';
+import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, PlayCircle, Database, FileJson, KeyRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import JarTools from '@/components/tools/JarTools';
@@ -15,6 +15,7 @@ import JarQuickPuller from '@/components/tools/JarQuickPuller';
 import WorkStarter from '@/components/tools/WorkStarter';
 import ApiDocGenerator from '@/components/tools/ApiDocGenerator';
 import UrlDecryptTool from '@/components/tools/UrlDecryptTool';
+import CollapsibleDescription from '@/components/CollapsibleDescription';
 
 interface Tool {
   id: string;
@@ -26,7 +27,12 @@ interface Tool {
 
 const Index = () => {
   const [activeTool, setActiveTool] = useState('work-starter');
-  const { sidebarOpen, setSidebarOpen } = useSettings();
+  const { sidebarOpen, setSidebarOpen, loadSettings } = useSettings();
+
+  // 加载设置
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
 
   const tools: Tool[] = [
     { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
@@ -102,7 +108,7 @@ const Index = () => {
             </div>
 
             {/* 可滚动的菜单区域 */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/30">
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
               <nav className={cn(
                 "space-y-2 pb-4",
                 sidebarOpen ? "px-6" : "px-4"
@@ -198,15 +204,10 @@ const Index = () => {
           <div className="flex-1 overflow-auto bg-background/30 backdrop-blur-md h-[calc(100vh-40px)] scrollbar-hide">
             <div className="p-6">
               {activeToolInfo?.dec && (
-                <div className="mb-6 p-4 rounded-xl bg-card/50 border border-primary/20 backdrop-blur-sm">
-                  <div className="flex items-start gap-3">
-                    <Info className="text-primary mt-1" size={20} />
-                    <div>
-                      <h2 className="text-lg font-medium text-primary mb-2">{activeToolInfo.name}</h2>
-                      <p className="text-muted-foreground">{activeToolInfo.dec}</p>
-                    </div>
-                  </div>
-                </div>
+                <CollapsibleDescription 
+                  title={activeToolInfo.name}
+                  description={activeToolInfo.dec}
+                />
               )}
               <div className="min-h-0 flex-1">
                 <ActiveComponent />
