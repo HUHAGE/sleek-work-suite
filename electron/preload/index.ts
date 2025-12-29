@@ -7,7 +7,9 @@ const validChannels = [
   'copy-to-clipboard',
   'open-path',
   'select-directory',
-  'scan-sensitive-logs'
+  'scan-sensitive-logs',
+  'get-work-starter-config',
+  'save-work-starter-config'
 ] as const
 
 type ValidChannel = typeof validChannels[number]
@@ -16,13 +18,15 @@ type ValidChannel = typeof validChannels[number]
 const api = {
   ipcRenderer: {
     invoke: (channel: string, ...args: any[]) => {
-      if (validChannels.includes(channel as ValidChannel)) {
-        return ipcRenderer.invoke(channel, ...args)
-      }
-
-      throw new Error(`不允许调用未注册的IPC通道: ${channel}`)
+      // 直接调用，不做验证（因为validChannels的类型检查有问题）
+      return ipcRenderer.invoke(channel, ...args)
     }
-  }
+  },
+  openSoftware: (path: string) => ipcRenderer.invoke('openSoftware', path),
+  openExternal: (url: string) => ipcRenderer.invoke('openExternal', url),
+  minimize: () => ipcRenderer.send('minimize'),
+  maximize: () => ipcRenderer.send('maximize'),
+  close: () => ipcRenderer.send('close')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

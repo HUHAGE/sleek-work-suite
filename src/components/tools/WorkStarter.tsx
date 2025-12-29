@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useUserData } from '@/lib/store/userDataManager'
 import { Laptop, Globe, Trash2, Plus, Play } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -11,6 +10,13 @@ import { useToast } from "@/components/ui/use-toast"
 
 type ItemType = 'software' | 'website'
 
+interface WorkItem {
+  id: string
+  name: string
+  path: string
+  type: ItemType
+}
+
 interface NewItem {
   name: string
   path: string
@@ -18,9 +24,54 @@ interface NewItem {
 }
 
 const WorkStarter = () => {
-  const { workItems, addWorkItem, removeWorkItem } = useUserData()
+  const [workItems, setWorkItems] = useState<WorkItem[]>([])
   const [newItem, setNewItem] = useState<NewItem>({ name: '', path: '', type: 'software' })
   const { toast } = useToast()
+
+  // 从文件系统加载配置
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await window.electron.ipcRenderer.invoke('get-work-starter-config')
+        if (config && config.workItems) {
+          setWorkItems(config.workItems)
+        }
+      } catch (error) {
+        console.error('加载工作启动器配置失败:', error)
+      }
+    }
+    loadConfig()
+  }, [])
+
+  // 保存配置到文件系统
+  const saveConfig = async (items: WorkItem[]) => {
+    try {
+      await window.electron.ipcRenderer.invoke('save-work-starter-config', { workItems: items })
+    } catch (error) {
+      console.error('保存工作启动器配置失败:', error)
+      toast({
+        title: "保存失败",
+        description: "配置保存失败，请重试",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const addWorkItem = (item: NewItem) => {
+    const newWorkItem: WorkItem = {
+      ...item,
+      id: crypto.randomUUID()
+    }
+    const updatedItems = [...workItems, newWorkItem]
+    setWorkItems(updatedItems)
+    saveConfig(updatedItems)
+  }
+
+  const removeWorkItem = (id: string) => {
+    const updatedItems = workItems.filter(item => item.id !== id)
+    setWorkItems(updatedItems)
+    saveConfig(updatedItems)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -206,12 +257,7 @@ const WorkStarter = () => {
 }
 
 interface WorkItemCardProps {
-  item: {
-    id: string
-    name: string
-    path: string
-    type: ItemType
-  }
+  item: WorkItem
   onRemove: (id: string) => void
 }
 
@@ -239,9 +285,22 @@ const WorkItemCard = ({ item, onRemove }: WorkItemCardProps) => {
     )}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium truncate">{item.name}</h3>
-            <p className="text-sm text-muted-foreground truncate">{item.path}</p>
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <h3 className="font-medium truncate" title={item.name}>{item.name}</h3>
+            <p 
+              className="text-sm text-muted-foreground overflow-hidden" 
+              title={item.path}
+              style={{
+                wordBreak: 'break-all',
+                overflowWrap: 'break-word',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                maxWidth: '100%'
+              }}
+            >
+              {item.path}
+            </p>
           </div>
           <div className="flex gap-2 flex-none">
             <Button

@@ -16,7 +16,10 @@ contextBridge.exposeInMainWorld('electron', {
         'select-directory-and-pull-jar',
         'scan-jar-files',
         'copy-files',
-        'decrypt-url'
+        'decrypt-url',
+        'get-work-starter-config',
+        'save-work-starter-config',
+        'scan-sensitive-logs'
       ];
       
       if (validChannels.includes(channel)) {

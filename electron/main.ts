@@ -173,6 +173,66 @@ async function addJobAnnotation(filePath: string): Promise<void> {
   }
 }
 
+// 工作启动器配置管理器
+class WorkStarterConfigManager {
+  private configFilePath: string;
+
+  constructor() {
+    const userDataPath = app.getPath('userData');
+    this.configFilePath = path.join(userDataPath, 'work_starter_config.json');
+    console.log('工作启动器配置文件路径:', this.configFilePath);
+    this.initConfigFile();
+  }
+
+  private initConfigFile() {
+    try {
+      if (!fs.existsSync(this.configFilePath)) {
+        console.log('创建新的工作启动器配置文件');
+        fs.writeFileSync(this.configFilePath, JSON.stringify({ workItems: [] }, null, 2));
+      } else {
+        console.log('工作启动器配置文件已存在');
+        // 验证文件内容是否是有效的JSON
+        const content = fs.readFileSync(this.configFilePath, 'utf-8');
+        try {
+          JSON.parse(content);
+        } catch (e) {
+          console.log('配置文件内容无效，重新初始化');
+          fs.writeFileSync(this.configFilePath, JSON.stringify({ workItems: [] }, null, 2));
+        }
+      }
+    } catch (error) {
+      console.error('初始化工作启动器配置文件失败:', error);
+    }
+  }
+
+  async getConfig() {
+    try {
+      console.log('读取工作启动器配置');
+      const data = await fs.promises.readFile(this.configFilePath, 'utf-8');
+      const config = JSON.parse(data);
+      console.log('当前配置项数量:', config.workItems?.length || 0);
+      return config;
+    } catch (error) {
+      console.error('读取配置失败:', error);
+      return { workItems: [] };
+    }
+  }
+
+  async saveConfig(config: any) {
+    try {
+      console.log('保存工作启动器配置');
+      await fs.promises.writeFile(this.configFilePath, JSON.stringify(config, null, 2));
+      console.log('配置保存成功');
+      return true;
+    } catch (error) {
+      console.error('保存配置失败:', error);
+      throw error;
+    }
+  }
+}
+
+const workStarterConfigManager = new WorkStarterConfigManager();
+
 // 在createWindow函数之前添加日志管理器
 class LogManager {
   private logFilePath: string;
@@ -347,6 +407,17 @@ function registerIpcHandlers() {
       console.error('打开软件失败:', error)
       throw error
     }
+  })
+
+  // 工作启动器配置相关
+  ipcMain.handle('get-work-starter-config', async () => {
+    console.log('收到获取工作启动器配置请求');
+    return await workStarterConfigManager.getConfig();
+  })
+
+  ipcMain.handle('save-work-starter-config', async (_, config) => {
+    console.log('收到保存工作启动器配置请求');
+    return await workStarterConfigManager.saveConfig(config);
   })
 
   // 选择目录
