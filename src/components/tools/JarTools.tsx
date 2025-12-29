@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,7 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
-import { Archive, FolderOpen, Search, Copy, FileArchive, ExternalLink, X } from 'lucide-react'
+import { Archive, FolderOpen, Search, Copy, FileArchive, ExternalLink, X, Edit2, Check } from 'lucide-react'
 import {
   Command,
   CommandEmpty,
@@ -25,6 +25,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { useUserData } from '@/lib/store/userDataManager'
 
 interface JarFile {
@@ -35,30 +44,49 @@ interface JarFile {
   selected: boolean
 }
 
-const MAX_HISTORY = 10
-
 const JarTools = () => {
   const [path, setPath] = useState<string>('')
   const [jarFiles, setJarFiles] = useState<JarFile[]>([])
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [scanning, setScanning] = useState(false)
   const [open, setOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<{ id: string; name: string; path: string } | null>(null)
+  const [editName, setEditName] = useState('')
   const { toast } = useToast()
   
-  const { jarToolsPathHistory, setJarToolsPathHistory } = useUserData()
+  const { jarToolsPathHistory, addJarToolsPath, removeJarToolsPath, updateJarToolsPath } = useUserData()
 
   // 保存路径到历史记录
   const saveToHistory = (newPath: string) => {
-    if (!newPath || jarToolsPathHistory.includes(newPath)) return
-    
-    const newHistory = [newPath, ...jarToolsPathHistory].slice(0, MAX_HISTORY)
-    setJarToolsPathHistory(newHistory)
+    if (!newPath) return
+    addJarToolsPath(newPath)
   }
 
   // 从历史记录中删除路径
-  const removeFromHistory = (pathToRemove: string) => {
-    const newHistory = jarToolsPathHistory.filter(p => p !== pathToRemove)
-    setJarToolsPathHistory(newHistory)
+  const removeFromHistory = (id: string) => {
+    removeJarToolsPath(id)
+  }
+
+  // 打开编辑对话框
+  const handleEditClick = (item: { id: string; name: string; path: string }) => {
+    setEditingItem(item)
+    setEditName(item.name)
+    setEditDialogOpen(true)
+  }
+
+  // 保存编辑
+  const handleSaveEdit = () => {
+    if (editingItem && editName.trim()) {
+      updateJarToolsPath(editingItem.id, editName.trim())
+      setEditDialogOpen(false)
+      setEditingItem(null)
+      setEditName('')
+      toast({
+        title: "保存成功",
+        description: "路径名称已更新",
+      })
+    }
   }
 
   const handleSelectPath = async () => {
@@ -120,7 +148,7 @@ const JarTools = () => {
 
   const copyFiles = async (files: { path: string, name: string }[]) => {
     try {
-      await window.electron.ipcRenderer.invoke('copy-files', files)
+      await (window.electron.ipcRenderer.invoke as any)('copy-files', files)
       toast({
         title: "复制成功",
         description: "文件已复制到剪贴板",
@@ -187,6 +215,36 @@ const JarTools = () => {
     }
   };
 
+  // 点击历史路径卡片，扫描该路径
+  const handleHistoryCardClick = async (historyPath: string) => {
+    setPath(historyPath);
+    setScanning(true);
+    try {
+      const files = await window.electron.ipcRenderer.invoke('scan-jar-files', historyPath);
+      const jarFiles: JarFile[] = files.map((file: any) => ({
+        id: `${file.path}${file.name}`,
+        name: file.name,
+        path: file.path,
+        createTime: new Date(file.createTime),
+        selected: false
+      }));
+      setJarFiles(jarFiles);
+      toast({
+        title: "扫描完成",
+        description: `共找到 ${jarFiles.length} 个JAR文件`,
+      });
+    } catch (error) {
+      console.error('扫描JAR文件失败:', error);
+      toast({
+        title: "扫描失败",
+        description: "请检查目录权限或路径是否正确",
+        variant: "destructive"
+      });
+    } finally {
+      setScanning(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* 路径输入区域 */}
@@ -215,23 +273,26 @@ const JarTools = () => {
                     <CommandInput placeholder="搜索历史路径..." />
                     <CommandEmpty>未找到匹配的路径</CommandEmpty>
                     <CommandGroup>
-                      {jarToolsPathHistory.map((historyPath) => (
+                      {jarToolsPathHistory.map((item) => (
                         <CommandItem
-                          key={historyPath}
+                          key={item.id}
                           onSelect={() => {
-                            setPath(historyPath)
+                            setPath(item.path)
                             setOpen(false)
                           }}
                           className="flex justify-between items-center"
                         >
-                          <span className="truncate flex-1 mr-4">{historyPath}</span>
+                          <div className="flex-1 min-w-0 mr-4">
+                            <div className="font-medium truncate">{item.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{item.path}</div>
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 shrink-0"
                             onClick={(e) => {
                               e.stopPropagation()
-                              removeFromHistory(historyPath)
+                              removeFromHistory(item.id)
                             }}
                           >
                             <X className="h-4 w-4" />
@@ -257,7 +318,102 @@ const JarTools = () => {
             {scanning ? '扫描中...' : '扫描'}
           </Button>
         </div>
+
+        {/* 历史路径卡片列表 */}
+        {jarToolsPathHistory.length > 0 && (
+          <div className="mt-6">
+            <h4 className="text-sm font-medium text-muted-foreground mb-3">常用路径</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {jarToolsPathHistory.map((item) => (
+                <div
+                  key={item.id}
+                  className="group relative border rounded-lg p-3 hover:border-primary hover:shadow-md transition-all cursor-pointer bg-card"
+                  onClick={() => handleHistoryCardClick(item.path)}
+                >
+                  <div className="flex items-start gap-2">
+                    <FolderOpen className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" title={item.name}>
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate mt-1" title={item.path}>
+                        {item.path}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleEditClick(item)
+                        }}
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeFromHistory(item.id)
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* 编辑名称对话框 */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>编辑路径名称</DialogTitle>
+            <DialogDescription>
+              为这个路径设置一个容易识别的名称
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">名称</Label>
+              <Input
+                id="name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="输入路径名称..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveEdit()
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>路径</Label>
+              <p className="text-sm text-muted-foreground break-all">
+                {editingItem?.path}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={!editName.trim()}>
+              <Check className="w-4 h-4 mr-2" />
+              保存
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* JAR文件列表 */}
       {jarFiles.length > 0 && (
@@ -277,7 +433,7 @@ const JarTools = () => {
             </Button>
           </div>
 
-          <div className="border rounded-lg">
+          <div className="border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -288,9 +444,9 @@ const JarTools = () => {
                     />
                   </TableHead>
                   <TableHead className="w-[80px]">序号</TableHead>
-                  <TableHead>文件名</TableHead>
+                  <TableHead className="min-w-[200px] w-[300px]">文件名</TableHead>
                   <TableHead 
-                    className="cursor-pointer hover:text-primary transition-colors"
+                    className="w-[180px] cursor-pointer hover:text-primary transition-colors whitespace-nowrap"
                     onClick={handleSort}
                   >
                     创建时间
@@ -298,7 +454,7 @@ const JarTools = () => {
                       {sortOrder === 'asc' ? '↑' : '↓'}
                     </span>
                   </TableHead>
-                  <TableHead>路径</TableHead>
+                  <TableHead className="min-w-[150px]">路径</TableHead>
                   <TableHead className="w-24">操作</TableHead>
                 </TableRow>
               </TableHeader>
@@ -312,11 +468,11 @@ const JarTools = () => {
                       />
                     </TableCell>
                     <TableCell className="text-center">{index + 1}</TableCell>
-                    <TableCell className="font-medium">{file.name}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium break-all">{file.name}</TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {format(file.createTime, 'yyyy-MM-dd HH:mm:ss')}
                     </TableCell>
-                    <TableCell className="max-w-md truncate">
+                    <TableCell className="truncate max-w-[200px]" title={file.path}>
                       {file.path}
                     </TableCell>
                     <TableCell>

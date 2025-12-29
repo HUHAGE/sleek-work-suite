@@ -23,9 +23,16 @@ interface SqlToolsHistory {
   }
 }
 
+// JAR工具路径项
+export interface JarPathItem {
+  id: string
+  name: string
+  path: string
+}
+
 // 用户数据类型定义
 interface UserData {
-  jarToolsPathHistory: string[]
+  jarToolsPathHistory: JarPathItem[]
   jobToolsPathHistory: string[]
   sensitiveLogPathHistory: string[]
   workItems: WorkItem[] // 工作启动项配置
@@ -33,7 +40,10 @@ interface UserData {
 }
 
 interface UserDataState extends UserData {
-  setJarToolsPathHistory: (history: string[]) => void
+  setJarToolsPathHistory: (history: JarPathItem[]) => void
+  addJarToolsPath: (path: string, name?: string) => void
+  removeJarToolsPath: (id: string) => void
+  updateJarToolsPath: (id: string, name: string) => void
   setJobToolsPathHistory: (history: string[]) => void
   setSensitiveLogPathHistory: (history: string[]) => void
   // 工作启动项相关方法
@@ -68,6 +78,30 @@ export const useUserData = create<UserDataState>()(
 
       // 更新方法
       setJarToolsPathHistory: (history) => set({ jarToolsPathHistory: history }),
+      addJarToolsPath: (path, name) => set((state) => {
+        // 检查路径是否已存在
+        if (state.jarToolsPathHistory.some(item => item.path === path)) {
+          return state;
+        }
+        // 生成默认名称（路径的最后一个文件夹名）
+        const defaultName = name || path.split(/[/\\]/).pop() || path;
+        const newItem: JarPathItem = {
+          id: crypto.randomUUID(),
+          name: defaultName,
+          path
+        };
+        // 限制最多10条记录
+        const newHistory = [newItem, ...state.jarToolsPathHistory].slice(0, 10);
+        return { jarToolsPathHistory: newHistory };
+      }),
+      removeJarToolsPath: (id) => set((state) => ({
+        jarToolsPathHistory: state.jarToolsPathHistory.filter(item => item.id !== id)
+      })),
+      updateJarToolsPath: (id, name) => set((state) => ({
+        jarToolsPathHistory: state.jarToolsPathHistory.map(item =>
+          item.id === id ? { ...item, name } : item
+        )
+      })),
       setJobToolsPathHistory: (history) => set({ jobToolsPathHistory: history }),
       setSensitiveLogPathHistory: (history) => set({ sensitiveLogPathHistory: history }),
 
@@ -130,7 +164,18 @@ export const useUserData = create<UserDataState>()(
           // 获取并迁移JAR工具历史记录
           const jarHistory = localStorage.getItem('jarToolsPathHistory')
           if (jarHistory) {
-            set({ jarToolsPathHistory: JSON.parse(jarHistory) })
+            const oldHistory = JSON.parse(jarHistory);
+            // 如果是旧格式（字符串数组），转换为新格式
+            if (Array.isArray(oldHistory) && oldHistory.length > 0 && typeof oldHistory[0] === 'string') {
+              const newHistory: JarPathItem[] = oldHistory.map((path: string) => ({
+                id: crypto.randomUUID(),
+                name: path.split(/[/\\]/).pop() || path,
+                path
+              }));
+              set({ jarToolsPathHistory: newHistory });
+            } else {
+              set({ jarToolsPathHistory: oldHistory });
+            }
             localStorage.removeItem('jarToolsPathHistory')
           }
 
@@ -154,7 +199,7 @@ export const useUserData = create<UserDataState>()(
     }),
     {
       name: 'user-data-storage',
-      version: 3, // 增加版本号
+      version: 4, // 增加版本号
       onRehydrateStorage: () => {
         return (state) => {
           // 确保sqlToolsHistory存在且具有正确的结构
@@ -182,6 +227,20 @@ export const useUserData = create<UserDataState>()(
                 sql,
                 params: '',
                 timestamp: Date.now()
+              }));
+            }
+          }
+
+          // 迁移旧的jarToolsPathHistory数据格式（从字符串数组到对象数组）
+          if (Array.isArray(state.jarToolsPathHistory)) {
+            const oldHistory = state.jarToolsPathHistory;
+            const isOldFormat = oldHistory.length > 0 && typeof oldHistory[0] === 'string';
+            
+            if (isOldFormat) {
+              state.jarToolsPathHistory = (oldHistory as unknown as string[]).map((path: string) => ({
+                id: crypto.randomUUID(),
+                name: path.split(/[/\\]/).pop() || path,
+                path
               }));
             }
           }

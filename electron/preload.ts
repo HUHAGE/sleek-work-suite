@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electron', {
         'save-file',
         'select-directory-and-pull-jar',
         'scan-jar-files',
+        'copy-files',
         'decrypt-url'
       ];
       

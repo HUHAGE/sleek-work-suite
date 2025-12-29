@@ -17,6 +17,9 @@ declare global {
         invoke(channel: 'open-file', path: string): Promise<void>;
         invoke(channel: 'open-path', path: string): Promise<void>;
         invoke(channel: 'load-logs'): Promise<LogEntry[]>;
+        invoke(channel: 'scan-jar-files', path: string): Promise<Array<{ name: string; path: string; createTime: number }>>;
+        invoke(channel: 'copy-files', files: Array<{ path: string; name: string }>): Promise<boolean>;
+        invoke(channel: 'save-file', params: { defaultPath: string; fileContent: string }): Promise<string | null>;
         invoke(channel: 'select-directory-and-pull-jar', params: {
           type: 'single' | 'batch';
           repoUrl: string;
