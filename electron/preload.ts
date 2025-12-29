@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('electron', {
         'scan-jar-files',
         'copy-files',
         'decrypt-url',
+        'decrypt-db-config',
         'get-work-starter-config',
         'save-work-starter-config',
         'scan-sensitive-logs',
@@ -44,6 +45,7 @@ contextBridge.exposeInMainWorld('electron', {
   openSoftware: (path: string) => ipcRenderer.invoke('openSoftware', path),
   openExternal: (url: string) => ipcRenderer.invoke('openExternal', url),
   decryptUrl: (encryptedUrl: string, systemUrl: string) => ipcRenderer.invoke('decrypt-url', encryptedUrl, systemUrl),
+  decryptDbConfig: (config: { urlCipher: string; usernameCipher: string; passwordCipher: string }) => ipcRenderer.invoke('decrypt-db-config', config),
   minimize: () => ipcRenderer.send('minimize'),
   maximize: () => ipcRenderer.send('maximize'),
   close: () => ipcRenderer.send('close')

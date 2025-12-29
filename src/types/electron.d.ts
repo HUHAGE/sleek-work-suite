@@ -36,6 +36,7 @@ declare global {
       openSoftware: (path: string) => Promise<void>;
       openExternal: (url: string) => Promise<void>;
       decryptUrl: (encryptedUrl: string, systemUrl: string) => Promise<{ success: boolean; decryptedUrl?: string; error?: string }>;
+      decryptDbConfig: (config: { urlCipher: string; usernameCipher: string; passwordCipher: string }) => Promise<{ success: boolean; url?: string; username?: string; password?: string; error?: string }>;
     };
   }
 }
@@ -61,6 +62,7 @@ export interface IElectronAPI {
   openSoftware: (path: string) => Promise<void>;
   openExternal: (url: string) => Promise<void>;
   decryptUrl: (encryptedUrl: string, systemUrl: string) => Promise<{ success: boolean; decryptedUrl?: string; error?: string }>;
+  decryptDbConfig: (config: { urlCipher: string; usernameCipher: string; passwordCipher: string }) => Promise<{ success: boolean; url?: string; username?: string; password?: string; error?: string }>;
   minimize: () => void;
   maximize: () => void;
   close: () => void;

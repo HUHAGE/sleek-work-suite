@@ -836,6 +836,141 @@ function registerIpcHandlers() {
       return { success: false, error: error.message || '解密过程中发生错误' };
     }
   })
+
+  // 处理数据库配置解密请求
+  ipcMain.handle('decrypt-db-config', async (_, { urlCipher, usernameCipher, passwordCipher }) => {
+    let decryptWindow: BrowserWindow | null = null;
+    try {
+      // 创建一个隐藏的浏览器窗口来执行解密
+      decryptWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: false,
+        }
+      });
+
+      // 加载系统地址
+      const systemUrl = 'http://172.29.3.91:8080/epoint-common-web/webencrypt';
+      await decryptWindow.loadURL(systemUrl);
+
+      // 等待页面加载完成
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // 切换到第二个tab（通用加解密）
+      await decryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            const tabs = mini.get('tabs1');
+            if (tabs) {
+              tabs.activeIndex = 1;
+            }
+          } catch (error) {
+            console.error('切换tab失败:', error);
+          }
+        })()
+      `);
+
+      // 等待tab切换完成
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // 设置解密参数并解密URL
+      const urlResult = await decryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            // 设置参数
+            mini.get('encryptType').setValue('2'); // SM4_1
+            mini.get('isaddprefix').setValue(true); // 添加密文前缀：是
+            mini.get('model').setValue(true); // 算法模式：老模式
+            
+            // 设置密文
+            mini.get('ciphertext').setValue('${urlCipher}');
+            
+            // 点击解密按钮
+            decrypt();
+            
+            // 等待解密完成并获取结果
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const plaintext = mini.get('plaintext').getValue();
+                resolve(plaintext);
+              }, 1000);
+            });
+          } catch (error) {
+            return 'ERROR: ' + error.message;
+          }
+        })()
+      `);
+
+      if (typeof urlResult === 'string' && urlResult.startsWith('ERROR:')) {
+        throw new Error(urlResult.substring(7));
+      }
+
+      // 解密username
+      const usernameResult = await decryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            mini.get('ciphertext').setValue('${usernameCipher}');
+            decrypt();
+            
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const plaintext = mini.get('plaintext').getValue();
+                resolve(plaintext);
+              }, 1000);
+            });
+          } catch (error) {
+            return 'ERROR: ' + error.message;
+          }
+        })()
+      `);
+
+      if (typeof usernameResult === 'string' && usernameResult.startsWith('ERROR:')) {
+        throw new Error(usernameResult.substring(7));
+      }
+
+      // 解密password
+      const passwordResult = await decryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            mini.get('ciphertext').setValue('${passwordCipher}');
+            decrypt();
+            
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const plaintext = mini.get('plaintext').getValue();
+                resolve(plaintext);
+              }, 1000);
+            });
+          } catch (error) {
+            return 'ERROR: ' + error.message;
+          }
+        })()
+      `);
+
+      if (typeof passwordResult === 'string' && passwordResult.startsWith('ERROR:')) {
+        throw new Error(passwordResult.substring(7));
+      }
+
+      // 关闭窗口
+      decryptWindow.close();
+      decryptWindow = null;
+
+      return {
+        success: true,
+        url: urlResult,
+        username: usernameResult,
+        password: passwordResult
+      };
+    } catch (error) {
+      console.error('数据库配置解密失败:', error);
+      if (decryptWindow) {
+        decryptWindow.close();
+      }
+      return { success: false, error: error.message || '解密过程中发生错误' };
+    }
+  })
 }
 
 let mainWindow: BrowserWindow | null = null;
