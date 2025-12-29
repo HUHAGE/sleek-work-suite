@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info, PlayCircle, Database, FileJson } from 'lucide-react';
+import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, Info, PlayCircle, Database, FileJson, KeyRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import JarTools from '@/components/tools/JarTools';
@@ -14,6 +14,7 @@ import { SensitiveLogScanner } from '@/components/tools/SensitiveLogScanner';
 import JarQuickPuller from '@/components/tools/JarQuickPuller';
 import WorkStarter from '@/components/tools/WorkStarter';
 import ApiDocGenerator from '@/components/tools/ApiDocGenerator';
+import UrlDecryptTool from '@/components/tools/UrlDecryptTool';
 
 interface Tool {
   id: string;
@@ -32,6 +33,7 @@ const Index = () => {
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
     { id: 'sql', name: 'SQL工具', dec: '', icon: Database, component: SqlTools },
     { id: 'api-doc', name: '接口文档生成', dec: '根据代码生成专业的接口文档，支持多种格式导出（实验性功能，请谨慎使用）', icon: FileJson, component: ApiDocGenerator },
+    { id: 'url-decrypt', name: 'URL解密', dec: '通过系统控制台调用 Util.decryptUrlParams() 方法解密URL参数', icon: KeyRound, component: UrlDecryptTool },
     { id: 'jar', name: '个性化Jar管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
     { id: 'jar-quick-puller', name: 'Jar快速拉取', dec: '拉取产品的Jar包，方便整改，支持单个Jar包拉取和批量Maven依赖拉取', icon: Download, component: JarQuickPuller },
     { id: 'job-annotation', name: 'Job注解整改', dec: '扫描并添加Job类的并发控制注解（@DisallowConcurrentExecution）', icon: FileCode, component: JobAnnotationTool },

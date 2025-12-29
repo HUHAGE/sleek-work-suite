@@ -336,7 +336,7 @@ function registerIpcHandlers() {
   ipcMain.handle('openSoftware', async (_, path: string) => {
     try {
       if (process.platform === 'win32') {
-        await execAsync(`start "" "${path}"`, { shell: true })
+        await execAsync(`start "" "${path}"`)
       } else if (process.platform === 'darwin') {
         await execAsync(`open "${path}"`)
       } else {
@@ -634,6 +634,50 @@ function registerIpcHandlers() {
     } catch (error) {
       console.error('打开网页失败:', error)
       throw error
+    }
+  })
+
+  // 处理URL解密请求
+  ipcMain.handle('decrypt-url', async (_, encryptedUrl: string, systemUrl: string) => {
+    try {
+      // 创建一个隐藏的浏览器窗口来执行解密
+      const decryptWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: false,
+        }
+      });
+
+      // 加载系统地址
+      await decryptWindow.loadURL(systemUrl);
+
+      // 等待页面加载完成
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // 在控制台中执行解密方法
+      const result = await decryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            if (typeof Util !== 'undefined' && typeof Util.decryptUrlParams === 'function') {
+              return { success: true, decryptedUrl: Util.decryptUrlParams('${encryptedUrl.replace(/'/g, "\\'")}') };
+            } else {
+              return { success: false, error: '系统中未找到 Util.decryptUrlParams 方法' };
+            }
+          } catch (error) {
+            return { success: false, error: error.message };
+          }
+        })()
+      `);
+
+      // 关闭窗口
+      decryptWindow.close();
+
+      return result;
+    } catch (error) {
+      console.error('URL解密失败:', error);
+      return { success: false, error: error.message || '解密过程中发生错误' };
     }
   })
 }

@@ -32,6 +32,7 @@ declare global {
       };
       openSoftware: (path: string) => Promise<void>;
       openExternal: (url: string) => Promise<void>;
+      decryptUrl: (encryptedUrl: string, systemUrl: string) => Promise<{ success: boolean; decryptedUrl?: string; error?: string }>;
     };
   }
 }
@@ -56,6 +57,7 @@ export interface IElectronAPI {
   platform: () => Promise<string>;
   openSoftware: (path: string) => Promise<void>;
   openExternal: (url: string) => Promise<void>;
+  decryptUrl: (encryptedUrl: string, systemUrl: string) => Promise<{ success: boolean; decryptedUrl?: string; error?: string }>;
   minimize: () => void;
   maximize: () => void;
   close: () => void;

@@ -14,7 +14,8 @@ contextBridge.exposeInMainWorld('electron', {
         'load-logs',
         'save-file',
         'select-directory-and-pull-jar',
-        'scan-jar-files'
+        'scan-jar-files',
+        'decrypt-url'
       ];
       
       if (validChannels.includes(channel)) {
@@ -36,6 +37,7 @@ contextBridge.exposeInMainWorld('electron', {
   platform: () => ipcRenderer.invoke('platform'),
   openSoftware: (path: string) => ipcRenderer.invoke('openSoftware', path),
   openExternal: (url: string) => ipcRenderer.invoke('openExternal', url),
+  decryptUrl: (encryptedUrl: string, systemUrl: string) => ipcRenderer.invoke('decrypt-url', encryptedUrl, systemUrl),
   minimize: () => ipcRenderer.send('minimize'),
   maximize: () => ipcRenderer.send('maximize'),
   close: () => ipcRenderer.send('close')
