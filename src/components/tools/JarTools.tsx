@@ -14,18 +14,6 @@ import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
 import { Archive, FolderOpen, Search, Copy, FileArchive, ExternalLink, X, Edit2, Check } from 'lucide-react'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -49,7 +37,6 @@ const JarTools = () => {
   const [jarFiles, setJarFiles] = useState<JarFile[]>([])
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [scanning, setScanning] = useState(false)
-  const [open, setOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<{ id: string; name: string; path: string } | null>(null)
   const [editName, setEditName] = useState('')
@@ -118,7 +105,10 @@ const JarTools = () => {
         createTime: new Date(file.createTime),
         selected: false
       }))
-      setJarFiles(jarFiles)
+      // 默认按创建时间倒序排列
+      const sortedFiles = jarFiles.sort((a, b) => b.createTime.getTime() - a.createTime.getTime())
+      setJarFiles(sortedFiles)
+      setSortOrder('desc')
       saveToHistory(path)
       toast({
         title: "扫描完成",
@@ -228,7 +218,10 @@ const JarTools = () => {
         createTime: new Date(file.createTime),
         selected: false
       }));
-      setJarFiles(jarFiles);
+      // 默认按创建时间倒序排列
+      const sortedFiles = jarFiles.sort((a, b) => b.createTime.getTime() - a.createTime.getTime())
+      setJarFiles(sortedFiles);
+      setSortOrder('desc')
       toast({
         title: "扫描完成",
         description: `共找到 ${jarFiles.length} 个JAR文件`,
@@ -254,57 +247,12 @@ const JarTools = () => {
           <h3 className="text-xl font-semibold">JAR文件扫描</h3>
         </div>
         <div className="flex gap-2">
-          <div className="flex-1 flex gap-2">
-            <Input
-              value={path}
-              onChange={(e) => setPath(e.target.value)}
-              placeholder="请输入或选择要扫描的路径..."
-              className="flex-1"
-            />
-            {jarToolsPathHistory.length > 0 && (
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="shrink-0 w-[120px]">
-                    历史记录
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="p-0 w-[500px]" align="start">
-                  <Command className="w-full">
-                    <CommandInput placeholder="搜索历史路径..." />
-                    <CommandEmpty>未找到匹配的路径</CommandEmpty>
-                    <CommandGroup>
-                      {jarToolsPathHistory.map((item) => (
-                        <CommandItem
-                          key={item.id}
-                          onSelect={() => {
-                            setPath(item.path)
-                            setOpen(false)
-                          }}
-                          className="flex justify-between items-center"
-                        >
-                          <div className="flex-1 min-w-0 mr-4">
-                            <div className="font-medium truncate">{item.name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{item.path}</div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 shrink-0"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              removeFromHistory(item.id)
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            )}
-          </div>
+          <Input
+            value={path}
+            onChange={(e) => setPath(e.target.value)}
+            placeholder="请输入或选择要扫描的路径..."
+            className="flex-1"
+          />
           <Button onClick={handleSelectPath} variant="outline" className="shrink-0">
             <FolderOpen className="w-4 h-4 mr-2" />
             选择
@@ -419,9 +367,22 @@ const JarTools = () => {
       {jarFiles.length > 0 && (
         <div className="tool-card">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <FileArchive size={20} className="text-primary" />
               <h3 className="text-xl font-semibold">扫描结果</h3>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">共</span>
+                <span className="font-semibold text-primary text-lg">{jarFiles.length}</span>
+                <span className="text-muted-foreground">个JAR文件</span>
+                {jarFiles.some(f => f.selected) && (
+                  <>
+                    <span className="text-muted-foreground mx-1">|</span>
+                    <span className="text-muted-foreground">已选</span>
+                    <span className="font-semibold text-primary">{jarFiles.filter(f => f.selected).length}</span>
+                    <span className="text-muted-foreground">个</span>
+                  </>
+                )}
+              </div>
             </div>
             <Button
               onClick={handleCopySelected}
