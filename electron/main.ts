@@ -971,6 +971,145 @@ function registerIpcHandlers() {
       return { success: false, error: error.message || '解密过程中发生错误' };
     }
   })
+
+  // 处理数据库配置加密请求
+  ipcMain.handle('encrypt-db-config', async (_, { urlPlain, usernamePlain, passwordPlain }) => {
+    let encryptWindow: BrowserWindow | null = null;
+    try {
+      // 创建一个隐藏的浏览器窗口来执行加密
+      encryptWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: false,
+        }
+      });
+
+      // 加载系统地址
+      const systemUrl = 'http://172.29.3.91:8080/epoint-common-web/webencrypt';
+      await encryptWindow.loadURL(systemUrl);
+
+      // 等待页面加载完成
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // 切换到第二个tab（通用加解密）
+      await encryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            const tabs = mini.get('tabs1');
+            if (tabs) {
+              tabs.activeIndex = 1;
+            }
+          } catch (error) {
+            console.error('切换tab失败:', error);
+          }
+        })()
+      `);
+
+      // 等待tab切换完成
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // 设置加密参数并加密URL
+      const urlResult = await encryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            // 设置参数
+            mini.get('encryptType').setValue('2'); // SM4_1
+            mini.get('isaddprefix').setValue(true); // 添加密文前缀：是
+            mini.get('model').setValue(true); // 算法模式：老模式
+            
+            // 设置明文
+            mini.get('plaintext').setValue('${urlPlain.replace(/'/g, "\\'")}');
+            
+            // 点击加密按钮
+            encrypt();
+            
+            // 等待加密完成并获取结果
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const ciphertext = mini.get('ciphertext').getValue();
+                // 移除 {SM4_1::} 前缀，只返回密文部分
+                const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
+                resolve(cipher);
+              }, 1000);
+            });
+          } catch (error) {
+            return 'ERROR: ' + error.message;
+          }
+        })()
+      `);
+
+      if (typeof urlResult === 'string' && urlResult.startsWith('ERROR:')) {
+        throw new Error(urlResult.substring(7));
+      }
+
+      // 加密username
+      const usernameResult = await encryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            mini.get('plaintext').setValue('${usernamePlain.replace(/'/g, "\\'")}');
+            encrypt();
+            
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const ciphertext = mini.get('ciphertext').getValue();
+                const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
+                resolve(cipher);
+              }, 1000);
+            });
+          } catch (error) {
+            return 'ERROR: ' + error.message;
+          }
+        })()
+      `);
+
+      if (typeof usernameResult === 'string' && usernameResult.startsWith('ERROR:')) {
+        throw new Error(usernameResult.substring(7));
+      }
+
+      // 加密password
+      const passwordResult = await encryptWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            mini.get('plaintext').setValue('${passwordPlain.replace(/'/g, "\\'")}');
+            encrypt();
+            
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const ciphertext = mini.get('ciphertext').getValue();
+                const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
+                resolve(cipher);
+              }, 1000);
+            });
+          } catch (error) {
+            return 'ERROR: ' + error.message;
+          }
+        })()
+      `);
+
+      if (typeof passwordResult === 'string' && passwordResult.startsWith('ERROR:')) {
+        throw new Error(passwordResult.substring(7));
+      }
+
+      // 关闭窗口
+      encryptWindow.close();
+      encryptWindow = null;
+
+      return {
+        success: true,
+        urlCipher: urlResult,
+        usernameCipher: usernameResult,
+        passwordCipher: passwordResult
+      };
+    } catch (error) {
+      console.error('数据库配置加密失败:', error);
+      if (encryptWindow) {
+        encryptWindow.close();
+      }
+      return { success: false, error: error.message || '加密过程中发生错误' };
+    }
+  })
 }
 
 let mainWindow: BrowserWindow | null = null;
