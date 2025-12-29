@@ -643,13 +643,24 @@ let mainWindow: BrowserWindow | null = null;
 const isDev = process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
 function createWindow() {
+  // 获取图标路径 - 开发环境和生产环境使用不同的路径
+  const getIconPath = () => {
+    if (isDev) {
+      // 开发环境：从项目根目录的 build 文件夹
+      return path.join(process.cwd(), 'build', 'icon.ico');
+    } else {
+      // 生产环境：从 resources 目录
+      return path.join(process.resourcesPath, 'build', 'icon.ico');
+    }
+  };
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 800,
     minHeight: 600,
     frame: false,
-    icon: path.join(process.env.PUBLIC || app.getAppPath(), 'build', 'icon.ico'),
+    icon: getIconPath(),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

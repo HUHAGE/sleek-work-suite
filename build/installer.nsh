@@ -17,8 +17,11 @@
 !macroend
 
 !macro customInstall
-    # 创建开始菜单快捷方式
-    CreateShortCut "$SMPROGRAMS\${APP_FILENAME}.lnk" "$INSTDIR\${APP_EXECUTABLE_FILENAME}"
+    # 创建开始菜单快捷方式（带图标）
+    CreateShortCut "$SMPROGRAMS\${APP_FILENAME}.lnk" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" 0
+    
+    # 创建桌面快捷方式（带图标）
+    CreateShortCut "$DESKTOP\${APP_FILENAME}.lnk" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" 0
     
     # 写入卸载信息到注册表
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_GUID}" "InstallLocation" "$INSTDIR"
@@ -30,6 +33,9 @@
 !macro customUnInstall
     # 删除开始菜单快捷方式
     Delete "$SMPROGRAMS\${APP_FILENAME}.lnk"
+    
+    # 删除桌面快捷方式
+    Delete "$DESKTOP\${APP_FILENAME}.lnk"
     
     # 删除注册表信息
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_GUID}"
