@@ -70,6 +70,7 @@ const JsonPreview = ({ json, showLineNumbers, wrapLines, selectedTheme, collapse
           padding: '1rem',
           background: 'transparent',
           minHeight: '500px',
+          fontSize: '0.875rem',
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
         }}
         codeTagProps={{
@@ -131,6 +132,7 @@ const SqlPreview = ({ sql, showLineNumbers, wrapLines, selectedTheme }: SqlPrevi
           padding: '1rem',
           background: 'transparent',
           minHeight: '500px',
+          fontSize: '0.875rem',
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
           textShadow: 'none',
         }}
@@ -184,6 +186,7 @@ const XmlPreview = ({ xml, showLineNumbers, wrapLines, selectedTheme }: XmlPrevi
           padding: '1rem',
           background: 'transparent',
           minHeight: '500px',
+          fontSize: '0.875rem',
           fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
         }}
         codeTagProps={{
@@ -601,15 +604,6 @@ ORDER BY u.created_at DESC;`;
 
   const buttonCategories = [
     {
-      name: '大小写',
-      icon: 'Aa',
-      buttons: [
-        { key: 'uppercase', label: '大写', icon: '↑' },
-        { key: 'lowercase', label: '小写', icon: '↓' },
-        { key: 'capitalize', label: '首字母大写', icon: 'Aa' },
-      ]
-    },
-    {
       name: '编码',
       icon: '#',
       buttons: [
@@ -625,6 +619,9 @@ ORDER BY u.created_at DESC;`;
       name: '格式',
       icon: '{',
       buttons: [
+        { key: 'uppercase', label: '大写', icon: '↑' },
+        { key: 'lowercase', label: '小写', icon: '↓' },
+        { key: 'capitalize', label: '首字母大写', icon: 'Aa' },
         { key: 'json', label: 'JSON格式化', icon: '{' },
         { key: 'xml', label: 'XML格式化', icon: '<' },
         { key: 'sql', label: 'SQL格式化', icon: '≡' },
@@ -870,39 +867,23 @@ ORDER BY u.created_at DESC;`;
 
   return (
     <div className="flex flex-col gap-6 h-full">
-      {/* 顶部操作按钮区域 */}
-      <div className="flex gap-4 justify-center">
+      {/* 顶部操作按钮区域 - 上下两行布局 */}
+      <div className="space-y-4">
         {buttonCategories.map((category) => (
-          <div key={category.name} className="relative group">
-            <Button
-              size="sm"
-              className="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary shadow-sm hover:shadow-md transition-all"
-            >
-              <div className="bg-primary/10 w-6 h-6 flex items-center justify-center rounded-md">
-                <span className="text-primary text-base">{category.icon}</span>
-              </div>
-              <span className="text-sm font-medium">{category.name}</span>
-            </Button>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
-              <div className="bg-card rounded-lg shadow-lg border border-border/50 p-2 min-w-[200px]">
-                <div className="flex flex-col gap-1">
-                  {category.buttons.map((button) => (
-                    <Button
-                      key={button.key}
-                      size="sm"
-                      className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all w-full justify-start"
-                      onClick={() => transformText(button.key)}
-                    >
-                      <div className="bg-primary-foreground/10 w-6 h-6 flex items-center justify-center rounded-md">
-                        <span className="text-primary-foreground text-base">{button.icon}</span>
-                      </div>
-                      <span className="text-sm font-medium">{button.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              {/* 添加一个透明的区域来保持下拉菜单可见 */}
-              <div className="absolute -top-4 left-0 right-0 h-4 bg-transparent" />
+          <div key={category.name}>
+            <h4 className="text-sm font-semibold text-foreground/80 mb-2.5">{category.name}</h4>
+            <div className="flex flex-wrap gap-2">
+              {category.buttons.map((button) => (
+                <Button
+                  key={button.key}
+                  size="sm"
+                  variant="outline"
+                  className="h-9 px-4 text-sm font-medium hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+                  onClick={() => transformText(button.key)}
+                >
+                  {button.label}
+                </Button>
+              ))}
             </div>
           </div>
         ))}
@@ -973,7 +954,7 @@ ORDER BY u.created_at DESC;`;
               placeholder="在此输入您要处理的文本..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className="min-h-[300px] bg-background/50 border-2 border-primary/20 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none text-base shadow-lg shadow-primary/5 transition-all duration-200 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
+              className="min-h-[300px] bg-background/50 border-2 border-primary/20 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 resize-none text-sm shadow-lg shadow-primary/5 transition-all duration-200 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
             />
           </div>
 
@@ -1126,7 +1107,7 @@ ORDER BY u.created_at DESC;`;
                 selectedTheme={selectedTheme}
               />
             ) : (
-              <div className="text-base bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto overflow-x-hidden break-words border border-border/50 dark:border-border/30 shadow-inner">
+              <div className="text-sm bg-muted/30 dark:bg-muted/20 rounded-lg p-4 min-h-[500px] overflow-y-auto overflow-x-hidden break-words border border-border/50 dark:border-border/30 shadow-inner">
                 {result || '处理结果将显示在这里...'}
               </div>
             )}
