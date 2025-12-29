@@ -72,123 +72,125 @@ const Index = () => {
             {/* 侧边光效 */}
             <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/20 to-transparent pointer-events-none" />
             
-            <div className="relative flex-1 flex flex-col">
-              {/* 折叠按钮 */}
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 border border-primary/40 text-primary hover:from-primary/40 hover:to-primary/30 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 hover:scale-110"
-              >
-                <ChevronLeft className={cn(
-                  "transition-transform duration-300",
-                  !sidebarOpen && "rotate-180"
-                )} size={16} />
-              </button>
+            {/* 折叠按钮 */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 rounded-full bg-gradient-to-br from-primary/30 to-primary/20 border border-primary/40 text-primary hover:from-primary/40 hover:to-primary/30 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200 hover:scale-110"
+            >
+              <ChevronLeft className={cn(
+                "transition-transform duration-300",
+                !sidebarOpen && "rotate-180"
+              )} size={16} />
+            </button>
 
-              <div className={cn(
-                "p-6 relative",
-                !sidebarOpen && "px-4"
-              )}>
-                <div className="mb-8">
-                  <h1 className={cn(
-                    "text-2xl font-bold gradient-text mb-2 drop-shadow-sm",
-                    !sidebarOpen && "text-center text-sm"
-                  )}>
-                    {!sidebarOpen ? "AiDo" : "工作提效小助手"}
-                  </h1>
-                  {sidebarOpen && (
-                    <p className="text-muted-foreground text-sm">快速定制，随时更新，随时使用</p>
-                  )}
-                </div>
-              </div>
-
-              {/* 可滚动的菜单区域 */}
-              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                <nav className={cn(
-                  "space-y-2",
-                  sidebarOpen ? "px-6" : "px-4"
+            {/* 顶部标题区域 */}
+            <div className={cn(
+              "p-6 relative flex-shrink-0",
+              !sidebarOpen && "px-4"
+            )}>
+              <div className="mb-8">
+                <h1 className={cn(
+                  "text-2xl font-bold gradient-text mb-2 drop-shadow-sm",
+                  !sidebarOpen && "text-center text-sm"
                 )}>
-                  {tools.filter(tool => tool.id !== 'huha').map((tool) => {
-                    const Icon = tool.icon;
-                    return (
-                      <button
-                        key={tool.id}
-                        onClick={() => setActiveTool(tool.id)}
-                        className={cn(
-                          "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
-                          "hover:scale-[1.02] hover:shadow-md",
-                          activeTool === tool.id
-                            ? "bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/40 shadow-lg shadow-primary/10"
-                            : "text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/5 border border-transparent hover:border-primary/20",
-                          !sidebarOpen && "justify-center px-2"
-                        )}
-                        title={!sidebarOpen ? tool.name : undefined}
-                      >
-                        {/* 悬停光效 */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                        
-                        <Icon size={20} className="relative z-10" />
-                        {sidebarOpen && (
-                          <span className="font-medium relative z-10">{tool.name}</span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </nav>
+                  {!sidebarOpen ? "AiDo" : "工作提效小助手"}
+                </h1>
+                {sidebarOpen && (
+                  <p className="text-muted-foreground text-sm">快速定制，随时更新，随时使用</p>
+                )}
               </div>
             </div>
 
-            {/* HUHA工具集按钮 - 固定在底部 */}
-            <div className="p-4 border-t border-border/50 bg-gradient-to-t from-background/50 to-transparent backdrop-blur-sm">
-              {tools.find(tool => tool.id === 'huha') && (() => {
-                const tool = tools.find(tool => tool.id === 'huha')!;
-                const Icon = tool.icon;
-                return (
-                  <button
-                    onClick={() => setActiveTool(tool.id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
-                      "hover:scale-[1.02] hover:shadow-md",
-                      activeTool === tool.id
-                        ? "bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/40 shadow-lg shadow-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/5 border border-transparent hover:border-primary/20",
-                      !sidebarOpen && "justify-center px-2"
-                    )}
-                    title={!sidebarOpen ? tool.name : undefined}
-                  >
-                    {/* 悬停光效 */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    
-                    <Icon size={20} className="relative z-10" />
-                    {sidebarOpen && (
-                      <span className="font-medium relative z-10">{tool.name}</span>
-                    )}
-                  </button>
-                );
-              })()}
+            {/* 可滚动的菜单区域 */}
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/30">
+              <nav className={cn(
+                "space-y-2 pb-4",
+                sidebarOpen ? "px-6" : "px-4"
+              )}>
+                {tools.filter(tool => tool.id !== 'huha').map((tool) => {
+                  const Icon = tool.icon;
+                  return (
+                    <button
+                      key={tool.id}
+                      onClick={() => setActiveTool(tool.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
+                        "hover:scale-[1.02] hover:shadow-md",
+                        activeTool === tool.id
+                          ? "bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/40 shadow-lg shadow-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/5 border border-transparent hover:border-primary/20",
+                        !sidebarOpen && "justify-center px-2"
+                      )}
+                      title={!sidebarOpen ? tool.name : undefined}
+                    >
+                      {/* 悬停光效 */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      
+                      <Icon size={20} className="relative z-10" />
+                      {sidebarOpen && (
+                        <span className="font-medium relative z-10">{tool.name}</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
 
-            {/* 设置按钮 */}
-            <div className="p-4 border-t border-border/50 bg-gradient-to-t from-background/50 to-transparent backdrop-blur-sm">
-              <button
-                onClick={() => setActiveTool('settings')}
-                className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
-                  "hover:scale-[1.02] hover:shadow-md",
-                  activeTool === 'settings'
-                    ? "bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/40 shadow-lg shadow-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/5 border border-transparent hover:border-primary/20",
-                  !sidebarOpen && "justify-center px-2"
-                )}
-                title={!sidebarOpen ? settingsTool.name : undefined}
-              >
-                {/* 悬停光效 */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                
-                <Settings size={20} className="relative z-10" />
-                {sidebarOpen && (
-                  <span className="font-medium relative z-10">{settingsTool.name}</span>
-                )}
-              </button>
+            {/* 底部固定区域 - HUHA工具集和设置 */}
+            <div className="flex-shrink-0 border-t border-border/50 bg-gradient-to-t from-background/95 to-background/80 backdrop-blur-sm">
+              {/* HUHA工具集按钮 */}
+              <div className="p-4">
+                {tools.find(tool => tool.id === 'huha') && (() => {
+                  const tool = tools.find(tool => tool.id === 'huha')!;
+                  const Icon = tool.icon;
+                  return (
+                    <button
+                      onClick={() => setActiveTool(tool.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
+                        "hover:scale-[1.02] hover:shadow-md",
+                        activeTool === tool.id
+                          ? "bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/40 shadow-lg shadow-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/5 border border-transparent hover:border-primary/20",
+                        !sidebarOpen && "justify-center px-2"
+                      )}
+                      title={!sidebarOpen ? tool.name : undefined}
+                    >
+                      {/* 悬停光效 */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      
+                      <Icon size={20} className="relative z-10" />
+                      {sidebarOpen && (
+                        <span className="font-medium relative z-10">{tool.name}</span>
+                      )}
+                    </button>
+                  );
+                })()}
+              </div>
+
+              {/* 设置按钮 */}
+              <div className="p-4 pt-0">
+                <button
+                  onClick={() => setActiveTool('settings')}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden group",
+                    "hover:scale-[1.02] hover:shadow-md",
+                    activeTool === 'settings'
+                      ? "bg-gradient-to-r from-primary/15 to-primary/10 text-primary border border-primary/40 shadow-lg shadow-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/5 border border-transparent hover:border-primary/20",
+                    !sidebarOpen && "justify-center px-2"
+                  )}
+                  title={!sidebarOpen ? settingsTool.name : undefined}
+                >
+                  {/* 悬停光效 */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  
+                  <Settings size={20} className="relative z-10" />
+                  {sidebarOpen && (
+                    <span className="font-medium relative z-10">{settingsTool.name}</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
