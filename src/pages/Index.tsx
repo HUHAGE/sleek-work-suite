@@ -28,7 +28,7 @@ interface Tool {
 
 const Index = () => {
   const [activeTool, setActiveTool] = useState('work-starter');
-  const { sidebarOpen, setSidebarOpen, loadSettings } = useSettings();
+  const { sidebarOpen, setSidebarOpen, loadSettings, menuConfigs } = useSettings();
 
   // 加载设置
   useEffect(() => {
@@ -51,6 +51,30 @@ const Index = () => {
 
   const settingsTool: Tool = { id: 'settings', name: '设置', icon: Settings, component: SettingsTools };
 
+  // 根据菜单配置过滤和排序工具
+  const getVisibleTools = () => {
+    if (menuConfigs.length === 0) {
+      // 如果没有配置，显示所有工具
+      return tools
+    }
+    
+    // 根据配置过滤和排序
+    const configMap = new Map(menuConfigs.map(c => [c.id, c]))
+    return tools
+      .filter(tool => {
+        const config = configMap.get(tool.id)
+        return config ? config.enabled : true
+      })
+      .sort((a, b) => {
+        const configA = configMap.get(a.id)
+        const configB = configMap.get(b.id)
+        const orderA = configA ? configA.order : 999
+        const orderB = configB ? configB.order : 999
+        return orderA - orderB
+      })
+  }
+
+  const visibleTools = getVisibleTools()
   const ActiveComponent = (activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool))?.component || TextTools;
   const activeToolInfo = activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool);
 
@@ -93,10 +117,10 @@ const Index = () => {
 
             {/* 顶部标题区域 */}
             <div className={cn(
-              "p-6 relative flex-shrink-0",
+              "p-6 pb-3 relative flex-shrink-0",
               !sidebarOpen && "px-4"
             )}>
-              <div className="mb-8">
+              <div className="mb-4">
                 <h1 className={cn(
                   "text-2xl font-bold gradient-text mb-2 drop-shadow-sm",
                   !sidebarOpen && "text-center text-sm"
@@ -115,7 +139,7 @@ const Index = () => {
                 "space-y-2 pb-4",
                 sidebarOpen ? "px-6" : "px-4"
               )}>
-                {tools.filter(tool => tool.id !== 'huha').map((tool) => {
+                {visibleTools.filter(tool => tool.id !== 'huha').map((tool) => {
                   const Icon = tool.icon;
                   return (
                     <button
@@ -148,8 +172,8 @@ const Index = () => {
             <div className="flex-shrink-0 border-t border-border/50 bg-gradient-to-t from-background/95 to-background/80 backdrop-blur-sm">
               {/* HUHA工具集按钮 */}
               <div className="p-4">
-                {tools.find(tool => tool.id === 'huha') && (() => {
-                  const tool = tools.find(tool => tool.id === 'huha')!;
+                {visibleTools.find(tool => tool.id === 'huha') && (() => {
+                  const tool = visibleTools.find(tool => tool.id === 'huha')!;
                   const Icon = tool.icon;
                   return (
                     <button
@@ -212,7 +236,11 @@ const Index = () => {
                 />
               )}
               <div className="min-h-0 flex-1">
-                <ActiveComponent />
+                {activeTool === 'settings' ? (
+                  <SettingsTools tools={tools} />
+                ) : (
+                  <ActiveComponent />
+                )}
               </div>
             </div>
           </div>

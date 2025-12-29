@@ -4,6 +4,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { useSettings, type ThemeColor } from "@/lib/store/settings"
 import { cn } from "@/lib/utils"
+import MenuManagement from "@/components/MenuManagement"
+
+interface ToolInfo {
+  id: string
+  name: string
+  icon: any
+}
 
 const themeColors: { value: ThemeColor; label: string; lightClass: string; darkClass: string }[] = [
   { 
@@ -260,7 +267,11 @@ function AboutSetting() {
   )
 }
 
-export default function SettingsTools() {
+interface SettingsToolsProps {
+  tools?: ToolInfo[]
+}
+
+export default function SettingsTools({ tools = [] }: SettingsToolsProps) {
   return (
     <div className="space-y-6 pb-8">
       <div className="flex items-center gap-2 mb-4">
@@ -271,6 +282,7 @@ export default function SettingsTools() {
         <SidebarSetting />
         <ThemeSetting />
         <ThemeColorSetting />
+        {tools.length > 0 && <MenuManagement tools={tools} />}
         <AboutSetting />
       </div>
     </div>
