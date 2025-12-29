@@ -307,6 +307,158 @@ class AppSettingsManager {
 
 const appSettingsManager = new AppSettingsManager();
 
+// 加解密窗口管理器
+class CryptoWindowManager {
+  private cryptoWindow: BrowserWindow | null = null;
+  private isReady: boolean = false;
+  private initPromise: Promise<void> | null = null;
+
+  async ensureWindow(): Promise<BrowserWindow> {
+    if (this.cryptoWindow && !this.cryptoWindow.isDestroyed() && this.isReady) {
+      return this.cryptoWindow;
+    }
+
+    // 如果正在初始化，等待初始化完成
+    if (this.initPromise) {
+      await this.initPromise;
+      return this.cryptoWindow!;
+    }
+
+    // 开始初始化
+    this.initPromise = this.initWindow();
+    await this.initPromise;
+    this.initPromise = null;
+    return this.cryptoWindow!;
+  }
+
+  private async initWindow(): Promise<void> {
+    try {
+      console.log('初始化加解密窗口...');
+      this.isReady = false;
+
+      // 创建隐藏窗口
+      this.cryptoWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: false,
+        }
+      });
+
+      // 加载页面
+      const systemUrl = 'http://172.29.3.91:8080/epoint-common-web/webencrypt';
+      await this.cryptoWindow.loadURL(systemUrl);
+
+      // 等待页面加载完成 - 减少到1.5秒
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // 初始化页面设置
+      await this.cryptoWindow.webContents.executeJavaScript(`
+        (function() {
+          try {
+            // 切换到通用加解密tab
+            const tabs = mini.get('tabs1');
+            if (tabs) {
+              tabs.activeIndex = 1;
+            }
+            
+            // 预设参数
+            mini.get('encryptType').setValue('2'); // SM4_1
+            mini.get('isaddprefix').setValue(true);
+            mini.get('model').setValue(true);
+            
+            return true;
+          } catch (error) {
+            console.error('初始化失败:', error);
+            return false;
+          }
+        })()
+      `);
+
+      this.isReady = true;
+      console.log('加解密窗口初始化完成');
+    } catch (error) {
+      console.error('初始化加解密窗口失败:', error);
+      if (this.cryptoWindow && !this.cryptoWindow.isDestroyed()) {
+        this.cryptoWindow.close();
+      }
+      this.cryptoWindow = null;
+      this.isReady = false;
+      throw error;
+    }
+  }
+
+  async decrypt(ciphertext: string): Promise<string> {
+    const window = await this.ensureWindow();
+    
+    const result = await window.webContents.executeJavaScript(`
+      (function() {
+        try {
+          mini.get('ciphertext').setValue('${ciphertext.replace(/'/g, "\\'")}');
+          decrypt();
+          
+          // 减少等待时间到300ms
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              const plaintext = mini.get('plaintext').getValue();
+              resolve(plaintext);
+            }, 300);
+          });
+        } catch (error) {
+          return 'ERROR: ' + error.message;
+        }
+      })()
+    `);
+
+    if (typeof result === 'string' && result.startsWith('ERROR:')) {
+      throw new Error(result.substring(7));
+    }
+
+    return result;
+  }
+
+  async encrypt(plaintext: string): Promise<string> {
+    const window = await this.ensureWindow();
+    
+    const result = await window.webContents.executeJavaScript(`
+      (function() {
+        try {
+          mini.get('plaintext').setValue('${plaintext.replace(/'/g, "\\'")}');
+          encrypt();
+          
+          // 减少等待时间到300ms
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              const ciphertext = mini.get('ciphertext').getValue();
+              const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
+              resolve(cipher);
+            }, 300);
+          });
+        } catch (error) {
+          return 'ERROR: ' + error.message;
+        }
+      })()
+    `);
+
+    if (typeof result === 'string' && result.startsWith('ERROR:')) {
+      throw new Error(result.substring(7));
+    }
+
+    return result;
+  }
+
+  destroy() {
+    if (this.cryptoWindow && !this.cryptoWindow.isDestroyed()) {
+      this.cryptoWindow.close();
+    }
+    this.cryptoWindow = null;
+    this.isReady = false;
+  }
+}
+
+const cryptoWindowManager = new CryptoWindowManager();
+
 // 在createWindow函数之前添加日志管理器
 class LogManager {
   private logFilePath: string;
@@ -837,276 +989,54 @@ function registerIpcHandlers() {
     }
   })
 
-  // 处理数据库配置解密请求
+  // 处理数据库配置解密请求 - 优化版本
   ipcMain.handle('decrypt-db-config', async (_, { urlCipher, usernameCipher, passwordCipher }) => {
-    let decryptWindow: BrowserWindow | null = null;
     try {
-      // 创建一个隐藏的浏览器窗口来执行解密
-      decryptWindow = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true,
-          webSecurity: false,
-        }
-      });
+      console.log('开始解密数据库配置...');
+      const startTime = Date.now();
 
-      // 加载系统地址
-      const systemUrl = 'http://172.29.3.91:8080/epoint-common-web/webencrypt';
-      await decryptWindow.loadURL(systemUrl);
+      // 串行解密三个字段（避免并行时互相覆盖输入框）
+      const url = await cryptoWindowManager.decrypt(urlCipher);
+      const username = await cryptoWindowManager.decrypt(usernameCipher);
+      const password = await cryptoWindowManager.decrypt(passwordCipher);
 
-      // 等待页面加载完成
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // 切换到第二个tab（通用加解密）
-      await decryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            const tabs = mini.get('tabs1');
-            if (tabs) {
-              tabs.activeIndex = 1;
-            }
-          } catch (error) {
-            console.error('切换tab失败:', error);
-          }
-        })()
-      `);
-
-      // 等待tab切换完成
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 设置解密参数并解密URL
-      const urlResult = await decryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            // 设置参数
-            mini.get('encryptType').setValue('2'); // SM4_1
-            mini.get('isaddprefix').setValue(true); // 添加密文前缀：是
-            mini.get('model').setValue(true); // 算法模式：老模式
-            
-            // 设置密文
-            mini.get('ciphertext').setValue('${urlCipher}');
-            
-            // 点击解密按钮
-            decrypt();
-            
-            // 等待解密完成并获取结果
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                const plaintext = mini.get('plaintext').getValue();
-                resolve(plaintext);
-              }, 1000);
-            });
-          } catch (error) {
-            return 'ERROR: ' + error.message;
-          }
-        })()
-      `);
-
-      if (typeof urlResult === 'string' && urlResult.startsWith('ERROR:')) {
-        throw new Error(urlResult.substring(7));
-      }
-
-      // 解密username
-      const usernameResult = await decryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            mini.get('ciphertext').setValue('${usernameCipher}');
-            decrypt();
-            
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                const plaintext = mini.get('plaintext').getValue();
-                resolve(plaintext);
-              }, 1000);
-            });
-          } catch (error) {
-            return 'ERROR: ' + error.message;
-          }
-        })()
-      `);
-
-      if (typeof usernameResult === 'string' && usernameResult.startsWith('ERROR:')) {
-        throw new Error(usernameResult.substring(7));
-      }
-
-      // 解密password
-      const passwordResult = await decryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            mini.get('ciphertext').setValue('${passwordCipher}');
-            decrypt();
-            
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                const plaintext = mini.get('plaintext').getValue();
-                resolve(plaintext);
-              }, 1000);
-            });
-          } catch (error) {
-            return 'ERROR: ' + error.message;
-          }
-        })()
-      `);
-
-      if (typeof passwordResult === 'string' && passwordResult.startsWith('ERROR:')) {
-        throw new Error(passwordResult.substring(7));
-      }
-
-      // 关闭窗口
-      decryptWindow.close();
-      decryptWindow = null;
+      const elapsed = Date.now() - startTime;
+      console.log(`解密完成，耗时: ${elapsed}ms`);
 
       return {
         success: true,
-        url: urlResult,
-        username: usernameResult,
-        password: passwordResult
+        url,
+        username,
+        password
       };
     } catch (error) {
       console.error('数据库配置解密失败:', error);
-      if (decryptWindow) {
-        decryptWindow.close();
-      }
       return { success: false, error: error.message || '解密过程中发生错误' };
     }
   })
 
-  // 处理数据库配置加密请求
+  // 处理数据库配置加密请求 - 优化版本
   ipcMain.handle('encrypt-db-config', async (_, { urlPlain, usernamePlain, passwordPlain }) => {
-    let encryptWindow: BrowserWindow | null = null;
     try {
-      // 创建一个隐藏的浏览器窗口来执行加密
-      encryptWindow = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true,
-          webSecurity: false,
-        }
-      });
+      console.log('开始加密数据库配置...');
+      const startTime = Date.now();
 
-      // 加载系统地址
-      const systemUrl = 'http://172.29.3.91:8080/epoint-common-web/webencrypt';
-      await encryptWindow.loadURL(systemUrl);
+      // 串行加密三个字段（避免并行时互相覆盖输入框）
+      const urlCipher = await cryptoWindowManager.encrypt(urlPlain);
+      const usernameCipher = await cryptoWindowManager.encrypt(usernamePlain);
+      const passwordCipher = await cryptoWindowManager.encrypt(passwordPlain);
 
-      // 等待页面加载完成
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // 切换到第二个tab（通用加解密）
-      await encryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            const tabs = mini.get('tabs1');
-            if (tabs) {
-              tabs.activeIndex = 1;
-            }
-          } catch (error) {
-            console.error('切换tab失败:', error);
-          }
-        })()
-      `);
-
-      // 等待tab切换完成
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 设置加密参数并加密URL
-      const urlResult = await encryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            // 设置参数
-            mini.get('encryptType').setValue('2'); // SM4_1
-            mini.get('isaddprefix').setValue(true); // 添加密文前缀：是
-            mini.get('model').setValue(true); // 算法模式：老模式
-            
-            // 设置明文
-            mini.get('plaintext').setValue('${urlPlain.replace(/'/g, "\\'")}');
-            
-            // 点击加密按钮
-            encrypt();
-            
-            // 等待加密完成并获取结果
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                const ciphertext = mini.get('ciphertext').getValue();
-                // 移除 {SM4_1::} 前缀，只返回密文部分
-                const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
-                resolve(cipher);
-              }, 1000);
-            });
-          } catch (error) {
-            return 'ERROR: ' + error.message;
-          }
-        })()
-      `);
-
-      if (typeof urlResult === 'string' && urlResult.startsWith('ERROR:')) {
-        throw new Error(urlResult.substring(7));
-      }
-
-      // 加密username
-      const usernameResult = await encryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            mini.get('plaintext').setValue('${usernamePlain.replace(/'/g, "\\'")}');
-            encrypt();
-            
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                const ciphertext = mini.get('ciphertext').getValue();
-                const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
-                resolve(cipher);
-              }, 1000);
-            });
-          } catch (error) {
-            return 'ERROR: ' + error.message;
-          }
-        })()
-      `);
-
-      if (typeof usernameResult === 'string' && usernameResult.startsWith('ERROR:')) {
-        throw new Error(usernameResult.substring(7));
-      }
-
-      // 加密password
-      const passwordResult = await encryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            mini.get('plaintext').setValue('${passwordPlain.replace(/'/g, "\\'")}');
-            encrypt();
-            
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                const ciphertext = mini.get('ciphertext').getValue();
-                const cipher = ciphertext.replace(/^\{SM4_1::\}/, '');
-                resolve(cipher);
-              }, 1000);
-            });
-          } catch (error) {
-            return 'ERROR: ' + error.message;
-          }
-        })()
-      `);
-
-      if (typeof passwordResult === 'string' && passwordResult.startsWith('ERROR:')) {
-        throw new Error(passwordResult.substring(7));
-      }
-
-      // 关闭窗口
-      encryptWindow.close();
-      encryptWindow = null;
+      const elapsed = Date.now() - startTime;
+      console.log(`加密完成，耗时: ${elapsed}ms`);
 
       return {
         success: true,
-        urlCipher: urlResult,
-        usernameCipher: usernameResult,
-        passwordCipher: passwordResult
+        urlCipher,
+        usernameCipher,
+        passwordCipher
       };
     } catch (error) {
       console.error('数据库配置加密失败:', error);
-      if (encryptWindow) {
-        encryptWindow.close();
-      }
       return { success: false, error: error.message || '加密过程中发生错误' };
     }
   })
@@ -1474,6 +1404,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  cryptoWindowManager.destroy();
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -1483,6 +1414,10 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+app.on('before-quit', () => {
+  cryptoWindowManager.destroy();
 });
 
 // 处理Maven依赖字符串，提取groupId、artifactId和version
