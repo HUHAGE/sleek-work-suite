@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Loader2, Lock, Unlock, Copy, Check, ArrowRightLeft } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Lock, Unlock, Copy, Check, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const DbDecryptTool: React.FC = () => {
@@ -12,7 +12,7 @@ const DbDecryptTool: React.FC = () => {
   const [outputText, setOutputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const [isEncryptMode, setIsEncryptMode] = useState(false); // false=解密, true=加密
+  const [mode, setMode] = useState<'decrypt' | 'encrypt'>('decrypt'); // 'decrypt' 或 'encrypt'
   const { toast } = useToast();
 
   const handleDecrypt = async () => {
@@ -150,7 +150,7 @@ const DbDecryptTool: React.FC = () => {
   };
 
   const handleProcess = () => {
-    if (isEncryptMode) {
+    if (mode === 'encrypt') {
       handleEncrypt();
     } else {
       handleDecrypt();
@@ -180,7 +180,7 @@ const DbDecryptTool: React.FC = () => {
   };
 
   const insertSample = () => {
-    if (isEncryptMode) {
+    if (mode === 'encrypt') {
       // 加密模式示例
       const sample = `url=jdbc:sqlserver://localhost;databaseName=epointbid_JAVAYEWU_test
 username=sa
@@ -203,8 +203,8 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
     }
   };
 
-  const handleModeChange = (checked: boolean) => {
-    setIsEncryptMode(checked);
+  const handleModeChange = (value: string) => {
+    setMode(value as 'decrypt' | 'encrypt');
     setInputText('');
     setOutputText('');
     setIsCopied(false);
@@ -212,42 +212,37 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
 
   return (
     <div className="space-y-6">
+      {/* 顶部功能切换 */}
+      <div className="flex items-center justify-center">
+        <Tabs value={mode} onValueChange={handleModeChange} className="w-auto">
+          <TabsList className="grid w-[400px] grid-cols-2">
+            <TabsTrigger value="decrypt" className="flex items-center gap-2">
+              <Unlock className="h-4 w-4" />
+              解密模式
+            </TabsTrigger>
+            <TabsTrigger value="encrypt" className="flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              加密模式
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5" />
+            <Database className="w-5 h-5" />
             数据库快速加解密
           </CardTitle>
           <CardDescription>
-            通过系统控制台自动加密或解密数据库配置信息
+            通过系统控制台自动{mode === 'encrypt' ? '加密' : '解密'}数据库配置信息
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* 模式切换 */}
-          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-            <div className="flex items-center gap-3">
-              <Unlock className={`w-5 h-5 ${!isEncryptMode ? 'text-primary' : 'text-muted-foreground'}`} />
-              <span className={`font-medium ${!isEncryptMode ? 'text-primary' : 'text-muted-foreground'}`}>
-                解密模式
-              </span>
-            </div>
-            <Switch
-              checked={isEncryptMode}
-              onCheckedChange={handleModeChange}
-              className="data-[state=checked]:bg-primary"
-            />
-            <div className="flex items-center gap-3">
-              <span className={`font-medium ${isEncryptMode ? 'text-primary' : 'text-muted-foreground'}`}>
-                加密模式
-              </span>
-              <Lock className={`w-5 h-5 ${isEncryptMode ? 'text-primary' : 'text-muted-foreground'}`} />
-            </div>
-          </div>
-
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="input-text">
-                {isEncryptMode ? '明文输入' : '密文输入'}
+                {mode === 'encrypt' ? '明文输入' : '密文输入'}
               </Label>
               <Button
                 variant="outline"
@@ -261,14 +256,14 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
             <Textarea
               id="input-text"
               placeholder={
-                isEncryptMode
+                mode === 'encrypt'
                   ? '请按照以下格式输入：\nurl=jdbc:sqlserver://localhost;databaseName=xxx\nusername=sa\npassword=123456'
                   : '请按照以下格式输入：\nurl={SM4_1::}密文\nusername={SM4_1::}密文\npassword={SM4_1::}密文'
               }
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               rows={6}
-              className="font-mono text-sm"
+              className="font-mono text-sm resize-none"
             />
           </div>
 
@@ -280,11 +275,11 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isEncryptMode ? '加密中...' : '解密中...'}
+                {mode === 'encrypt' ? '加密中...' : '解密中...'}
               </>
             ) : (
               <>
-                {isEncryptMode ? (
+                {mode === 'encrypt' ? (
                   <>
                     <Lock className="mr-2 h-4 w-4" />
                     加密
@@ -303,7 +298,7 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
             <div className="space-y-2 mt-6">
               <div className="flex items-center justify-between">
                 <Label htmlFor="output-text">
-                  {isEncryptMode ? '加密结果' : '解密结果'}
+                  {mode === 'encrypt' ? '加密结果' : '解密结果'}
                 </Label>
                 <Button
                   variant="outline"
