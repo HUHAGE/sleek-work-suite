@@ -3,14 +3,42 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Lock, Unlock } from 'lucide-react';
+import { Loader2, Lock, Unlock, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+const DEFAULT_SYSTEM_URL = 'http://www.njsggzy.cn:181/epoint-ssonew_cs/default/login_tp';
+
+// URL解码函数，支持多次解码直到完全解码
+const decodeUrl = (url: string): string => {
+  try {
+    let decoded = url;
+    let prevDecoded = '';
+    
+    // 循环解码，直到无法再解码为止（处理多次编码的情况）
+    while (decoded !== prevDecoded) {
+      prevDecoded = decoded;
+      try {
+        decoded = decodeURIComponent(decoded);
+      } catch {
+        // 如果解码失败，返回当前结果
+        break;
+      }
+    }
+    
+    return decoded;
+  } catch (error) {
+    console.error('URL解码失败:', error);
+    return url; // 解码失败时返回原始URL
+  }
+};
 
 const UrlDecryptTool: React.FC = () => {
   const [encryptedUrl, setEncryptedUrl] = useState('');
-  const [systemUrl, setSystemUrl] = useState('');
+  const [systemUrl, setSystemUrl] = useState(DEFAULT_SYSTEM_URL);
   const [decryptedUrl, setDecryptedUrl] = useState('');
+  const [decodedUrl, setDecodedUrl] = useState(''); // 存储解码后的URL用于显示
   const [isDecrypting, setIsDecrypting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
 
   const handleDecrypt = async () => {
@@ -34,12 +62,17 @@ const UrlDecryptTool: React.FC = () => {
 
     setIsDecrypting(true);
     setDecryptedUrl('');
+    setDecodedUrl('');
+    setIsCopied(false);
 
     try {
       const result = await (window.electron as any).decryptUrl(encryptedUrl, systemUrl);
       
       if (result.success && result.decryptedUrl) {
         setDecryptedUrl(result.decryptedUrl);
+        // 对解密后的URL进行解码
+        const decoded = decodeUrl(result.decryptedUrl);
+        setDecodedUrl(decoded);
         toast({
           title: '解密成功',
           description: 'URL已成功解密',
@@ -60,6 +93,30 @@ const UrlDecryptTool: React.FC = () => {
       });
     } finally {
       setIsDecrypting(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    try {
+      // 复制解码后的URL
+      await navigator.clipboard.writeText(decodedUrl);
+      setIsCopied(true);
+      toast({
+        title: '复制成功',
+        description: '解密后的URL已复制到剪贴板',
+      });
+      
+      // 3秒后重置复制状态
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 3000);
+    } catch (error) {
+      console.error('复制失败:', error);
+      toast({
+        title: '复制失败',
+        description: '无法复制到剪贴板',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -116,9 +173,29 @@ const UrlDecryptTool: React.FC = () => {
 
           {decryptedUrl && (
             <div className="space-y-2 mt-6">
-              <Label htmlFor="decrypted-url">解密后的URL</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="decrypted-url">解密后的URL</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopy}
+                  className="h-8"
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      已复制
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      复制
+                    </>
+                  )}
+                </Button>
+              </div>
               <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm break-all">{decryptedUrl}</p>
+                <p className="text-sm break-all">{decodedUrl}</p>
               </div>
             </div>
           )}
