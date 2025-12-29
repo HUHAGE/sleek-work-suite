@@ -131,3 +131,19 @@
     @apply animate-float;
   }
 }
+
+@layer utilities {
+  /* 闪光动画 */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+}
