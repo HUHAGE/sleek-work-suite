@@ -75,6 +75,18 @@ const Index = () => {
   }
 
   const visibleTools = getVisibleTools()
+  
+  // 当菜单配置加载后，检查当前激活的工具是否可见
+  useEffect(() => {
+    if (menuConfigs.length > 0 && activeTool !== 'settings') {
+      const isActiveToolVisible = visibleTools.some(tool => tool.id === activeTool)
+      if (!isActiveToolVisible && visibleTools.length > 0) {
+        // 如果当前激活的工具不可见，切换到第一个可见的工具
+        setActiveTool(visibleTools[0].id)
+      }
+    }
+  }, [menuConfigs, activeTool, visibleTools])
+  
   const ActiveComponent = (activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool))?.component || TextTools;
   const activeToolInfo = activeTool === 'settings' ? settingsTool : tools.find(tool => tool.id === activeTool);
 
