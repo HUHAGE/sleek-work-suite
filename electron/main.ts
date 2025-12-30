@@ -307,6 +307,66 @@ class AppSettingsManager {
 
 const appSettingsManager = new AppSettingsManager();
 
+// JAR工具配置管理器
+class JarToolsConfigManager {
+  private configFilePath: string;
+
+  constructor() {
+    const userDataPath = app.getPath('userData');
+    this.configFilePath = path.join(userDataPath, 'jar_tools_config.json');
+    console.log('JAR工具配置文件路径:', this.configFilePath);
+    this.initConfigFile();
+  }
+
+  private initConfigFile() {
+    try {
+      if (!fs.existsSync(this.configFilePath)) {
+        console.log('创建新的JAR工具配置文件');
+        fs.writeFileSync(this.configFilePath, JSON.stringify({ pathHistory: [] }, null, 2));
+      } else {
+        console.log('JAR工具配置文件已存在');
+        // 验证文件内容是否是有效的JSON
+        const content = fs.readFileSync(this.configFilePath, 'utf-8');
+        try {
+          JSON.parse(content);
+        } catch (e) {
+          console.log('配置文件内容无效，重新初始化');
+          fs.writeFileSync(this.configFilePath, JSON.stringify({ pathHistory: [] }, null, 2));
+        }
+      }
+    } catch (error) {
+      console.error('初始化JAR工具配置文件失败:', error);
+    }
+  }
+
+  async getConfig() {
+    try {
+      console.log('读取JAR工具配置');
+      const data = await fs.promises.readFile(this.configFilePath, 'utf-8');
+      const config = JSON.parse(data);
+      console.log('当前路径历史数量:', config.pathHistory?.length || 0);
+      return config;
+    } catch (error) {
+      console.error('读取配置失败:', error);
+      return { pathHistory: [] };
+    }
+  }
+
+  async saveConfig(config: any) {
+    try {
+      console.log('保存JAR工具配置');
+      await fs.promises.writeFile(this.configFilePath, JSON.stringify(config, null, 2));
+      console.log('配置保存成功');
+      return true;
+    } catch (error) {
+      console.error('保存配置失败:', error);
+      throw error;
+    }
+  }
+}
+
+const jarToolsConfigManager = new JarToolsConfigManager();
+
 // 加解密窗口管理器
 class CryptoWindowManager {
   private cryptoWindow: BrowserWindow | null = null;
@@ -776,6 +836,17 @@ function registerIpcHandlers() {
   ipcMain.handle('save-app-settings', async (_, settings) => {
     console.log('收到保存应用设置请求');
     return await appSettingsManager.saveSettings(settings);
+  })
+
+  // JAR工具配置相关
+  ipcMain.handle('get-jar-tools-config', async () => {
+    console.log('收到获取JAR工具配置请求');
+    return await jarToolsConfigManager.getConfig();
+  })
+
+  ipcMain.handle('save-jar-tools-config', async (_, config) => {
+    console.log('收到保存JAR工具配置请求');
+    return await jarToolsConfigManager.saveConfig(config);
   })
 
   // 选择目录

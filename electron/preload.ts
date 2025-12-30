@@ -23,7 +23,9 @@ contextBridge.exposeInMainWorld('electron', {
         'save-work-starter-config',
         'scan-sensitive-logs',
         'get-app-settings',
-        'save-app-settings'
+        'save-app-settings',
+        'get-jar-tools-config',
+        'save-jar-tools-config'
       ];
       
       if (validChannels.includes(channel)) {

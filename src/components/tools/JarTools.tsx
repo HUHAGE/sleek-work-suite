@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,7 +22,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { useUserData } from '@/lib/store/userDataManager'
 import { trackToolUsage, trackButtonClick } from '@/lib/analytics';
 
 interface JarFile {
@@ -33,6 +32,12 @@ interface JarFile {
   selected: boolean
 }
 
+interface JarPathItem {
+  id: string
+  name: string
+  path: string
+}
+
 const JarTools = () => {
   const [path, setPath] = useState<string>('')
   const [jarFiles, setJarFiles] = useState<JarFile[]>([])
@@ -41,19 +46,73 @@ const JarTools = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<{ id: string; name: string; path: string } | null>(null)
   const [editName, setEditName] = useState('')
+  const [jarToolsPathHistory, setJarToolsPathHistory] = useState<JarPathItem[]>([])
   const { toast } = useToast()
-  
-  const { jarToolsPathHistory, addJarToolsPath, removeJarToolsPath, updateJarToolsPath } = useUserData()
+
+  // 从electron加载配置
+  useEffect(() => {
+    loadConfig()
+  }, [])
+
+  const loadConfig = async () => {
+    try {
+      const config = (await window.electron.ipcRenderer.invoke('get-jar-tools-config' as any)) as unknown as { pathHistory: JarPathItem[] }
+      setJarToolsPathHistory(config.pathHistory || [])
+    } catch (error) {
+      console.error('加载JAR工具配置失败:', error)
+    }
+  }
+
+  const saveConfig = async (pathHistory: JarPathItem[]) => {
+    try {
+      await (window.electron.ipcRenderer.invoke as any)('save-jar-tools-config', { pathHistory })
+    } catch (error) {
+      console.error('保存JAR工具配置失败:', error)
+      toast({
+        title: "保存失败",
+        description: "无法保存路径历史记录",
+        variant: "destructive"
+      })
+    }
+  }
 
   // 保存路径到历史记录
   const saveToHistory = (newPath: string) => {
     if (!newPath) return
-    addJarToolsPath(newPath)
+    
+    // 检查路径是否已存在
+    if (jarToolsPathHistory.some(item => item.path === newPath)) {
+      return
+    }
+    
+    // 生成默认名称（路径的最后一个文件夹名）
+    const defaultName = newPath.split(/[/\\]/).pop() || newPath
+    const newItem: JarPathItem = {
+      id: crypto.randomUUID(),
+      name: defaultName,
+      path: newPath
+    }
+    
+    // 限制最多10条记录
+    const newHistory = [newItem, ...jarToolsPathHistory].slice(0, 10)
+    setJarToolsPathHistory(newHistory)
+    saveConfig(newHistory)
   }
 
   // 从历史记录中删除路径
   const removeFromHistory = (id: string) => {
-    removeJarToolsPath(id)
+    const newHistory = jarToolsPathHistory.filter(item => item.id !== id)
+    setJarToolsPathHistory(newHistory)
+    saveConfig(newHistory)
+  }
+
+  // 更新路径名称
+  const updatePathName = (id: string, name: string) => {
+    const newHistory = jarToolsPathHistory.map(item =>
+      item.id === id ? { ...item, name } : item
+    )
+    setJarToolsPathHistory(newHistory)
+    saveConfig(newHistory)
   }
 
   // 打开编辑对话框
@@ -66,7 +125,7 @@ const JarTools = () => {
   // 保存编辑
   const handleSaveEdit = () => {
     if (editingItem && editName.trim()) {
-      updateJarToolsPath(editingItem.id, editName.trim())
+      updatePathName(editingItem.id, editName.trim())
       setEditDialogOpen(false)
       setEditingItem(null)
       setEditName('')
