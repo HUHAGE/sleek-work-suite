@@ -22,14 +22,33 @@ const App = () => {
     migrateFromLocalStorage()
   }, [migrateFromLocalStorage])
 
-  // 移除初始加载动画
+  // 移除初始加载动画 - 最少显示1秒，最多1.2秒
   useEffect(() => {
     const loader = document.getElementById('initial-loader')
-    if (loader) {
-      loader.classList.add('fade-out')
+    if (!loader) return
+
+    const startTime = performance.now()
+    const minDisplayTime = 1000 // 最少显示1秒，让用户看到炫酷动画
+    const maxDisplayTime = 1200 // 最多1.2秒，避免等待过久
+
+    // 应用加载完成后的处理
+    const handleAppReady = () => {
+      const elapsed = performance.now() - startTime
+      const remainingTime = Math.max(0, Math.min(minDisplayTime - elapsed, maxDisplayTime - elapsed))
+
       setTimeout(() => {
-        loader.remove()
-      }, 200)
+        loader.classList.add('fade-out')
+        setTimeout(() => {
+          loader.remove()
+        }, 400)
+      }, remainingTime)
+    }
+
+    // 使用 requestIdleCallback 或 setTimeout 确保应用已渲染
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(handleAppReady, { timeout: maxDisplayTime })
+    } else {
+      setTimeout(handleAppReady, 100)
     }
   }, [])
 
