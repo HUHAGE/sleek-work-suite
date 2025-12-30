@@ -29,7 +29,7 @@ interface JarFile {
   id: string
   name: string
   path: string
-  createTime: Date
+  createTime: Date // 实际存储的是文件的最后修改时间
   selected: boolean
 }
 
@@ -108,7 +108,7 @@ const JarTools = () => {
         createTime: new Date(file.createTime),
         selected: false
       }))
-      // 默认按创建时间倒序排列
+      // 默认按更新时间倒序排列
       const sortedFiles = jarFiles.sort((a, b) => b.createTime.getTime() - a.createTime.getTime())
       setJarFiles(sortedFiles)
       setSortOrder('desc')
@@ -166,7 +166,7 @@ const JarTools = () => {
         name: file.name
       }))
     if (selectedFiles.length > 0) {
-      trackButtonClick('jar_tools', 'copy_batch', { count: selectedFiles.length });
+      trackButtonClick('jar_tools', 'copy_batch');
       copyFiles(selectedFiles)
     }
   }
@@ -186,6 +186,24 @@ const JarTools = () => {
     trackButtonClick('jar_tools', 'copy_single');
     copyFiles([file])
   }
+
+  const handleOpenFileDirectory = async (dirPath: string) => {
+    trackButtonClick('jar_tools', 'open_file_directory');
+    try {
+      await window.electron.ipcRenderer.invoke('open-path', dirPath);
+      toast({
+        title: "打开目录",
+        description: "已打开文件所在目录",
+      });
+    } catch (error) {
+      console.error('打开目录失败:', error);
+      toast({
+        title: "打开失败",
+        description: "无法打开目录，请检查路径是否存在",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleOpenPath = async () => {
     trackButtonClick('jar_tools', 'open_path');
@@ -226,7 +244,7 @@ const JarTools = () => {
         createTime: new Date(file.createTime),
         selected: false
       }));
-      // 默认按创建时间倒序排列
+      // 默认按更新时间倒序排列
       const sortedFiles = jarFiles.sort((a, b) => b.createTime.getTime() - a.createTime.getTime())
       setJarFiles(sortedFiles);
       setSortOrder('desc')
@@ -418,13 +436,13 @@ const JarTools = () => {
                     className="w-[180px] cursor-pointer hover:text-primary transition-colors whitespace-nowrap"
                     onClick={handleSort}
                   >
-                    创建时间
+                    更新时间
                     <span className="ml-2">
                       {sortOrder === 'asc' ? '↑' : '↓'}
                     </span>
                   </TableHead>
                   <TableHead className="min-w-[150px]">路径</TableHead>
-                  <TableHead className="w-24">操作</TableHead>
+                  <TableHead className="w-32">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -445,14 +463,26 @@ const JarTools = () => {
                       {file.path}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleCopyFile({ path: file.path, name: file.name })}
-                        className="hover:bg-primary/20"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleCopyFile({ path: file.path, name: file.name })}
+                          className="hover:bg-primary/20"
+                          title="复制文件"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleOpenFileDirectory(file.path)}
+                          className="hover:bg-primary/20"
+                          title="打开目录"
+                        >
+                          <FolderOpen className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -683,7 +683,7 @@ function registerIpcHandlers() {
       return jarPaths.map(filePath => ({
         name: path.basename(filePath),
         path: path.dirname(filePath) + path.sep,
-        createTime: fs.statSync(filePath).birthtime.getTime()
+        createTime: fs.statSync(filePath).mtime.getTime()
       }));
     } catch (error) {
       console.error('Error scanning JAR files:', error);
@@ -1145,7 +1145,7 @@ function createWindow() {
       return jarPaths.map(filePath => ({
         name: path.basename(filePath),
         path: path.dirname(filePath) + path.sep,
-        createTime: fs.statSync(filePath).birthtime.getTime()
+        createTime: fs.statSync(filePath).mtime.getTime()
       }));
     } catch (error) {
       console.error('Error scanning JAR files:', error);
