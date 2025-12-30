@@ -871,11 +871,11 @@ ORDER BY u.created_at DESC;`;
 
   return (
     <div className="flex flex-col gap-6 h-full">
-      {/* 顶部操作按钮区域 - 上下两行布局 */}
-      <div className="space-y-4">
+      {/* 顶部操作按钮区域 - 标题和按钮在同一行 */}
+      <div className="space-y-3">
         {buttonCategories.map((category) => (
-          <div key={category.name}>
-            <h4 className="text-sm font-semibold text-foreground/80 mb-2.5">{category.name}</h4>
+          <div key={category.name} className="flex items-center gap-4">
+            <h4 className="text-sm font-semibold text-foreground/80 whitespace-nowrap">{category.name}</h4>
             <div className="flex flex-wrap gap-2">
               {category.buttons.map((button) => (
                 <Button
