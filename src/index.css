@@ -40,10 +40,10 @@
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 3.9%;
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 3.9%;
+    --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 221.2 83.2% 53.3%;
@@ -52,7 +52,7 @@
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 14.9%;
+    --muted: 0 0% 18%;
     --muted-foreground: 0 0% 63.9%;
 
     --accent: 0 0% 14.9%;
@@ -61,8 +61,8 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
     --ring: 221.2 83.2% 53.3%;
   }
 }
@@ -118,9 +118,10 @@
   }
 
   .tool-card {
-    @apply bg-white dark:bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-6 
-           hover:bg-white dark:hover:bg-card/70 hover:border-primary/30 transition-all duration-300
-           hover:shadow-lg hover:shadow-primary/20;
+    @apply bg-white dark:bg-card/80 backdrop-blur-sm border border-border/50 dark:border-border rounded-xl p-6 
+           shadow-sm dark:shadow-md dark:shadow-black/20
+           hover:bg-white dark:hover:bg-card hover:border-primary/30 dark:hover:border-primary/50 transition-all duration-300
+           hover:shadow-lg hover:shadow-primary/20 dark:hover:shadow-primary/30;
   }
 
   .gradient-text {

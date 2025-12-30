@@ -360,7 +360,7 @@ const JarTools = () => {
               {jarToolsPathHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="group relative border rounded-lg p-3 hover:border-primary hover:shadow-md transition-all cursor-pointer bg-card"
+                  className="group relative border-2 border-border dark:border-border/80 rounded-lg p-3 hover:border-primary hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-primary/20 transition-all cursor-pointer bg-card dark:bg-card/60"
                   onClick={() => handleHistoryCardClick(item.path)}
                 >
                   <div className="flex items-start gap-2">
@@ -479,7 +479,7 @@ const JarTools = () => {
             </Button>
           </div>
 
-          <div className="border rounded-lg overflow-x-auto">
+          <div className="border-2 border-border/50 dark:border-border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

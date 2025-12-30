@@ -241,7 +241,7 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
         </Tabs>
       </div>
 
-      <Card>
+      <Card className="border-2 border-border/50 dark:border-border dark:bg-card/80 dark:shadow-md dark:shadow-black/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="w-5 h-5" />

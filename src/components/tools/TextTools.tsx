@@ -782,39 +782,39 @@ ORDER BY u.created_at DESC;`;
     if (resultType === 'json' && jsonStats) {
       return (
         <>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-primary">{jsonStats.totalKeys}</div>
             <div className="text-sm text-muted-foreground">总键数</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-blue-500">{jsonStats.totalValues}</div>
             <div className="text-sm text-muted-foreground">总值数</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-green-500">{jsonStats.stringValues}</div>
             <div className="text-sm text-muted-foreground">字符串</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-yellow-500">{jsonStats.numberValues}</div>
             <div className="text-sm text-muted-foreground">数字</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-purple-500">{jsonStats.booleanValues}</div>
             <div className="text-sm text-muted-foreground">布尔值</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-pink-500">{jsonStats.nullValues}</div>
             <div className="text-sm text-muted-foreground">空值</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-indigo-500">{jsonStats.arrayValues}</div>
             <div className="text-sm text-muted-foreground">数组</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-orange-500">{jsonStats.objectValues}</div>
             <div className="text-sm text-muted-foreground">对象</div>
           </div>
-          <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+          <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
             <div className="text-2xl font-bold text-teal-500">{jsonStats.maxDepth}</div>
             <div className="text-sm text-muted-foreground">最大深度</div>
           </div>
@@ -825,43 +825,43 @@ ORDER BY u.created_at DESC;`;
     // 对于SQL、XML和普通文本，显示相同的文本统计信息
     return (
       <>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-primary">{textStats.characters}</div>
           <div className="text-sm text-muted-foreground">总字符</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-blue-500">{textStats.chineseChars}</div>
           <div className="text-sm text-muted-foreground">中文</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-green-500">{textStats.englishWords}</div>
           <div className="text-sm text-muted-foreground">英文</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-yellow-500">{textStats.numbers}</div>
           <div className="text-sm text-muted-foreground">数字</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-purple-500">{textStats.punctuation}</div>
           <div className="text-sm text-muted-foreground">标点</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-pink-500">{textStats.spaces}</div>
           <div className="text-sm text-muted-foreground">空格</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-indigo-500">{textStats.charactersNoSpaces}</div>
           <div className="text-sm text-muted-foreground">无空格</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-orange-500">{textStats.words}</div>
           <div className="text-sm text-muted-foreground">单词</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-teal-500">{textStats.lines}</div>
           <div className="text-sm text-muted-foreground">行数</div>
         </div>
-        <div className="bg-background/80 dark:bg-background/40 rounded-lg p-3 text-center shadow-sm border border-border/30 hover:shadow-md transition-shadow">
+        <div className="bg-background/80 dark:bg-background/60 rounded-lg p-3 text-center shadow-sm border-2 border-border/30 dark:border-border/60 hover:shadow-md transition-shadow hover:border-primary/30 dark:hover:border-primary/50">
           <div className="text-2xl font-bold text-cyan-500">{textStats.paragraphs}</div>
           <div className="text-sm text-muted-foreground">段落</div>
         </div>
@@ -882,7 +882,7 @@ ORDER BY u.created_at DESC;`;
                   key={button.key}
                   size="sm"
                   variant="outline"
-                  className="h-9 px-4 text-sm font-medium hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
+                  className="h-9 px-4 text-sm font-medium border-2 border-green-500/60 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all"
                   onClick={() => transformText(button.key)}
                 >
                   {button.label}
@@ -898,7 +898,7 @@ ORDER BY u.created_at DESC;`;
         {/* 左侧区域：输入和统计 */}
         <div className="space-y-4">
           {/* 输入区域 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
+          <div className="bg-card dark:bg-card/80 rounded-xl p-6 shadow-sm border-2 border-border/50 dark:border-border dark:shadow-md dark:shadow-black/20">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/10 p-1.5 rounded-lg">
@@ -963,7 +963,7 @@ ORDER BY u.created_at DESC;`;
           </div>
 
           {/* 统计信息 */}
-          <div className="bg-card rounded-xl p-6 shadow-sm border border-border/50">
+          <div className="bg-card dark:bg-card/80 rounded-xl p-6 shadow-sm border-2 border-border/50 dark:border-border dark:shadow-md dark:shadow-black/20">
             <div className="flex items-center gap-2 mb-3">
               <div className="bg-primary/10 p-1.5 rounded-lg">
                 <Hash size={18} className="text-primary" />
@@ -979,7 +979,7 @@ ORDER BY u.created_at DESC;`;
         </div>
 
         {/* 右侧区域：输出结果 */}
-        <Card className="shadow-md">
+        <Card className="shadow-md border-2 border-border/50 dark:border-border dark:bg-card/80 dark:shadow-lg dark:shadow-black/20">
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">

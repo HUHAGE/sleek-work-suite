@@ -140,10 +140,10 @@ export default function MenuManagement({ tools }: MenuManagementProps) {
             <div
               key={config.id}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg border transition-all",
+                "flex items-center gap-3 p-3 rounded-lg border-2 transition-all",
                 config.enabled 
-                  ? "bg-background border-border hover:border-primary/50" 
-                  : "bg-muted/50 border-border/50 opacity-60"
+                  ? "bg-background dark:bg-background/60 border-border dark:border-border/80 hover:border-primary/50 dark:hover:border-primary/60" 
+                  : "bg-muted/50 dark:bg-muted/30 border-border/50 dark:border-border/40 opacity-60"
               )}
             >
               {/* 拖拽图标 */}

@@ -128,7 +128,7 @@ const UrlDecryptTool: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="border-2 border-border/50 dark:border-border dark:bg-card/80 dark:shadow-md dark:shadow-black/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="w-5 h-5" />
