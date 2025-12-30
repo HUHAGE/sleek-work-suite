@@ -459,6 +459,127 @@ class CryptoWindowManager {
 
 const cryptoWindowManager = new CryptoWindowManager();
 
+// URL解密窗口管理器
+class UrlDecryptWindowManager {
+  private windows: Map<string, { window: BrowserWindow; isReady: boolean }> = new Map();
+  private initPromises: Map<string, Promise<void>> = new Map();
+
+  async ensureWindow(systemUrl: string): Promise<BrowserWindow> {
+    const cached = this.windows.get(systemUrl);
+    
+    if (cached && !cached.window.isDestroyed() && cached.isReady) {
+      return cached.window;
+    }
+
+    // 如果正在初始化，等待初始化完成
+    const existingPromise = this.initPromises.get(systemUrl);
+    if (existingPromise) {
+      await existingPromise;
+      return this.windows.get(systemUrl)!.window;
+    }
+
+    // 开始初始化
+    const initPromise = this.initWindow(systemUrl);
+    this.initPromises.set(systemUrl, initPromise);
+    
+    try {
+      await initPromise;
+    } finally {
+      this.initPromises.delete(systemUrl);
+    }
+    
+    return this.windows.get(systemUrl)!.window;
+  }
+
+  private async initWindow(systemUrl: string): Promise<void> {
+    try {
+      console.log(`初始化URL解密窗口: ${systemUrl}`);
+      
+      // 创建隐藏窗口
+      const window = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          webSecurity: false,
+        }
+      });
+
+      // 加载系统地址
+      await window.loadURL(systemUrl);
+
+      // 等待页面加载完成 - 减少到1秒
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // 验证Util.decryptUrlParams方法是否存在
+      const hasMethod = await window.webContents.executeJavaScript(`
+        typeof Util !== 'undefined' && typeof Util.decryptUrlParams === 'function'
+      `);
+
+      if (!hasMethod) {
+        window.close();
+        throw new Error('系统中未找到 Util.decryptUrlParams 方法');
+      }
+
+      this.windows.set(systemUrl, { window, isReady: true });
+      console.log(`URL解密窗口初始化完成: ${systemUrl}`);
+    } catch (error) {
+      console.error(`初始化URL解密窗口失败: ${systemUrl}`, error);
+      const cached = this.windows.get(systemUrl);
+      if (cached && !cached.window.isDestroyed()) {
+        cached.window.close();
+      }
+      this.windows.delete(systemUrl);
+      throw error;
+    }
+  }
+
+  async decrypt(encryptedUrl: string, systemUrl: string): Promise<{ success: boolean; decryptedUrl?: string; error?: string }> {
+    try {
+      const window = await this.ensureWindow(systemUrl);
+      
+      const result = await window.webContents.executeJavaScript(`
+        (function() {
+          try {
+            if (typeof Util !== 'undefined' && typeof Util.decryptUrlParams === 'function') {
+              return { success: true, decryptedUrl: Util.decryptUrlParams('${encryptedUrl.replace(/'/g, "\\'")}') };
+            } else {
+              return { success: false, error: '系统中未找到 Util.decryptUrlParams 方法' };
+            }
+          } catch (error) {
+            return { success: false, error: error.message };
+          }
+        })()
+      `);
+
+      return result;
+    } catch (error) {
+      console.error('URL解密失败:', error);
+      return { success: false, error: error.message || '解密过程中发生错误' };
+    }
+  }
+
+  destroy(systemUrl?: string) {
+    if (systemUrl) {
+      const cached = this.windows.get(systemUrl);
+      if (cached && !cached.window.isDestroyed()) {
+        cached.window.close();
+      }
+      this.windows.delete(systemUrl);
+    } else {
+      // 销毁所有窗口
+      for (const [url, cached] of this.windows.entries()) {
+        if (!cached.window.isDestroyed()) {
+          cached.window.close();
+        }
+      }
+      this.windows.clear();
+    }
+  }
+}
+
+const urlDecryptWindowManager = new UrlDecryptWindowManager();
+
 // 在createWindow函数之前添加日志管理器
 class LogManager {
   private logFilePath: string;
@@ -945,42 +1066,16 @@ function registerIpcHandlers() {
     }
   })
 
-  // 处理URL解密请求
+  // 处理URL解密请求 - 优化版本
   ipcMain.handle('decrypt-url', async (_, encryptedUrl: string, systemUrl: string) => {
     try {
-      // 创建一个隐藏的浏览器窗口来执行解密
-      const decryptWindow = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          nodeIntegration: false,
-          contextIsolation: true,
-          webSecurity: false,
-        }
-      });
+      console.log('开始URL解密...');
+      const startTime = Date.now();
 
-      // 加载系统地址
-      await decryptWindow.loadURL(systemUrl);
+      const result = await urlDecryptWindowManager.decrypt(encryptedUrl, systemUrl);
 
-      // 等待页面加载完成
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // 在控制台中执行解密方法
-      const result = await decryptWindow.webContents.executeJavaScript(`
-        (function() {
-          try {
-            if (typeof Util !== 'undefined' && typeof Util.decryptUrlParams === 'function') {
-              return { success: true, decryptedUrl: Util.decryptUrlParams('${encryptedUrl.replace(/'/g, "\\'")}') };
-            } else {
-              return { success: false, error: '系统中未找到 Util.decryptUrlParams 方法' };
-            }
-          } catch (error) {
-            return { success: false, error: error.message };
-          }
-        })()
-      `);
-
-      // 关闭窗口
-      decryptWindow.close();
+      const elapsed = Date.now() - startTime;
+      console.log(`URL解密完成，耗时: ${elapsed}ms`);
 
       return result;
     } catch (error) {
