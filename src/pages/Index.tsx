@@ -40,7 +40,7 @@ const Index = () => {
     { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
     { id: 'sql', name: 'SQL工具', dec: '', icon: Database, component: SqlTools },
-    { id: 'api-doc', name: '接口文档生成', dec: '根据代码生成专业的接口文档，支持多种格式导出（实验性功能，请谨慎使用）', icon: FileJson, component: ApiDocGenerator },
+    { id: 'api-doc', name: 'AI接口文档生成', dec: '根据代码生成专业的接口文档，支持多种格式导出（实验性功能，请谨慎使用）', icon: FileJson, component: ApiDocGenerator },
     { id: 'url-decrypt', name: 'URL快速解密', dec: '通过系统控制台调用 Util.decryptUrlParams() 方法解密URL参数', icon: KeyRound, component: UrlDecryptTool },
     { id: 'db-decrypt', name: 'JDBC快速加解密', dec: '通过系统控制台自动解密数据库配置信息（url、username、password），注意拨上公司VPN后再使用', icon: Key, component: DbDecryptTool },
     { id: 'jar', name: '个性化Jar管理', dec: '扫描路径下target目录下的jar文件，实现批量复制，简化8.x多个jar的批量更新', icon: Archive, component: JarTools },
