@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, PlayCircle, Database, FileJson, KeyRound, Key } from 'lucide-react';
+import { Type, Settings, Archive, FileCode, ChevronLeft, Globe, Shield, Download, PlayCircle, Database, FileJson, KeyRound, Key, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import TextTools from '@/components/tools/TextTools';
 import JarTools from '@/components/tools/JarTools';
@@ -16,6 +16,7 @@ import WorkStarter from '@/components/tools/WorkStarter';
 import ApiDocGenerator from '@/components/tools/ApiDocGenerator';
 import UrlDecryptTool from '@/components/tools/UrlDecryptTool';
 import DbDecryptTool from '@/components/tools/DbDecryptTool';
+import AiCodeReview from '@/components/tools/AiCodeReview';
 import CollapsibleDescription from '@/components/CollapsibleDescription';
 import { trackMenuSwitch } from '@/lib/analytics';
 
@@ -40,6 +41,7 @@ const Index = () => {
     { id: 'work-starter', name: '工作启动器', dec: '每天开机第一件事，快速打开工作要用的软件和网页', icon: PlayCircle, component: WorkStarter },
     { id: 'text', name: '文本工具', icon: Type, component: TextTools },
     { id: 'sql', name: 'SQL工具', dec: '', icon: Database, component: SqlTools },
+    { id: 'ai-code-review', name: 'AI代码评审', dec: '上传代码文件，AI将为您提供专业的代码评审建议和改进意见', icon: Brain, component: AiCodeReview },
     { id: 'api-doc', name: 'AI接口文档生成', dec: '根据代码生成专业的接口文档，支持多种格式导出（实验性功能，请谨慎使用）', icon: FileJson, component: ApiDocGenerator },
     { id: 'url-decrypt', name: 'URL快速解密', dec: '通过系统控制台调用 Util.decryptUrlParams() 方法解密URL参数', icon: KeyRound, component: UrlDecryptTool },
     { id: 'db-decrypt', name: 'JDBC快速加解密', dec: '通过系统控制台自动解密数据库配置信息（url、username、password），注意拨上公司VPN后再使用', icon: Key, component: DbDecryptTool },
