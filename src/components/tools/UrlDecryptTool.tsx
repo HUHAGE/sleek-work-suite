@@ -316,22 +316,45 @@ const UrlDecryptTool: React.FC = () => {
                       <div className="space-y-3">
                         <Label className="text-sm font-medium">查询参数</Label>
                         {/* 表头 */}
-                        <div className="grid grid-cols-3 gap-2 p-2 bg-muted/50 rounded border font-medium text-sm">
+                        <div className="grid grid-cols-3 gap-2 p-2 bg-muted rounded border text-sm font-bold">
                           <div>参数名</div>
                           <div>参数值</div>
                           <div className="text-center">操作</div>
                         </div>
                         {/* 参数列表 */}
                         <div className="space-y-1">
-                          {Object.entries(parsedUrl.params).map(([key, value]) => (
-                            <div key={key} className="grid grid-cols-3 gap-2 p-2 bg-muted rounded border items-center">
-                              <div className="text-sm font-mono break-all">{key}</div>
-                              <div className="text-sm font-mono break-all">{value}</div>
-                              <div className="flex justify-center">
-                                <CopyButton text={value} label={`参数值: ${key}`} />
-                              </div>
-                            </div>
-                          ))}
+                          {(() => {
+                            // 定义重要参数
+                            const importantParams = ['RowGuid', 'ProcessVersionInstanceGuid'];
+                            
+                            // 分离重要参数和普通参数
+                            const entries = Object.entries(parsedUrl.params);
+                            const importantEntries = entries.filter(([key]) => importantParams.includes(key));
+                            const normalEntries = entries.filter(([key]) => !importantParams.includes(key));
+                            
+                            // 按重要性排序重要参数
+                            const sortedImportantEntries = importantEntries.sort(([keyA], [keyB]) => {
+                              const indexA = importantParams.indexOf(keyA);
+                              const indexB = importantParams.indexOf(keyB);
+                              return indexA - indexB;
+                            });
+                            
+                            // 合并排序后的参数
+                            const sortedEntries = [...sortedImportantEntries, ...normalEntries];
+                            
+                            return sortedEntries.map(([key, value]) => {
+                              const isImportant = importantParams.includes(key);
+                              return (
+                                <div key={key} className="grid grid-cols-3 gap-2 p-2 bg-muted rounded border items-center">
+                                  <div className={`text-sm font-mono break-all ${isImportant ? 'font-bold' : ''}`}>{key}</div>
+                                  <div className={`text-sm font-mono break-all ${isImportant ? 'font-bold' : ''}`}>{value}</div>
+                                  <div className="flex justify-center">
+                                    <CopyButton text={value} label={`参数值: ${key}`} />
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()}
                         </div>
                       </div>
                     )}
