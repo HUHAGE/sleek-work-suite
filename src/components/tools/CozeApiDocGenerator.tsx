@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { toast } from '@/components/ui/use-toast';
-import { Loader2, Upload, FileCode, Trash2, Eye, Download, Copy, CheckCircle2 } from 'lucide-react';
+import { Loader2, Upload, FileText, Trash2, Eye, Download, Copy, CheckCircle2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -26,74 +25,57 @@ interface CodeFile {
   name: string;
   content: string;
   size: number;
-  url?: string; // 添加url字段用于API调用
 }
 
-interface ReviewResult {
+interface ApiDocResult {
   id: string;
   fileName: string;
   result: string;
   createdAt: Date;
   size: number;
-  reportUrl?: string; // 添加报告链接
-  htmlReport?: string; // 添加HTML报告
+  reportUrl?: string;
+  htmlReport?: string;
 }
 
-// 更新API接口格式 - API需要url字段
-interface ApiCodeFile {
-  url: string;
-  file_type: 'document';
+interface CozeApiDocRequest {
+  java_file: {
+    name: string;
+    content: string;
+    url: string;
+  };
 }
 
-interface CodeReviewRequest {
-  code_files: ApiCodeFile[];
-}
+const API_URL = 'https://qxwkzdftrg.coze.site/run';
+const API_TOKEN = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjJhYzk5MmRhLWEzODItNDIyMC04NTA0LWFjNGY1YzIzZDM3NSJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbImNUcUVYS2hDeHl6eTVBUTZIMDhMcGMzRDk1Und2bUMxIl0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzY3NTgxMTk2LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NTkxMTA4NTQ4MTk3OTQxMjkwIiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NTkxNzAzNDMyNzk3MzU2MDcyIn0.kwJ53S7bORpOdgqyAWVwYGHUWzZoqq1BsCL_F1vKO9rO7l_Y2mE617VeJtR9_4qatXEjxM9ZIyoZ30BRBNFNQIlUXZwIpOhv-x7DEAEJSyIaviB-D-2WSVxlfSiMNWp0pfEBlAzZztk876A2n0u_24omTi9D9aV1hq9oyEdsPMXgutKEecWhE_W5rF-NrjqetheMjTcig4WpuP-EWWd2GwrJk7bnOlFLzprn1Ptz-o4KFUerG9KgmnOEUVMZrk4df29v9xMfhqMK2fI6lTR4WNrzGkcCs9CVPncQponN2NtKjdQFmUjloes5hcBKcyqpJCl8-AAi9K_pP_fIY-XwGw';
 
-interface CodeReviewResponse {
-  review_report: string;
-  review_report_html: string;
-  report_url: string;
-  feishu_sent: boolean;
-  feishu_message: string;
-  run_id?: string;
-}
-
-const API_URL = 'https://8pj8hj7r8w.coze.site/run';
-const API_TOKEN = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjA1NWIzNDljLTE5ZWItNGVhMC1iY2YzLTYwODFmY2Q4OTIyZiJ9.eyJpc3MiOiJodHRwczovL2FwaS5jb3plLmNuIiwiYXVkIjpbIkp3QXBJWk1JajA3T3M2YVVWSlN3QW1oYzdZWWd1UkJmIl0sImV4cCI6ODIxMDI2Njg3Njc5OSwiaWF0IjoxNzY3NTM2MTc3LCJzdWIiOiJzcGlmZmU6Ly9hcGkuY296ZS5jbi93b3JrbG9hZF9pZGVudGl0eS9pZDo3NTkxMzg0NTg0NzIyMzE3MzQ3Iiwic3JjIjoiaW5ib3VuZF9hdXRoX2FjY2Vzc190b2tlbl9pZDo3NTkxNTEwMDc1MDA1NDY4NzI2In0.Kr_GOHK8B_FTjrgD8XaGgYqFIo2HnoJNAz4MOuixxU8BgQ8VlM9bdiNMJ291I8wbeks7M1WEbIrOS1n7-VOyYcMHutinm-Kyhl2viRlQC7Xe80pfLFoUQuYaav2TokTN4q_75KMA_9SWfmkAX_EvzHTaWrlcO8NQDlatL5n4Appu5I4hg6BCKNDUchz7JYJ48q4spXGHdx3qjT7qyN3fiti0lXg8HCPai5D3MGIDND6prHHYxLHY5Il-zDUm2VUSBx-5WHHmocWZi6l1pfkhmwbz-Lf9sy_9eQiQq_tYkP86twSEaojqVBH5lIjcMlkFTyHlNgVwwPRHg18fnFOcZw';
-
-export default function AiCodeReview() {
-  const [codeFiles, setCodeFiles] = useState<CodeFile[]>([]);
-  const [isReviewing, setIsReviewing] = useState(false);
-  const [reviewResults, setReviewResults] = useState<ReviewResult[]>([]);
-  const [previewResult, setPreviewResult] = useState<ReviewResult | null>(null);
+export default function CozeApiDocGenerator() {
+  const [codeFile, setCodeFile] = useState<CodeFile | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [docResults, setDocResults] = useState<ApiDocResult[]>([]);
+  const [previewResult, setPreviewResult] = useState<ApiDocResult | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 调试：监控 codeFiles 变化
+  // 从localStorage加载生成历史
   useEffect(() => {
-    console.log('codeFiles state changed:', codeFiles);
-  }, [codeFiles]);
-
-  // 从localStorage加载评审历史
-  useEffect(() => {
-    const savedResults = localStorage.getItem('ai-code-review-results');
+    const savedResults = localStorage.getItem('coze-api-doc-results');
     if (savedResults) {
       try {
         const results = JSON.parse(savedResults).map((result: any) => ({
           ...result,
           createdAt: new Date(result.createdAt)
         }));
-        setReviewResults(results);
+        setDocResults(results);
       } catch (error) {
         console.error('Failed to load saved results:', error);
       }
     }
   }, []);
 
-  // 保存评审结果到localStorage
-  const saveResultsToStorage = (results: ReviewResult[]) => {
+  // 保存结果到localStorage
+  const saveResultsToStorage = (results: ApiDocResult[]) => {
     try {
-      localStorage.setItem('ai-code-review-results', JSON.stringify(results));
+      localStorage.setItem('coze-api-doc-results', JSON.stringify(results));
     } catch (error) {
       console.error('Failed to save results:', error);
     }
@@ -123,75 +105,41 @@ export default function AiCodeReview() {
       return;
     }
 
-    const fileArray = Array.from(files);
-    const totalFiles = fileArray.length;
-    console.log(`Processing ${totalFiles} files`);
+    // 只处理第一个文件
+    const file = files[0];
+    console.log(`Processing file: ${file.name}`);
     
-    const newFiles: CodeFile[] = [];
-    let filesProcessed = 0;
-
-    fileArray.forEach((file, index) => {
-      console.log(`Reading file ${index + 1}/${totalFiles}: ${file.name}`);
-      const reader = new FileReader();
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      console.log(`File ${file.name} loaded, size: ${content.length} chars`);
       
-      reader.onload = (e) => {
-        const content = e.target?.result as string;
-        console.log(`File ${file.name} loaded, size: ${content.length} chars`);
-        
-        const newFile = {
-          id: crypto.randomUUID(),
-          name: file.name,
-          content,
-          size: calculateSize(content)
-        };
-        
-        newFiles.push(newFile);
-        filesProcessed++;
-        
-        console.log(`Processed ${filesProcessed}/${totalFiles} files`);
-        
-        if (filesProcessed === totalFiles) {
-          console.log('All files processed, updating state with:', newFiles);
-          setCodeFiles(prevFiles => {
-            const updated = [...prevFiles, ...newFiles];
-            console.log('Updated codeFiles:', updated);
-            return updated;
-          });
-          
-          toast({
-            title: "文件上传成功",
-            description: `已添加 ${newFiles.length} 个文件`,
-          });
-        }
+      const newFile: CodeFile = {
+        id: crypto.randomUUID(),
+        name: file.name,
+        content,
+        size: calculateSize(content)
       };
       
-      reader.onerror = (error) => {
-        console.error(`Error reading file ${file.name}:`, error);
-        filesProcessed++;
-        toast({
-          title: "文件读取失败",
-          description: `无法读取文件: ${file.name}`,
-          variant: "destructive",
-        });
-        
-        // 即使出错也要检查是否所有文件都处理完了
-        if (filesProcessed === totalFiles && newFiles.length > 0) {
-          console.log('All files processed (with some errors), updating state with:', newFiles);
-          setCodeFiles(prevFiles => {
-            const updated = [...prevFiles, ...newFiles];
-            console.log('Updated codeFiles:', updated);
-            return updated;
-          });
-          
-          toast({
-            title: "部分文件上传成功",
-            description: `已添加 ${newFiles.length} 个文件`,
-          });
-        }
-      };
+      setCodeFile(newFile);
       
-      reader.readAsText(file);
-    });
+      toast({
+        title: "文件上传成功",
+        description: `已加载文件: ${file.name}`,
+      });
+    };
+    
+    reader.onerror = (error) => {
+      console.error(`Error reading file ${file.name}:`, error);
+      toast({
+        title: "文件读取失败",
+        description: `无法读取文件: ${file.name}`,
+        variant: "destructive",
+      });
+    };
+    
+    reader.readAsText(file);
 
     // 重置input以允许重复上传相同文件
     if (fileInputRef.current) {
@@ -205,45 +153,125 @@ export default function AiCodeReview() {
   };
 
   // 删除文件
-  const handleRemoveFile = (fileId: string) => {
-    setCodeFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
+  const handleRemoveFile = () => {
+    setCodeFile(null);
   };
 
-  // 清空所有文件
-  const handleClearFiles = () => {
-    setCodeFiles([]);
+  // 清空文件
+  const handleClearFile = () => {
+    setCodeFile(null);
   };
 
   // 创建Data URL（base64编码）
   const createDataUrl = (file: CodeFile): string => {
-    const base64Content = btoa(unescape(encodeURIComponent(file.content)));
+    const base64Content = btoa(encodeURIComponent(file.content));
     return `data:text/plain;base64,${base64Content}`;
+  };
+
+  // 重试机制的API调用函数
+  const callApiWithRetry = async (requestData: CozeApiDocRequest, maxRetries = 3): Promise<any> => {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`API调用尝试 ${attempt}/${maxRetries}`);
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData)
+        });
+
+        console.log(`尝试 ${attempt} - API response status:`, response.status);
+        console.log(`尝试 ${attempt} - API response headers:`, Object.fromEntries(response.headers.entries()));
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log(`尝试 ${attempt} - API error response:`, errorText);
+          
+          let errorMessage = `API请求失败: ${response.status}`;
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage += ` - ${errorJson.message || errorJson.msg || errorJson.error || errorText}`;
+            
+            // 检查是否是超时错误，如果是则重试
+            if (errorJson.msg && errorJson.msg.includes('timeout')) {
+              if (attempt < maxRetries) {
+                console.log(`检测到超时错误，等待 ${attempt * 2} 秒后重试...`);
+                await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+                continue;
+              }
+            }
+          } catch {
+            errorMessage += ` - ${errorText}`;
+          }
+          
+          throw new Error(errorMessage);
+        }
+
+        const result = await response.json();
+        console.log(`尝试 ${attempt} - API response result:`, result);
+        return result;
+        
+      } catch (error) {
+        console.error(`尝试 ${attempt} 失败:`, error);
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        // 如果是最后一次尝试，抛出错误
+        if (attempt === maxRetries) {
+          throw lastError;
+        }
+        
+        // 等待后重试
+        console.log(`等待 ${attempt * 2} 秒后重试...`);
+        await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+      }
+    }
+    
+    throw lastError || new Error('未知错误');
   };
 
   // 测试API连接
   const handleTestAPI = async () => {
     try {
-      setIsReviewing(true);
+      setIsGenerating(true);
       
       // 创建一个简单的测试文件
-      const testContent = `public class TestClass {
-    public static void main(String[] args) {
-        System.out.println("Hello World");
+      const testContent = `/**
+ * 用户管理API
+ */
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        // 获取用户信息
+        return ResponseEntity.ok(userService.findById(id));
+    }
+    
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        // 创建新用户
+        return ResponseEntity.ok(userService.save(user));
     }
 }`;
       
-      const testDataUrl = `data:text/plain;base64,${btoa(unescape(encodeURIComponent(testContent)))}`;
+      const testDataUrl = `data:text/plain;base64,${btoa(encodeURIComponent(testContent))}`;
       
-      const testData: CodeReviewRequest = {
-        code_files: [{
-          url: testDataUrl,
-          file_type: 'document'
-        }]
+      const testData: CozeApiDocRequest = {
+        java_file: {
+          name: "UserController.java",
+          content: testContent,
+          url: testDataUrl
+        }
       };
 
-      console.log('Testing API connection with data URL:', {
+      console.log('Testing API connection with data:', {
         url: API_URL,
-        dataUrlLength: testDataUrl.length,
         contentLength: testContent.length
       });
       
@@ -289,7 +317,7 @@ export default function AiCodeReview() {
       
       toast({
         title: "API测试成功",
-        description: "API连接正常，可以进行代码评审",
+        description: "API连接正常，可以生成接口文档",
       });
       
     } catch (error) {
@@ -300,13 +328,13 @@ export default function AiCodeReview() {
         variant: "destructive",
       });
     } finally {
-      setIsReviewing(false);
+      setIsGenerating(false);
     }
   };
 
-  // 调用AI评审接口
-  const handleReview = async () => {
-    if (codeFiles.length === 0) {
+  // 调用Coze接口文档生成API
+  const handleGenerateDoc = async () => {
+    if (!codeFile) {
       toast({
         title: "错误",
         description: "请先上传代码文件",
@@ -316,20 +344,16 @@ export default function AiCodeReview() {
     }
 
     try {
-      setIsReviewing(true);
-
-      // 为每个文件创建Data URL
-      const apiCodeFiles: ApiCodeFile[] = codeFiles.map(file => {
-        const dataUrl = createDataUrl(file);
-        return {
-          url: dataUrl,
-          file_type: 'document'
-        };
-      });
+      setIsGenerating(true);
 
       // 准备请求数据
-      const requestData: CodeReviewRequest = {
-        code_files: apiCodeFiles
+      const dataUrl = createDataUrl(codeFile);
+      const requestData: CozeApiDocRequest = {
+        java_file: {
+          name: codeFile.name,
+          content: codeFile.content,
+          url: dataUrl
+        }
       };
 
       console.log('Sending request to API:', {
@@ -339,83 +363,46 @@ export default function AiCodeReview() {
           'Authorization': `Bearer ${API_TOKEN.substring(0, 20)}...`,
           'Content-Type': 'application/json',
         },
-        filesCount: codeFiles.length,
-        totalContentLength: codeFiles.reduce((sum, file) => sum + file.content.length, 0),
-        dataUrlsLength: apiCodeFiles.map(f => f.url.length)
+        fileName: codeFile.name,
+        contentLength: codeFile.content.length
       });
 
-      // 调用API
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-      });
-
-      console.log('API response status:', response.status);
-      console.log('API response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        // 尝试获取错误详情
-        let errorMessage = `API请求失败: ${response.status}`;
-        try {
-          const errorText = await response.text();
-          console.log('API error response:', errorText);
-          if (errorText) {
-            try {
-              const errorJson = JSON.parse(errorText);
-              errorMessage += ` - ${errorJson.message || errorJson.error || errorText}`;
-            } catch {
-              errorMessage += ` - ${errorText}`;
-            }
-          }
-        } catch (e) {
-          console.log('Could not read error response:', e);
-        }
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      console.log('API response result:', result);
+      // 使用重试机制调用API
+      const result = await callApiWithRetry(requestData, 3);
       
       // 处理不同的响应格式
-      let reviewReport = '';
-      let htmlReport = '';
+      let apiDoc = '';
+      let htmlDoc = '';
       let reportUrl = '';
       
-      if (result.review_report) {
-        // 标准格式响应
-        reviewReport = result.review_report;
-        htmlReport = result.review_report_html || '';
+      if (result.api_documentation) {
+        apiDoc = result.api_documentation;
+        htmlDoc = result.documentation_html || '';
         reportUrl = result.report_url || '';
       } else if (typeof result === 'string') {
-        // 简单字符串响应
-        reviewReport = result;
+        apiDoc = result;
       } else {
-        // JSON格式响应
-        reviewReport = JSON.stringify(result, null, 2);
+        apiDoc = JSON.stringify(result, null, 2);
       }
       
-      // 保存评审结果
-      const newResult: ReviewResult = {
+      // 保存生成结果
+      const newResult: ApiDocResult = {
         id: crypto.randomUUID(),
-        fileName: codeFiles.length === 1 ? codeFiles[0].name : `${codeFiles.length}个文件`,
-        result: reviewReport,
+        fileName: codeFile.name,
+        result: apiDoc,
         createdAt: new Date(),
-        size: calculateSize(reviewReport),
+        size: calculateSize(apiDoc),
         reportUrl: reportUrl || undefined,
-        htmlReport: htmlReport || undefined
+        htmlReport: htmlDoc || undefined
       };
 
-      const updatedResults = [newResult, ...reviewResults];
-      setReviewResults(updatedResults);
+      const updatedResults = [newResult, ...docResults];
+      setDocResults(updatedResults);
       saveResultsToStorage(updatedResults);
 
       toast({
-        title: "评审完成",
-        description: `AI代码评审已完成`
+        title: "文档生成完成",
+        description: `Coze接口文档已生成完成`
       });
 
       // 自动预览结果
@@ -423,27 +410,35 @@ export default function AiCodeReview() {
       setPreviewOpen(true);
 
       // 清空已上传的文件
-      setCodeFiles([]);
+      setCodeFile(null);
     } catch (error) {
-      console.error('Review error:', error);
+      console.error('Generate doc error:', error);
+      
+      let errorMessage = "请检查网络连接后重试";
+      if (error instanceof Error) {
+        if (error.message.includes('timeout')) {
+          errorMessage = "服务器处理超时，请稍后重试或尝试上传更小的文件";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "评审失败",
-        description: error instanceof Error ? error.message : "请检查网络连接后重试",
+        title: "文档生成失败",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
-      setIsReviewing(false);
+      setIsGenerating(false);
     }
   };
 
   // 在外部浏览器中打开链接
   const openExternalUrl = async (url: string) => {
     try {
-      // 检查是否在Electron环境中
       if (window.electron && window.electron.openExternal) {
         await window.electron.openExternal(url);
       } else {
-        // 如果不在Electron环境中，使用默认的window.open
         window.open(url, '_blank', 'noopener,noreferrer');
       }
     } catch (error) {
@@ -457,16 +452,17 @@ export default function AiCodeReview() {
   };
 
   // 预览结果
-  const handlePreview = (result: ReviewResult) => {
+  const handlePreview = (result: ApiDocResult) => {
     setPreviewResult(result);
     setPreviewOpen(true);
   };
-  const handleCopy = async (result: ReviewResult) => {
+
+  const handleCopy = async (result: ApiDocResult) => {
     try {
       await navigator.clipboard.writeText(result.result);
       toast({
         title: "复制成功",
-        description: "评审结果已复制到剪贴板",
+        description: "接口文档已复制到剪贴板",
       });
     } catch (error) {
       toast({
@@ -478,13 +474,13 @@ export default function AiCodeReview() {
   };
 
   // 下载结果
-  const handleDownload = (result: ReviewResult) => {
+  const handleDownload = (result: ApiDocResult) => {
     try {
       const blob = new Blob([result.result], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `code-review-${result.fileName}-${formatDate(result.createdAt, 'yyyyMMdd-HHmmss')}.txt`;
+      a.download = `api-doc-${result.fileName}-${formatDate(result.createdAt, 'yyyyMMdd-HHmmss')}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -492,36 +488,36 @@ export default function AiCodeReview() {
       
       toast({
         title: "下载成功",
-        description: "评审结果已开始下载",
+        description: "接口文档已开始下载",
       });
     } catch (error) {
       toast({
         title: "下载失败",
-        description: "无法下载评审结果",
+        description: "无法下载接口文档",
         variant: "destructive",
       });
     }
   };
 
-  // 删除评审结果
+  // 删除结果
   const handleDeleteResult = (resultId: string) => {
-    const updatedResults = reviewResults.filter(result => result.id !== resultId);
-    setReviewResults(updatedResults);
+    const updatedResults = docResults.filter(result => result.id !== resultId);
+    setDocResults(updatedResults);
     saveResultsToStorage(updatedResults);
     
     toast({
       title: "删除成功",
-      description: "评审结果已删除",
+      description: "接口文档已删除",
     });
   };
 
-  // 清空所有评审结果
+  // 清空所有结果
   const handleClearAllResults = () => {
-    setReviewResults([]);
+    setDocResults([]);
     saveResultsToStorage([]);
     toast({
       title: "清空成功",
-      description: "所有评审结果已清空",
+      description: "所有接口文档已清空",
     });
   };
 
@@ -531,24 +527,26 @@ export default function AiCodeReview() {
       <Card className="p-6 space-y-4">
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">上传代码文件</h3>
-         
+          <p className="text-sm text-muted-foreground">
+            支持上传单个代码文件，AI将为您生成专业的接口文档。如遇超时，系统会自动重试。
+          </p>
         </div>
 
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={triggerFileUpload}
-            disabled={isReviewing}
+            disabled={isGenerating}
           >
             <Upload className="w-4 h-4 mr-2" />
             选择文件
           </Button>
           
-          {codeFiles.length > 0 && (
+          {codeFile && (
             <Button
               variant="outline"
-              onClick={handleClearFiles}
-              disabled={isReviewing}
+              onClick={handleClearFile}
+              disabled={isGenerating}
             >
               <Trash2 className="w-4 h-4 mr-2" />
               清空文件
@@ -559,66 +557,57 @@ export default function AiCodeReview() {
         <input
           ref={fileInputRef}
           type="file"
-          multiple
           accept=".js,.ts,.java,.py,.php,.cs,.go,.rb,.cpp,.c,.h,.hpp,.jsx,.tsx,.vue,.swift,.kt,.scala,.rs,.dart,.m,.mm"
           onChange={handleFileUpload}
           className="hidden"
         />
 
-        {/* 已上传文件列表 */}
-        {codeFiles.length > 0 && (
+        {/* 已上传文件显示 */}
+        {codeFile && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">
-                已上传文件 ({codeFiles.length})
+                已上传文件
               </label>
             </div>
             <div className="border-2 border-border/50 dark:border-border rounded-lg overflow-hidden">
-              <div className="max-h-[200px] overflow-y-auto">
-                {codeFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between p-3 border-b last:border-b-0 hover:bg-muted/50"
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <FileCode className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-sm truncate">{file.name}</span>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">
-                        {formatSize(file.size)}
-                      </span>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleRemoveFile(file.id)}
-                      disabled={isReviewing}
-                      className="flex-shrink-0"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between p-3 hover:bg-muted/50">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-sm truncate">{codeFile.name}</span>
+                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                    {formatSize(codeFile.size)}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleRemoveFile}
+                  disabled={isGenerating}
+                  className="flex-shrink-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 评审按钮 */}
         <div className="flex gap-2">
           <Button
-            onClick={handleReview}
-            disabled={isReviewing || codeFiles.length === 0}
+            onClick={handleGenerateDoc}
+            disabled={isGenerating || !codeFile}
             className="flex-1"
           >
-            {isReviewing ? (
+            {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                AI评审中...
+                生成中...
               </>
             ) : (
               <>
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                开始评审
+                生成接口文档
               </>
             )}
           </Button>
@@ -627,7 +616,7 @@ export default function AiCodeReview() {
           <Button
             variant="outline"
             onClick={handleTestAPI}
-            disabled={isReviewing}
+            disabled={isGenerating}
             className="flex-1"
           >
             测试API连接
@@ -635,16 +624,16 @@ export default function AiCodeReview() {
         </div>
       </Card>
 
-      {/* 评审历史 */}
-      {reviewResults.length > 0 && (
+      {/* 生成历史 */}
+      {docResults.length > 0 && (
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <FileCode size={20} className="text-primary" />
-              <h3 className="text-lg font-semibold">评审历史</h3>
+              <FileText size={20} className="text-primary" />
+              <h3 className="text-lg font-semibold">生成历史</h3>
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">共</span>
-                <span className="font-semibold text-primary text-lg">{reviewResults.length}</span>
+                <span className="font-semibold text-primary text-lg">{docResults.length}</span>
                 <span className="text-muted-foreground">条记录</span>
               </div>
             </div>
@@ -658,15 +647,6 @@ export default function AiCodeReview() {
             </Button>
           </div>
 
-          {/* 在线报告有效期提示 */}
-          {reviewResults.some(result => result.reportUrl) && (
-            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                💡 提示：在线报告有效期为2小时，请及时查看或下载保存
-              </p>
-            </div>
-          )}
-
           <div className="border-2 border-border/50 dark:border-border rounded-lg overflow-x-auto">
             <Table>
               <TableHeader>
@@ -674,13 +654,13 @@ export default function AiCodeReview() {
                   <TableHead className="w-[80px]">序号</TableHead>
                   <TableHead className="min-w-[200px]">文件名</TableHead>
                   <TableHead className="w-[100px]">大小</TableHead>
-                  <TableHead className="w-[180px]">评审时间</TableHead>
+                  <TableHead className="w-[180px]">生成时间</TableHead>
                   <TableHead className="w-[120px]">报告链接</TableHead>
                   <TableHead className="w-[200px]">操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {reviewResults.map((result, index) => (
+                {docResults.map((result, index) => (
                   <TableRow key={result.id}>
                     <TableCell className="text-center">{index + 1}</TableCell>
                     <TableCell className="font-medium">{result.fileName}</TableCell>
@@ -754,9 +734,9 @@ export default function AiCodeReview() {
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>评审结果 - {previewResult?.fileName}</DialogTitle>
+            <DialogTitle>接口文档 - {previewResult?.fileName}</DialogTitle>
             <DialogDescription>
-              大小: {previewResult ? formatSize(previewResult.size) : ''} | 评审时间: {previewResult ? formatDate(previewResult.createdAt, 'yyyy-MM-dd HH:mm:ss') : ''}
+              大小: {previewResult ? formatSize(previewResult.size) : ''} | 生成时间: {previewResult ? formatDate(previewResult.createdAt, 'yyyy-MM-dd HH:mm:ss') : ''}
               {previewResult?.reportUrl && (
                 <>
                   {' | '}
@@ -766,9 +746,6 @@ export default function AiCodeReview() {
                   >
                     查看完整HTML报告
                   </button>
-                  <span className="text-amber-600 dark:text-amber-400 text-xs ml-2">
-                    (有效期2h)
-                  </span>
                 </>
               )}
             </DialogDescription>
