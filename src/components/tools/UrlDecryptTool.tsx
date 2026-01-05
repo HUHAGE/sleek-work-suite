@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Lock, Unlock, Copy, Check } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Loader2, Lock, Unlock, Copy, Check, Link, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { trackToolUsage, trackButtonClick } from '@/lib/analytics';
 
@@ -33,13 +34,103 @@ const decodeUrl = (url: string): string => {
   }
 };
 
+// 解析URL结构
+interface ParsedUrl {
+  protocol: string;
+  host: string;
+  pathname: string;
+  search: string;
+  hash: string;
+  params: Record<string, string>;
+}
+
+const parseUrl = (url: string): ParsedUrl | null => {
+  try {
+    const urlObj = new URL(url);
+    const params: Record<string, string> = {};
+    
+    // 解析查询参数
+    urlObj.searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+    
+    return {
+      protocol: urlObj.protocol,
+      host: urlObj.host,
+      pathname: urlObj.pathname,
+      search: urlObj.search,
+      hash: urlObj.hash,
+      params
+    };
+  } catch (error) {
+    console.error('URL解析失败:', error);
+    return null;
+  }
+};
+
+// 复制按钮组件
+interface CopyButtonProps {
+  text: string;
+  label: string;
+  size?: 'sm' | 'default';
+}
+
+const CopyButton: React.FC<CopyButtonProps> = ({ text, label, size = 'sm' }) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const { toast } = useToast();
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      trackButtonClick('url_decrypt', `copy_${label}`);
+      toast({
+        title: '复制成功',
+        description: `${label}已复制到剪贴板`,
+      });
+      
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error('复制失败:', error);
+      toast({
+        title: '复制失败',
+        description: '无法复制到剪贴板',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size={size}
+      onClick={handleCopy}
+      className={size === 'sm' ? 'h-7 px-2' : ''}
+    >
+      {isCopied ? (
+        <>
+          <Check className="mr-1 h-3 w-3" />
+          已复制
+        </>
+      ) : (
+        <>
+          <Copy className="mr-1 h-3 w-3" />
+          复制
+        </>
+      )}
+    </Button>
+  );
+};
+
 const UrlDecryptTool: React.FC = () => {
   const [encryptedUrl, setEncryptedUrl] = useState('');
   const [systemUrl, setSystemUrl] = useState(DEFAULT_SYSTEM_URL);
   const [decryptedUrl, setDecryptedUrl] = useState('');
   const [decodedUrl, setDecodedUrl] = useState(''); // 存储解码后的URL用于显示
+  const [parsedUrl, setParsedUrl] = useState<ParsedUrl | null>(null); // 存储解析后的URL结构
   const [isDecrypting, setIsDecrypting] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const { toast } = useToast();
 
   const handleDecrypt = async () => {
@@ -66,7 +157,7 @@ const UrlDecryptTool: React.FC = () => {
     setIsDecrypting(true);
     setDecryptedUrl('');
     setDecodedUrl('');
-    setIsCopied(false);
+    setParsedUrl(null);
 
     try {
       const result = await (window.electron as any).decryptUrl(encryptedUrl, systemUrl);
@@ -76,6 +167,9 @@ const UrlDecryptTool: React.FC = () => {
         // 对解密后的URL进行解码
         const decoded = decodeUrl(result.decryptedUrl);
         setDecodedUrl(decoded);
+        // 解析URL结构
+        const parsed = parseUrl(decoded);
+        setParsedUrl(parsed);
         trackToolUsage('url_decrypt', 'decrypt_success');
         toast({
           title: '解密成功',
@@ -98,31 +192,6 @@ const UrlDecryptTool: React.FC = () => {
       });
     } finally {
       setIsDecrypting(false);
-    }
-  };
-
-  const handleCopy = async () => {
-    try {
-      // 复制解码后的URL
-      await navigator.clipboard.writeText(decodedUrl);
-      setIsCopied(true);
-      trackButtonClick('url_decrypt', 'copy_result');
-      toast({
-        title: '复制成功',
-        description: '解密后的URL已复制到剪贴板',
-      });
-      
-      // 3秒后重置复制状态
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 3000);
-    } catch (error) {
-      console.error('复制失败:', error);
-      toast({
-        title: '复制失败',
-        description: '无法复制到剪贴板',
-        variant: 'destructive',
-      });
     }
   };
 
@@ -178,31 +247,97 @@ const UrlDecryptTool: React.FC = () => {
           </Button>
 
           {decryptedUrl && (
-            <div className="space-y-2 mt-6">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="decrypted-url">解密后的URL</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopy}
-                  className="h-8"
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="mr-2 h-4 w-4" />
-                      已复制
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="mr-2 h-4 w-4" />
-                      复制
-                    </>
-                  )}
-                </Button>
+            <div className="space-y-6 mt-6">
+              {/* 完整URL展示 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    <Link className="w-4 h-4" />
+                    完整URL
+                  </Label>
+                  <CopyButton text={decodedUrl} label="完整URL" />
+                </div>
+                <div className="p-3 bg-muted rounded-lg border">
+                  <p className="text-sm break-all font-mono">{decodedUrl}</p>
+                </div>
               </div>
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm break-all">{decodedUrl}</p>
-              </div>
+
+              {/* URL结构解析 */}
+              {parsedUrl && (
+                <div className="space-y-4">
+                  <Separator />
+                  <div className="space-y-4">
+                    <Label className="flex items-center gap-2 text-base font-semibold">
+                      <Globe className="w-4 h-4" />
+                      URL结构解析
+                    </Label>
+
+                    {/* 基本信息 */}
+                    <div className="space-y-4">
+                      {parsedUrl.host && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium">主机</Label>
+                            <CopyButton text={parsedUrl.host} label="主机" />
+                          </div>
+                          <div className="p-2 bg-muted rounded border">
+                            <p className="text-sm font-mono">{parsedUrl.host}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {parsedUrl.pathname && parsedUrl.pathname !== '/' && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium">路径</Label>
+                            <CopyButton text={parsedUrl.pathname} label="路径" />
+                          </div>
+                          <div className="p-2 bg-muted rounded border">
+                            <p className="text-sm font-mono break-all">{parsedUrl.pathname}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {parsedUrl.hash && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium">锚点</Label>
+                            <CopyButton text={parsedUrl.hash} label="锚点" />
+                          </div>
+                          <div className="p-2 bg-muted rounded border">
+                            <p className="text-sm font-mono break-all">{parsedUrl.hash}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 查询参数 */}
+                    {Object.keys(parsedUrl.params).length > 0 && (
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">查询参数</Label>
+                        {/* 表头 */}
+                        <div className="grid grid-cols-3 gap-2 p-2 bg-muted/50 rounded border font-medium text-sm">
+                          <div>参数名</div>
+                          <div>参数值</div>
+                          <div className="text-center">操作</div>
+                        </div>
+                        {/* 参数列表 */}
+                        <div className="space-y-1">
+                          {Object.entries(parsedUrl.params).map(([key, value]) => (
+                            <div key={key} className="grid grid-cols-3 gap-2 p-2 bg-muted rounded border items-center">
+                              <div className="text-sm font-mono break-all">{key}</div>
+                              <div className="text-sm font-mono break-all">{value}</div>
+                              <div className="flex justify-center">
+                                <CopyButton text={value} label={`参数值: ${key}`} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
