@@ -1206,6 +1206,48 @@ function registerIpcHandlers() {
       return { success: false, error: error.message || '加密过程中发生错误' };
     }
   })
+
+  // 处理单个值解密请求
+  ipcMain.handle('decrypt-single-value', async (_, { cipher, type }) => {
+    try {
+      console.log(`开始解密单个值 (${type})...`);
+      const startTime = Date.now();
+
+      const plaintext = await cryptoWindowManager.decrypt(cipher);
+
+      const elapsed = Date.now() - startTime;
+      console.log(`单个值解密完成，耗时: ${elapsed}ms`);
+
+      return {
+        success: true,
+        plaintext
+      };
+    } catch (error) {
+      console.error(`单个值解密失败 (${type}):`, error);
+      return { success: false, error: error.message || '解密过程中发生错误' };
+    }
+  })
+
+  // 处理单个值加密请求
+  ipcMain.handle('encrypt-single-value', async (_, { plaintext, type }) => {
+    try {
+      console.log(`开始加密单个值 (${type})...`);
+      const startTime = Date.now();
+
+      const cipher = await cryptoWindowManager.encrypt(plaintext);
+
+      const elapsed = Date.now() - startTime;
+      console.log(`单个值加密完成，耗时: ${elapsed}ms`);
+
+      return {
+        success: true,
+        cipher
+      };
+    } catch (error) {
+      console.error(`单个值加密失败 (${type}):`, error);
+      return { success: false, error: error.message || '加密过程中发生错误' };
+    }
+  })
 }
 
 let mainWindow: BrowserWindow | null = null;

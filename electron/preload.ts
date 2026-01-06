@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld('electron', {
         'decrypt-url',
         'decrypt-db-config',
         'encrypt-db-config',
+        'decrypt-single-value',
+        'encrypt-single-value',
         'get-work-starter-config',
         'save-work-starter-config',
         'scan-sensitive-logs',
@@ -50,6 +52,8 @@ contextBridge.exposeInMainWorld('electron', {
   decryptUrl: (encryptedUrl: string, systemUrl: string) => ipcRenderer.invoke('decrypt-url', encryptedUrl, systemUrl),
   decryptDbConfig: (config: { urlCipher: string; usernameCipher: string; passwordCipher: string }) => ipcRenderer.invoke('decrypt-db-config', config),
   encryptDbConfig: (config: { urlPlain: string; usernamePlain: string; passwordPlain: string }) => ipcRenderer.invoke('encrypt-db-config', config),
+  decryptSingleValue: (config: { cipher: string; type: string }) => ipcRenderer.invoke('decrypt-single-value', config),
+  encryptSingleValue: (config: { plaintext: string; type: string }) => ipcRenderer.invoke('encrypt-single-value', config),
   minimize: () => ipcRenderer.send('minimize'),
   maximize: () => ipcRenderer.send('maximize'),
   close: () => ipcRenderer.send('close')

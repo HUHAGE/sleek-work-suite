@@ -22,7 +22,7 @@ const DbDecryptTool: React.FC = () => {
     if (!inputText.trim()) {
       toast({
         title: '错误',
-        description: '请输入密文',
+        description: '请输入要解密的内容',
         variant: 'destructive',
       });
       return;
@@ -33,52 +33,100 @@ const DbDecryptTool: React.FC = () => {
     setIsCopied(false);
 
     try {
-      // 解析输入的密文
-      const urlMatch = inputText.match(/url=\{SM4_1::\}([A-F0-9]+)/i);
-      const usernameMatch = inputText.match(/username=\{SM4_1::\}([A-F0-9]+)/i);
-      const passwordMatch = inputText.match(/password=\{SM4_1::\}([A-F0-9]+)/i);
+      // 解析输入内容，支持灵活的格式
+      const lines = inputText.trim().split('\n').map(line => line.trim()).filter(line => line);
+      const results: string[] = [];
+      let hasEncryptedContent = false;
 
-      if (!urlMatch || !usernameMatch || !passwordMatch) {
+      for (const line of lines) {
+        // 匹配各种可能的格式
+        const urlMatch = line.match(/^url\s*=\s*(.+)$/i);
+        const usernameMatch = line.match(/^username\s*=\s*(.+)$/i);
+        const passwordMatch = line.match(/^password\s*=\s*(.+)$/i);
+
+        if (urlMatch) {
+          const value = urlMatch[1].trim();
+          // 检查是否是加密格式
+          const encryptedMatch = value.match(/^\{SM4_1::\}([A-F0-9]+)$/i);
+          if (encryptedMatch) {
+            hasEncryptedContent = true;
+            // 需要解密
+            const cipher = encryptedMatch[1];
+            const result = await (window.electron as any).decryptSingleValue({ cipher, type: 'url' });
+            if (result.success) {
+              results.push(`url=${result.plaintext}`);
+            } else {
+              results.push(`url=解密失败: ${result.error || '未知错误'}`);
+            }
+          } else {
+            // 已经是明文，直接保留
+            results.push(`url=${value}`);
+          }
+        } else if (usernameMatch) {
+          const value = usernameMatch[1].trim();
+          const encryptedMatch = value.match(/^\{SM4_1::\}([A-F0-9]+)$/i);
+          if (encryptedMatch) {
+            hasEncryptedContent = true;
+            const cipher = encryptedMatch[1];
+            const result = await (window.electron as any).decryptSingleValue({ cipher, type: 'username' });
+            if (result.success) {
+              results.push(`username=${result.plaintext}`);
+            } else {
+              results.push(`username=解密失败: ${result.error || '未知错误'}`);
+            }
+          } else {
+            results.push(`username=${value}`);
+          }
+        } else if (passwordMatch) {
+          const value = passwordMatch[1].trim();
+          const encryptedMatch = value.match(/^\{SM4_1::\}([A-F0-9]+)$/i);
+          if (encryptedMatch) {
+            hasEncryptedContent = true;
+            const cipher = encryptedMatch[1];
+            const result = await (window.electron as any).decryptSingleValue({ cipher, type: 'password' });
+            if (result.success) {
+              results.push(`password=${result.plaintext}`);
+            } else {
+              results.push(`password=解密失败: ${result.error || '未知错误'}`);
+            }
+          } else {
+            results.push(`password=${value}`);
+          }
+        } else {
+          // 不匹配的行，直接保留
+          results.push(line);
+        }
+      }
+
+      if (results.length === 0) {
         toast({
           title: '格式错误',
-          description: '请按照正确的格式输入密文',
+          description: '未找到有效的url、username或password配置',
           variant: 'destructive',
         });
         setIsProcessing(false);
         return;
       }
 
-      const urlCipher = urlMatch[1];
-      const usernameCipher = usernameMatch[1];
-      const passwordCipher = passwordMatch[1];
-
-      // 调用后台解密
-      const result = await (window.electron as any).decryptDbConfig({
-        urlCipher,
-        usernameCipher,
-        passwordCipher
-      });
-
-      if (result.success) {
-        const output = `url=${result.url}\nusername=${result.username}\npassword=${result.password}`;
-        setOutputText(output);
+      setOutputText(results.join('\n'));
+      
+      if (hasEncryptedContent) {
         trackToolUsage('db_decrypt', 'decrypt_success');
         toast({
-          title: '解密成功',
-          description: '数据库配置已成功解密',
+          title: '处理完成',
+          description: '数据库配置已处理完成（包含解密内容）',
         });
       } else {
-        trackToolUsage('db_decrypt', 'decrypt_failed');
         toast({
-          title: '解密失败',
-          description: result.error || '未知错误',
-          variant: 'destructive',
+          title: '处理完成',
+          description: '输入内容均为明文，无需解密',
         });
       }
     } catch (error) {
-      console.error('解密失败:', error);
+      console.error('处理失败:', error);
+      trackToolUsage('db_decrypt', 'decrypt_failed');
       toast({
-        title: '解密失败',
+        title: '处理失败',
         description: error instanceof Error ? error.message : '未知错误',
         variant: 'destructive',
       });
@@ -93,7 +141,7 @@ const DbDecryptTool: React.FC = () => {
     if (!inputText.trim()) {
       toast({
         title: '错误',
-        description: '请输入明文',
+        description: '请输入要加密的内容',
         variant: 'destructive',
       });
       return;
@@ -104,52 +152,97 @@ const DbDecryptTool: React.FC = () => {
     setIsCopied(false);
 
     try {
-      // 解析输入的明文
-      const urlMatch = inputText.match(/url=([^\n]+)/);
-      const usernameMatch = inputText.match(/username=([^\n]+)/);
-      const passwordMatch = inputText.match(/password=([^\n]+)/);
+      // 解析输入内容，支持灵活的格式
+      const lines = inputText.trim().split('\n').map(line => line.trim()).filter(line => line);
+      const results: string[] = [];
+      let hasPlaintextContent = false;
 
-      if (!urlMatch || !usernameMatch || !passwordMatch) {
+      for (const line of lines) {
+        // 匹配各种可能的格式
+        const urlMatch = line.match(/^url\s*=\s*(.+)$/i);
+        const usernameMatch = line.match(/^username\s*=\s*(.+)$/i);
+        const passwordMatch = line.match(/^password\s*=\s*(.+)$/i);
+
+        if (urlMatch) {
+          const value = urlMatch[1].trim();
+          // 检查是否已经是加密格式
+          const encryptedMatch = value.match(/^\{SM4_1::\}([A-F0-9]+)$/i);
+          if (encryptedMatch) {
+            // 已经是密文，直接保留
+            results.push(`url=${value}`);
+          } else {
+            hasPlaintextContent = true;
+            // 需要加密
+            const result = await (window.electron as any).encryptSingleValue({ plaintext: value, type: 'url' });
+            if (result.success) {
+              results.push(`url={SM4_1::}${result.cipher}`);
+            } else {
+              results.push(`url=加密失败: ${result.error || '未知错误'}`);
+            }
+          }
+        } else if (usernameMatch) {
+          const value = usernameMatch[1].trim();
+          const encryptedMatch = value.match(/^\{SM4_1::\}([A-F0-9]+)$/i);
+          if (encryptedMatch) {
+            results.push(`username=${value}`);
+          } else {
+            hasPlaintextContent = true;
+            const result = await (window.electron as any).encryptSingleValue({ plaintext: value, type: 'username' });
+            if (result.success) {
+              results.push(`username={SM4_1::}${result.cipher}`);
+            } else {
+              results.push(`username=加密失败: ${result.error || '未知错误'}`);
+            }
+          }
+        } else if (passwordMatch) {
+          const value = passwordMatch[1].trim();
+          const encryptedMatch = value.match(/^\{SM4_1::\}([A-F0-9]+)$/i);
+          if (encryptedMatch) {
+            results.push(`password=${value}`);
+          } else {
+            hasPlaintextContent = true;
+            const result = await (window.electron as any).encryptSingleValue({ plaintext: value, type: 'password' });
+            if (result.success) {
+              results.push(`password={SM4_1::}${result.cipher}`);
+            } else {
+              results.push(`password=加密失败: ${result.error || '未知错误'}`);
+            }
+          }
+        } else {
+          // 不匹配的行，直接保留
+          results.push(line);
+        }
+      }
+
+      if (results.length === 0) {
         toast({
           title: '格式错误',
-          description: '请按照正确的格式输入明文（url=xxx username=xxx password=xxx）',
+          description: '未找到有效的url、username或password配置',
           variant: 'destructive',
         });
         setIsProcessing(false);
         return;
       }
 
-      const urlPlain = urlMatch[1].trim();
-      const usernamePlain = usernameMatch[1].trim();
-      const passwordPlain = passwordMatch[1].trim();
-
-      // 调用后台加密
-      const result = await (window.electron as any).encryptDbConfig({
-        urlPlain,
-        usernamePlain,
-        passwordPlain
-      });
-
-      if (result.success) {
-        const output = `url={SM4_1::}${result.urlCipher}\nusername={SM4_1::}${result.usernameCipher}\npassword={SM4_1::}${result.passwordCipher}`;
-        setOutputText(output);
+      setOutputText(results.join('\n'));
+      
+      if (hasPlaintextContent) {
         trackToolUsage('db_decrypt', 'encrypt_success');
         toast({
-          title: '加密成功',
-          description: '数据库配置已成功加密',
+          title: '处理完成',
+          description: '数据库配置已处理完成（包含加密内容）',
         });
       } else {
-        trackToolUsage('db_decrypt', 'encrypt_failed');
         toast({
-          title: '加密失败',
-          description: result.error || '未知错误',
-          variant: 'destructive',
+          title: '处理完成',
+          description: '输入内容均为密文，无需加密',
         });
       }
     } catch (error) {
-      console.error('加密失败:', error);
+      console.error('处理失败:', error);
+      trackToolUsage('db_decrypt', 'encrypt_failed');
       toast({
-        title: '加密失败',
+        title: '处理失败',
         description: error instanceof Error ? error.message : '未知错误',
         variant: 'destructive',
       });
@@ -193,24 +286,24 @@ const DbDecryptTool: React.FC = () => {
     trackButtonClick('db_decrypt', `insert_sample_${mode}`);
     
     if (mode === 'encrypt') {
-      // 加密模式示例
+      // 加密模式示例 - 支持混合格式
       const sample = `url=jdbc:sqlserver://localhost;databaseName=epointbid_JAVAYEWU_test
 username=sa
-password=123456`;
-      setInputText(sample);
-      toast({
-        title: '已插入示例',
-        description: '示例明文已填充到输入框',
-      });
-    } else {
-      // 解密模式示例
-      const sample = `url={SM4_1::}63C13E74F04FD790D3F9E5A34CCB92DB7D8FEA24C1FC8016BAC98488EA980D253817DC8CE3A0983DFCAFB023B04C7ED34C9D5DA634BEC1969402C59698FDCEC6F66EC795741CC001E60B3C482B1F133406BCE661049487CE23E8DCF4711E0D76
-username={SM4_1::}F4735284672EFED7FF0389BAD2B93DAC
 password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
       setInputText(sample);
       toast({
         title: '已插入示例',
-        description: '示例密文已填充到输入框',
+        description: '示例内容已填充（包含明文和密文混合）',
+      });
+    } else {
+      // 解密模式示例 - 支持混合格式
+      const sample = `url={SM4_1::}63C13E74F04FD790D3F9E5A34CCB92DB7D8FEA24C1FC8016BAC98488EA980D253817DC8CE3A0983DFCAFB023B04C7ED34C9D5DA634BEC1969402C59698FDCEC6F66EC795741CC001E60B3C482B1F133406BCE661049487CE23E8DCF4711E0D76
+username=sa
+password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
+      setInputText(sample);
+      toast({
+        title: '已插入示例',
+        description: '示例内容已填充（包含明文和密文混合）',
       });
     }
   };
@@ -248,14 +341,14 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
             数据库快速加解密
           </CardTitle>
           <CardDescription>
-            通过系统控制台自动{mode === 'encrypt' ? '加密' : '解密'}数据库配置信息
+            通过系统控制台智能处理数据库配置信息，支持明文和密文混合输入，自动识别并处理
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="input-text">
-                {mode === 'encrypt' ? '明文输入' : '密文输入'}
+                {mode === 'encrypt' ? '输入内容（支持明文/密文混合）' : '输入内容（支持明文/密文混合）'}
               </Label>
               <Button
                 variant="outline"
@@ -270,12 +363,12 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
               id="input-text"
               placeholder={
                 mode === 'encrypt'
-                  ? '请按照以下格式输入：\nurl=jdbc:sqlserver://localhost;databaseName=xxx\nusername=sa\npassword=123456'
-                  : '请按照以下格式输入：\nurl={SM4_1::}密文\nusername={SM4_1::}密文\npassword={SM4_1::}密文'
+                  ? '支持灵活输入格式，例如：\nurl=jdbc:sqlserver://localhost;databaseName=xxx\nusername=sa\npassword={SM4_1::}已加密的密码\n\n可以只输入其中一行或多行，支持明文和密文混合'
+                  : '支持灵活输入格式，例如：\nurl={SM4_1::}密文\nusername=明文用户名\npassword={SM4_1::}密文\n\n可以只输入其中一行或多行，支持明文和密文混合'
               }
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              rows={6}
+              rows={8}
               className="font-mono text-sm resize-none"
             />
           </div>
@@ -288,19 +381,19 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
             {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {mode === 'encrypt' ? '加密中...' : '解密中...'}
+                处理中...
               </>
             ) : (
               <>
                 {mode === 'encrypt' ? (
                   <>
                     <Lock className="mr-2 h-4 w-4" />
-                    加密
+                    智能加密
                   </>
                 ) : (
                   <>
                     <Unlock className="mr-2 h-4 w-4" />
-                    解密
+                    智能解密
                   </>
                 )}
               </>
@@ -311,7 +404,7 @@ password={SM4_1::}1699EBEA1BD4E12CB09E7F2B1763BDB9`;
             <div className="space-y-2 mt-6">
               <div className="flex items-center justify-between">
                 <Label htmlFor="output-text">
-                  {mode === 'encrypt' ? '加密结果' : '解密结果'}
+                  处理结果
                 </Label>
                 <Button
                   variant="outline"
