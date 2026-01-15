@@ -62,7 +62,7 @@ const Index = () => {
       // 如果没有配置，显示所有工具
       return tools
     }
-    
+
     // 根据配置过滤和排序
     const configMap = new Map(menuConfigs.map(c => [c.id, c]))
     return tools
@@ -80,7 +80,7 @@ const Index = () => {
   }
 
   const visibleTools = getVisibleTools()
-  
+
   // 当菜单配置加载后，检查当前激活的工具是否可见
   useEffect(() => {
     if (menuConfigs.length > 0 && activeTool !== 'settings') {
@@ -91,7 +91,7 @@ const Index = () => {
       }
     }
   }, [menuConfigs, activeTool, visibleTools])
-  
+
   const handleToolSwitch = (toolId: string) => {
     trackMenuSwitch(toolId);
     setActiveTool(toolId);
@@ -122,10 +122,10 @@ const Index = () => {
           )}>
             {/* 顶部光泽效果 */}
             <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-primary/5 via-primary/3 to-transparent pointer-events-none" />
-            
+
             {/* 侧边光效 */}
             <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/20 to-transparent pointer-events-none" />
-            
+
             {/* 折叠按钮 */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -144,9 +144,12 @@ const Index = () => {
             )}>
               <div className="mb-4">
                 <h1 className={cn(
-                  "text-2xl font-bold gradient-text mb-2 drop-shadow-sm",
-                  !sidebarOpen && "text-center text-sm"
+                  "text-2xl font-bold gradient-text mb-2 drop-shadow-sm flex items-center gap-2",
+                  !sidebarOpen && "text-center text-sm justify-center"
                 )}>
+                  {sidebarOpen && (
+                    <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
+                  )}
                   {!sidebarOpen ? "AiDo" : "工作提效小助手"}
                 </h1>
                 {sidebarOpen && (
@@ -179,7 +182,7 @@ const Index = () => {
                     >
                       {/* 悬停光效 */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                      
+
                       <Icon size={20} className="relative z-10" />
                       {sidebarOpen && (
                         <span className="font-medium relative z-10">{tool.name}</span>
@@ -212,7 +215,7 @@ const Index = () => {
                     >
                       {/* 悬停光效 */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                      
+
                       <Icon size={20} className="relative z-10" />
                       {sidebarOpen && (
                         <span className="font-medium relative z-10">{tool.name}</span>
@@ -238,7 +241,7 @@ const Index = () => {
                 >
                   {/* 悬停光效 */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  
+
                   <Settings size={20} className="relative z-10" />
                   {sidebarOpen && (
                     <span className="font-medium relative z-10">{settingsTool.name}</span>
@@ -252,7 +255,7 @@ const Index = () => {
           <div className="flex-1 overflow-auto bg-background/30 backdrop-blur-md h-[calc(100vh-40px)] scrollbar-hide">
             <div className="p-6">
               {activeToolInfo?.dec && (
-                <CollapsibleDescription 
+                <CollapsibleDescription
                   title={activeToolInfo.name}
                   description={activeToolInfo.dec}
                 />
