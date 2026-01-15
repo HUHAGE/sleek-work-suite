@@ -61,6 +61,8 @@ const themes = [
 const SqlFormatter = () => {
   const [sql, setSql] = useState('');
   const [result, setResult] = useState('');
+  const [singleLineResult, setSingleLineResult] = useState(''); // 单行结果
+  const [isCollapsed, setIsCollapsed] = useState(false); // 折叠状态
   const [copied, setCopied] = useState(false);
   const [showLineNumbers, setShowLineNumbers] = useState(true);
   const [wrapLines, setWrapLines] = useState(true);
@@ -98,6 +100,10 @@ ORDER BY u.created_at DESC;`;
 
   const handleFormat = () => {
     try {
+      // 保存单行版本（去除多余空格和换行）
+      const singleLine = sql.replace(/\s+/g, ' ').trim();
+      setSingleLineResult(singleLine);
+
       const formatted = format(sql, {
         language: 'sql',
         keywordCase: 'upper',
@@ -121,7 +127,8 @@ ORDER BY u.created_at DESC;`;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(result);
+      const textToCopy = isCollapsed ? singleLineResult : result;
+      await navigator.clipboard.writeText(textToCopy);
       setCopied(true);
       toast({
         title: "复制成功",
@@ -249,6 +256,22 @@ ORDER BY u.created_at DESC;`;
               <Button
                 size="icon"
                 variant="ghost"
+                className={cn(
+                  "h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20",
+                  isCollapsed && "bg-primary/10 dark:bg-primary/20"
+                )}
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                title={isCollapsed ? "展开" : "折叠为单行"}
+              >
+                {isCollapsed ? (
+                  <Maximize2 size={14} className="text-primary" />
+                ) : (
+                  <Minimize2 size={14} className="text-primary" />
+                )}
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
                 onClick={handleCopy}
                 className="h-7 w-7 hover:bg-primary/10 dark:hover:bg-primary/20"
                 title="复制到剪贴板"
@@ -304,7 +327,7 @@ ORDER BY u.created_at DESC;`;
                 textShadow: 'none', // 移除文字阴影
               }}
             >
-              {result || '格式化后的SQL将显示在这里...'}
+              {isCollapsed ? (singleLineResult || '格式化后的SQL将显示在这里...') : (result || '格式化后的SQL将显示在这里...')}
             </SyntaxHighlighter>
           </div>
         </CardContent>
