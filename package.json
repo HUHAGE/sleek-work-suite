@@ -1,7 +1,7 @@
 {
   "name": "vite_react_shadcn_ts",
   "private": true,
-  "version": "4.0.0",
+  "version": "4.0.1",
   "type": "commonjs",
   "main": "dist-electron/main.js",
   "description": "快速定制，随时更新，随时使用的工作提效工具",
