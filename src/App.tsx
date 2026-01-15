@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { getThemeColorVariables } from '@/lib/utils';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import UpdateNotification from '@/components/UpdateNotification';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -81,7 +82,7 @@ const App = () => {
   // 应用主题和主题色
   useEffect(() => {
     const root = document.documentElement
-    
+
     // 应用深色/浅色主题
     root.classList.remove('light', 'dark')
     if (theme === 'system') {
@@ -104,6 +105,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <UpdateNotification />
         <div className="min-h-screen bg-background text-foreground">
           <Toaster />
           <Sonner />
