@@ -10,7 +10,7 @@ const HuhaTools: React.FC = () => {
   useEffect(() => {
     // 跟踪工具加载
     trackToolUsage('huha_tools', 'load_start');
-    
+
     // 启动入场动画
     setIsVisible(true);
 
@@ -42,10 +42,9 @@ const HuhaTools: React.FC = () => {
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* 加载动画层 */}
-      <div 
-        className={`absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5 backdrop-blur-sm z-10 flex flex-col items-center justify-center transition-all duration-700 ${
-          isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5 backdrop-blur-sm z-10 flex flex-col items-center justify-center transition-all duration-700 ${isLoading ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
       >
         {/* 动画圆环 */}
         <div className="relative mb-8">
@@ -69,7 +68,7 @@ const HuhaTools: React.FC = () => {
 
         {/* 进度条 */}
         <div className="w-64 h-2 bg-primary/10 rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-primary/50 via-primary to-primary/50 rounded-full transition-all duration-300 ease-out relative"
             style={{ width: `${progress}%` }}
           >
@@ -84,17 +83,16 @@ const HuhaTools: React.FC = () => {
       </div>
 
       {/* iframe 内容 */}
-      <div 
-        className={`w-full h-full transition-all duration-1000 ${
-          isVisible && !isLoading 
-            ? 'opacity-100 scale-100 blur-0' 
-            : 'opacity-0 scale-95 blur-sm'
-        }`}
+      <div
+        className={`w-full h-full transition-all duration-1000 ${isVisible && !isLoading
+          ? 'opacity-100 scale-100 blur-0'
+          : 'opacity-0 scale-95 blur-sm'
+          }`}
       >
-        <iframe 
-          src="https://www.huhage.fun" 
+        <iframe
+          src="https://tools.huhage.fun"
           className="w-full h-full"
-          style={{ 
+          style={{
             border: 'none',
           }}
           title="HUHA工具集"
